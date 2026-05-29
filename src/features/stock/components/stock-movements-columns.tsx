@@ -5,11 +5,26 @@ import { DataTableColumnHeader } from '@/components/data-table'
 import { type StockMovement } from '../data/schema'
 
 const typeMap: Record<string, string> = {
-  production_output: 'Produção (saída)',
-  production_consumption: 'Produção (consumo)',
+  production_output: 'Produção de Produto',
+  production_consumption: 'Consumo na Produção',
   purchase: 'Compra',
   purchase_reversal: 'Estorno de Compra',
-  adjustment: 'Ajuste',
+  adjustment: 'Ajuste Manual',
+}
+
+function formatStock(value: number | null, unit?: string) {
+  if (value === null) return '—'
+  return `${value} ${unit || ''}`.trim()
+}
+
+function getMovementLabel(movement: StockMovement) {
+  if (movement.type === 'production_reversal') {
+    return movement.product
+      ? 'Estorno de Produto Produzido'
+      : 'Devolução de Insumo da Produção'
+  }
+
+  return typeMap[movement.type] || movement.type
 }
 
 export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
@@ -47,15 +62,44 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
     },
   },
   {
-    accessorKey: 'quantity',
+    accessorKey: 'stockBefore',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Quantidade' />
+      <DataTableColumnHeader column={column} title='Estoque anterior' />
     ),
     cell: ({ row }) => {
+      const m = row.original
+      return (
+        <span className='ps-2 text-muted-foreground'>
+          {formatStock(m.stockBefore, m.product?.unit || m.supply?.unit)}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: 'quantity',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Movimentação' />
+    ),
+    cell: ({ row }) => {
+      const m = row.original
       const q = row.getValue('quantity') as number
       return (
         <span className={q >= 0 ? 'text-green-600' : 'text-red-600'}>
-          {q > 0 ? '+' : ''}{q}
+          {q > 0 ? '+' : ''}{formatStock(q, m.product?.unit || m.supply?.unit)}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: 'stockAfter',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Atualizado' />
+    ),
+    cell: ({ row }) => {
+      const m = row.original
+      return (
+        <span className='ps-2 font-medium'>
+          {formatStock(m.stockAfter, m.product?.unit || m.supply?.unit)}
         </span>
       )
     },
@@ -66,18 +110,24 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
       <DataTableColumnHeader column={column} title='Movimento' />
     ),
     cell: ({ row }) => {
-      const type = row.getValue('type') as string
-      return <span className='ps-2'>{typeMap[type] || type}</span>
+      return <span className='ps-2'>{getMovementLabel(row.original)}</span>
     },
   },
   {
-    accessorKey: 'notes',
+    id: 'author',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Observação' />
+      <DataTableColumnHeader column={column} title='Autor' />
     ),
-    cell: ({ row }) => (
-      <span className='ps-2 text-muted-foreground'>{row.getValue('notes') || '—'}</span>
-    ),
+    accessorFn: (row) =>
+      row.author ? `${row.author.firstName} ${row.author.lastName}` : '',
+    cell: ({ row }) => {
+      const author = row.original.author
+      return (
+        <span className='ps-2 text-muted-foreground'>
+          {author ? `${author.firstName} ${author.lastName}` : '—'}
+        </span>
+      )
+    },
   },
   {
     accessorKey: 'createdAt',

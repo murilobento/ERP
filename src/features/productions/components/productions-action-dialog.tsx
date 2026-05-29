@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
-import { z } from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useQueryClient, useQuery } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
+import {
+  ProductSupplyCombobox,
+  type ProductSupplySearchItem,
+} from '@/components/product-supply-combobox'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,31 +16,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { type Product } from '../../products/data/schema'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
-const formSchema = z.object({
-  productId: z.string().min(1, 'Produto é obrigatório.'),
-  quantity: z.number().min(0.01, 'Quantidade deve ser maior que zero.'),
-  notes: z.string(),
-})
-
-type ProductionForm = z.infer<typeof formSchema>
+type ItemForm = {
+  productId: string
+  quantity: number
+}
 
 type ProductionsActionDialogProps = {
   open: boolean
@@ -51,40 +42,59 @@ export function ProductionsActionDialog({
   onOpenChange,
 }: ProductionsActionDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [notes, setNotes] = useState('')
+  const [draftItem, setDraftItem] = useState<ItemForm>({
+    productId: '',
+    quantity: 1,
+  })
+  const [items, setItems] = useState<ItemForm[]>([])
+  const [selectedProducts, setSelectedProducts] = useState<
+    Record<string, ProductSupplySearchItem>
+  >({})
   const queryClient = useQueryClient()
 
-  const { data: productsData } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
-      const res = await api.get('/products')
-      return res.data.products as Product[]
-    },
-  })
+  function resetForm() {
+    setNotes('')
+    setDraftItem({ productId: '', quantity: 1 })
+    setItems([])
+    setSelectedProducts({})
+  }
 
-  const products = (productsData || []).filter((p) => p.status === 'active')
+  function updateSelectedProduct(item: ProductSupplySearchItem | null) {
+    if (!item) return
+    setSelectedProducts((current) => ({ ...current, [item.id]: item }))
+  }
 
-  const form = useForm<ProductionForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      productId: '',
-      quantity: 0,
-      notes: '',
-    },
-  })
-
-  useEffect(() => {
-    if (!open) {
-      form.reset()
+  function addItem() {
+    if (!draftItem.productId || draftItem.quantity <= 0) {
+      toast.error('Selecione um produto e informe uma quantidade válida.')
+      return
     }
-  }, [open, form])
+    if (items.some((item) => item.productId === draftItem.productId)) {
+      toast.error('Este produto já foi adicionado.')
+      return
+    }
 
-  async function onSubmit(values: ProductionForm) {
+    setItems([...items, draftItem])
+    setDraftItem({ productId: '', quantity: 1 })
+  }
+
+  function removeItem(index: number) {
+    setItems(items.filter((_, i) => i !== index))
+  }
+
+  async function onSubmit() {
+    if (items.length === 0) {
+      toast.error('Adicione pelo menos um item.')
+      return
+    }
+
     setIsLoading(true)
     try {
-      await api.post('/productions', values)
+      await api.post('/productions', { notes, items })
       queryClient.invalidateQueries({ queryKey: ['productions'] })
       toast.success('Produção criada com sucesso.')
-      form.reset()
+      resetForm()
       onOpenChange(false)
     } catch (error: unknown) {
       const message =
@@ -100,77 +110,119 @@ export function ProductionsActionDialog({
     <Dialog
       open={open}
       onOpenChange={(state) => {
-        form.reset()
+        if (!state) resetForm()
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
+      <DialogContent className='sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <DialogTitle>Nova Produção</DialogTitle>
           <DialogDescription>
             Crie uma nova ordem de produção. Ela será criada como rascunho.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form
-            id='production-form'
-            onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-4 px-0.5'
-          >
-            <FormField
-              control={form.control}
-              name='productId'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Produto</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className='col-span-4'>
-                        <SelectValue placeholder='Selecione o produto' />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {products.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name} ({p.unit})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
+
+        <div className='space-y-4 px-0.5'>
+          <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
+            <Label className='col-span-2 text-end'>Observação</Label>
+            <Input
+              placeholder='Opcional'
+              className='col-span-4'
+              autoComplete='off'
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
             />
-            <FormField
-              control={form.control}
-              name='quantity'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Quantidade</FormLabel>
-                  <FormControl>
-                    <Input type='number' step='0.01' min='0' className='col-span-4' autoComplete='off' value={field.value} onChange={(e) => field.onChange(e.target.valueAsNumber || 0)} />
-                  </FormControl>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='notes'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Observação</FormLabel>
-                  <FormControl>
-                    <Input placeholder='Opcional' className='col-span-4' autoComplete='off' {...field} />
-                  </FormControl>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
+          </div>
+
+          <div className='space-y-2'>
+            <Label className='mb-2 block text-sm font-medium'>Itens</Label>
+            <div className='grid grid-cols-[1fr_7rem_auto] items-end gap-2'>
+              <div>
+                <Label className='text-xs text-muted-foreground'>Produto</Label>
+                <ProductSupplyCombobox
+                  type='product'
+                  value={draftItem.productId}
+                  onValueChange={(value) =>
+                    setDraftItem((current) => ({ ...current, productId: value }))
+                  }
+                  onItemChange={updateSelectedProduct}
+                  selectedItem={selectedProducts[draftItem.productId]}
+                  placeholder='Selecione o produto'
+                />
+              </div>
+              <div>
+                <Label className='text-xs text-muted-foreground'>Quantidade</Label>
+                <Input
+                  type='number'
+                  step='0.01'
+                  min='0'
+                  autoComplete='off'
+                  value={draftItem.quantity || ''}
+                  onChange={(e) =>
+                    setDraftItem((current) => ({
+                      ...current,
+                      quantity: e.target.valueAsNumber || 0,
+                    }))
+                  }
+                />
+              </div>
+              <Button type='button' onClick={addItem}>
+                <Plus size={16} />
+                Adicionar
+              </Button>
+            </div>
+
+            <div className='max-h-[260px] overflow-y-auto rounded-md border'>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Produto</TableHead>
+                    <TableHead>Quantidade</TableHead>
+                    <TableHead className='w-10' />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className='h-16 text-center text-muted-foreground'>
+                        Nenhum item adicionado.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    items.map((item, index) => {
+                      const product = selectedProducts[item.productId]
+
+                      return (
+                        <TableRow key={item.productId}>
+                          <TableCell className='font-medium'>
+                            {product?.name || item.productId}
+                          </TableCell>
+                          <TableCell>
+                            {item.quantity} {product?.unit || ''}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              type='button'
+                              variant='ghost'
+                              size='icon'
+                              className='text-red-500'
+                              onClick={() => removeItem(index)}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </div>
+
         <DialogFooter>
-          <Button type='submit' form='production-form' disabled={isLoading}>
+          <Button onClick={onSubmit} disabled={isLoading}>
             {isLoading && <Loader2 className='animate-spin' />}
             Criar Produção
           </Button>

@@ -15,6 +15,7 @@ export type PurchaseItem = {
 
 export type Purchase = {
   id: string
+  vendorId: string | null
   supplier: string
   status: 'pending' | 'completed'
   notes: string
@@ -23,5 +24,11 @@ export type Purchase = {
   reversedAt: string | null
   createdAt: string
   updatedAt: string
+  vendor: {
+    id: string
+    name: string
+    phone: string
+    status: string
+  } | null
   items: PurchaseItem[]
 }

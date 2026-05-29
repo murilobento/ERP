@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   type SortingState,
   type VisibilityState,
@@ -20,16 +20,17 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { type StockMovement } from '../data/schema'
-import { stockMovementsColumns as columns } from './stock-movements-columns'
+import { type Vendor } from '../data/schema'
+import { DataTableBulkActions } from './data-table-bulk-actions'
+import { vendorsColumns as columns } from './vendors-columns'
 
 type DataTableProps = {
-  data: StockMovement[]
+  data: Vendor[]
   search: Record<string, unknown>
   navigate: NavigateFn
 }
 
-export function StockMovementsTable({ data, search, navigate }: DataTableProps) {
+export function VendorsTable({ data, search, navigate }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
@@ -48,6 +49,7 @@ export function StockMovementsTable({ data, search, navigate }: DataTableProps) 
     columnFilters: [],
   })
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
@@ -66,12 +68,16 @@ export function StockMovementsTable({ data, search, navigate }: DataTableProps) 
     onGlobalFilterChange,
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
-      const m = row.original
-      const name = m.product?.name || m.supply?.name || ''
-      const notes = m.notes || ''
+      const { name, phone, street, number, neighborhood, city, state } =
+        row.original
+      const address = [street, number, neighborhood, city, state]
+        .filter(Boolean)
+        .join(', ')
+        .toLowerCase()
       return (
         name.toLowerCase().includes(search) ||
-        notes.toLowerCase().includes(search)
+        phone.toLowerCase().includes(search) ||
+        address.includes(search)
       )
     },
     getPaginationRowModel: getPaginationRowModel(),
@@ -85,20 +91,22 @@ export function StockMovementsTable({ data, search, navigate }: DataTableProps) 
   }, [table, ensurePageInRange])
 
   return (
-    <div className={cn('flex flex-1 flex-col gap-4')}>
+    <div
+      className={cn(
+        'max-sm:has-[div[role="toolbar"]]:mb-16',
+        'flex flex-1 flex-col gap-4'
+      )}
+    >
       <DataTableToolbar
         table={table}
-        searchPlaceholder='Filtrar movimentações...'
+        searchPlaceholder='Filtrar por nome, telefone ou endereço...'
         filters={[]}
         labels={{
-          item: 'Item',
-          itemType: 'Tipo',
-          stockBefore: 'Estoque anterior',
-          quantity: 'Movimentação',
-          stockAfter: 'Atualizado',
-          type: 'Movimento',
-          author: 'Autor',
-          createdAt: 'Data',
+          name: 'Nome',
+          phone: 'Telefone',
+          address: 'Endereço',
+          status: 'Status',
+          createdAt: 'Criado em',
         }}
       />
       <div className='overflow-hidden rounded-md border'>
@@ -106,28 +114,37 @@ export function StockMovementsTable({ data, search, navigate }: DataTableProps) 
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className='group/row'>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    colSpan={header.colSpan}
-                    className={cn(
-                      'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-                      header.column.columnDef.meta?.className,
-                      header.column.columnDef.meta?.thClassName
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      className={cn(
+                        'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                        header.column.columnDef.meta?.className,
+                        header.column.columnDef.meta?.thClassName
+                      )}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className='group/row'>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                  className='group/row'
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
@@ -137,14 +154,20 @@ export function StockMovementsTable({ data, search, navigate }: DataTableProps) 
                         cell.column.columnDef.meta?.tdClassName
                       )}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
                   Nenhum resultado.
                 </TableCell>
               </TableRow>
@@ -153,6 +176,7 @@ export function StockMovementsTable({ data, search, navigate }: DataTableProps) 
         </Table>
       </div>
       <DataTablePagination table={table} className='mt-auto' />
+      <DataTableBulkActions table={table} />
     </div>
   )
 }

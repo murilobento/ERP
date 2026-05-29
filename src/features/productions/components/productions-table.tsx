@@ -66,8 +66,10 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
     onGlobalFilterChange,
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
-      const { name } = row.original.product
-      return name.toLowerCase().includes(search)
+      const items = row.original.items?.length
+        ? row.original.items
+        : [{ product: row.original.product }]
+      return items.some((item) => item.product.name.toLowerCase().includes(search))
     },
     getPaginationRowModel: getPaginationRowModel(),
     getCoreRowModel: getCoreRowModel(),

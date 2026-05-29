@@ -9,12 +9,12 @@ export function PurchasesDialogs() {
       <PurchasesActionDialog
         key='purchase-add'
         open={open === 'add'}
-        onOpenChange={() => setOpen('add')}
+        onOpenChange={(state) => setOpen(state ? 'add' : null)}
       />
       <PurchasesActionDialog
         key='purchase-edit'
         open={open === 'edit'}
-        onOpenChange={() => setOpen('edit')}
+        onOpenChange={(state) => setOpen(state ? 'edit' : null)}
       />
       <PurchasesDetailDialog />
     </>

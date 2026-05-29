@@ -23,7 +23,67 @@ supplyRoutes.get('/', async (c) => {
     select: SUPPLY_SELECT,
     orderBy: { createdAt: 'desc' },
   })
-  return c.json({ supplies })
+
+  const suppliesWithStock = await Promise.all(
+    supplies.map(async (supply) => {
+      const stockResult = await prisma.stockMovement.aggregate({
+        where: { supplyId: supply.id },
+        _sum: { quantity: true },
+      })
+      return { ...supply, stock: stockResult._sum.quantity || 0 }
+    })
+  )
+
+  return c.json({ supplies: suppliesWithStock })
+})
+
+supplyRoutes.get('/search', async (c) => {
+  const q = (c.req.query('q') || '').trim()
+  const status = c.req.query('status')
+  const includeStock = c.req.query('includeStock') === 'true'
+  const requestedLimit = Number(c.req.query('limit') || 20)
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.min(Math.max(requestedLimit, 1), 50)
+    : 20
+
+  if (!q) {
+    return c.json({ supplies: [] })
+  }
+
+  const where = {
+    name: { contains: q, mode: 'insensitive' as const },
+    ...(status && status !== 'all' ? { status } : {}),
+  }
+
+  const supplies = await prisma.supply.findMany({
+    where,
+    select: {
+      id: true,
+      name: true,
+      unit: true,
+      status: true,
+      packageUnit: true,
+      packageQuantity: true,
+    },
+    orderBy: { name: 'asc' },
+    take: limit,
+  })
+
+  if (!includeStock) {
+    return c.json({ supplies })
+  }
+
+  const suppliesWithStock = await Promise.all(
+    supplies.map(async (supply) => {
+      const stockResult = await prisma.stockMovement.aggregate({
+        where: { supplyId: supply.id },
+        _sum: { quantity: true },
+      })
+      return { ...supply, stock: stockResult._sum.quantity || 0 }
+    })
+  )
+
+  return c.json({ supplies: suppliesWithStock })
 })
 
 supplyRoutes.post('/', async (c) => {

@@ -9,7 +9,7 @@ export function ProductionsDialogs() {
       <ProductionsActionDialog
         key='production-add'
         open={open === 'add'}
-        onOpenChange={() => setOpen('add')}
+        onOpenChange={(state) => setOpen(state ? 'add' : null)}
       />
 
       <ProductionsDetailDialog />

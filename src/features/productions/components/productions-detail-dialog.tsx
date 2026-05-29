@@ -15,7 +15,19 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { type ProductionDetail } from '../data/schema'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  type CompositionNeeded,
+  type Production,
+  type ProductionDetail,
+} from '../data/schema'
 import { useProductions } from './productions-provider'
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'success' }> = {
@@ -23,6 +35,28 @@ const statusMap: Record<string, { label: string; variant: 'default' | 'secondary
   in_production: { label: 'Em Produção', variant: 'default' },
   completed: { label: 'Concluída', variant: 'success' },
   cancelled: { label: 'Cancelada', variant: 'destructive' },
+}
+
+type ProductionDetailResponse = {
+  production: ProductionDetail
+  compositionNeeded: CompositionNeeded[]
+}
+
+type ProductionActionResponse = {
+  production: Production
+}
+
+function getProductionItems(production: Production | ProductionDetail) {
+  return production.items?.length
+    ? production.items
+    : [
+        {
+          id: production.id,
+          productId: production.productId,
+          quantity: production.quantity,
+          product: production.product,
+        },
+      ]
 }
 
 export function ProductionsDetailDialog() {
@@ -36,29 +70,72 @@ export function ProductionsDetailDialog() {
     queryKey: ['production', currentRow?.id],
     queryFn: async () => {
       const res = await api.get(`/productions/${currentRow?.id}`)
-      return res.data as { production: ProductionDetail; compositionNeeded: ProductionDetail['compositionNeeded'] }
+      return res.data as ProductionDetailResponse
     },
     enabled: open === 'view' && !!currentRow,
+    staleTime: 0,
   })
 
   const production = detail?.production
+  const productionForDisplay = production || currentRow
+  const productionItems = productionForDisplay
+    ? getProductionItems(productionForDisplay)
+    : []
   const compositionNeeded = detail?.compositionNeeded || []
   const status = production?.status || currentRow?.status || 'draft'
   const statusConfig = statusMap[status] || { label: status, variant: 'secondary' as const }
+
+  function syncProduction(updatedProduction: Production) {
+    queryClient.setQueryData<Production[]>(['productions'], (old) =>
+      old?.map((item) =>
+        item.id === updatedProduction.id ? updatedProduction : item
+      )
+    )
+
+    queryClient.setQueryData<ProductionDetailResponse>(
+      ['production', updatedProduction.id],
+      (old) => {
+        if (!old) return old
+
+        return {
+          ...old,
+          production: {
+            ...old.production,
+            ...updatedProduction,
+            product: {
+              ...old.production.product,
+              ...updatedProduction.product,
+            },
+            items: old.production.items,
+          },
+        }
+      }
+    )
+
+    setCurrentRow(updatedProduction)
+  }
 
   async function handleAction(action: 'start' | 'complete' | 'cancel') {
     if (!currentRow) return
     setIsLoading(true)
     try {
-      await api.post(`/productions/${currentRow.id}/${action}`)
+      const { data } = await api.post<ProductionActionResponse>(
+        `/productions/${currentRow.id}/${action}`
+      )
+      syncProduction(data.production)
       queryClient.invalidateQueries({ queryKey: ['productions'] })
-      queryClient.invalidateQueries({ queryKey: ['production'] })
+      queryClient.invalidateQueries({ queryKey: ['production', currentRow.id] })
+      if (action === 'complete') {
+        queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
+        queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
+      }
       const messages = {
         start: 'Produção iniciada.',
         complete: 'Produção concluída. Estoque atualizado.',
         cancel: 'Produção cancelada.',
       }
       toast.success(messages[action])
+      setConfirmAction(null)
       setOpen(null)
       setCurrentRow(null)
     } catch (error: unknown) {
@@ -75,10 +152,15 @@ export function ProductionsDetailDialog() {
     if (!currentRow || !reverseReason.trim()) return
     setIsLoading(true)
     try {
-      await api.post(`/productions/${currentRow.id}/reverse`, { reason: reverseReason.trim() })
+      const { data } = await api.post<ProductionActionResponse>(
+        `/productions/${currentRow.id}/reverse`,
+        { reason: reverseReason.trim() }
+      )
+      syncProduction(data.production)
       queryClient.invalidateQueries({ queryKey: ['productions'] })
-      queryClient.invalidateQueries({ queryKey: ['production'] })
+      queryClient.invalidateQueries({ queryKey: ['production', currentRow.id] })
       queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
+      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
       toast.success('Estorno realizado. Estoque revertido.')
       setConfirmAction(null)
       setReverseReason('')
@@ -106,16 +188,14 @@ export function ProductionsDetailDialog() {
         }
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
+      <DialogContent className='sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
             <DialogTitle>Detalhes da Produção</DialogTitle>
             <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
           </div>
           <DialogDescription>
-            {production?.product?.name || currentRow?.product?.name} —{' '}
-            {production?.quantity || currentRow?.quantity}{' '}
-            {production?.product?.unit || currentRow?.product?.unit}
+            {productionItems.length} {productionItems.length === 1 ? 'item' : 'itens'} na ordem
           </DialogDescription>
         </DialogHeader>
 
@@ -185,6 +265,34 @@ export function ProductionsDetailDialog() {
 
           {!confirmAction && (
             <>
+              {productionItems.length > 0 && (
+                <div>
+                  <h4 className='mb-2 text-sm font-medium'>Produtos</h4>
+                  <div className='rounded-md border'>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Produto</TableHead>
+                          <TableHead>Quantidade</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {productionItems.map((item) => (
+                          <TableRow key={item.productId}>
+                            <TableCell className='font-medium'>
+                              {item.product.name}
+                            </TableCell>
+                            <TableCell>
+                              {item.quantity} {item.product.unit}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
               {compositionNeeded.length > 0 && (
                 <div>
                   <h4 className='mb-2 text-sm font-medium'>Insumos Necessários</h4>

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useQueryClient, useQuery } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
+import { ProductSupplyCombobox } from '@/components/product-supply-combobox'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -14,15 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { type Product } from '../data/schema'
-import { type Supply } from '../../supplies/data/schema'
 
 type CompositionItem = {
   supplyId: string
@@ -48,16 +41,6 @@ export function ProductsCompositionDialog({
     }))
   )
   const queryClient = useQueryClient()
-
-  const { data: suppliesData } = useQuery({
-    queryKey: ['supplies'],
-    queryFn: async () => {
-      const res = await api.get('/supplies')
-      return res.data.supplies as Supply[]
-    },
-  })
-
-  const supplies = suppliesData || []
 
   function addItem() {
     setItems([...items, { supplyId: '', quantity: 0 }])
@@ -107,21 +90,17 @@ export function ProductsCompositionDialog({
             <div key={index} className='flex items-end gap-2'>
               <div className='flex-1'>
                 <Label className='text-xs text-muted-foreground'>Insumo</Label>
-                <Select
+                <ProductSupplyCombobox
+                  type='supply'
                   value={item.supplyId}
                   onValueChange={(val) => updateItem(index, 'supplyId', val)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Selecione...' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {supplies.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name} ({s.unit})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  selectedItem={
+                    currentRow.composition.find((c) => c.supplyId === item.supplyId)
+                      ?.supply
+                  }
+                  status='all'
+                  placeholder='Selecione...'
+                />
               </div>
               <div className='w-24'>
                 <Label className='text-xs text-muted-foreground'>Qtd</Label>

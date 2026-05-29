@@ -1,3 +1,14 @@
+export type ProductionItem = {
+  id: string
+  productId: string
+  quantity: number
+  product: {
+    id: string
+    name: string
+    unit: string
+  }
+}
+
 export type Production = {
   id: string
   productId: string
@@ -15,6 +26,7 @@ export type Production = {
     name: string
     unit: string
   }
+  items: ProductionItem[]
 }
 
 export type CompositionNeeded = {
@@ -35,5 +47,14 @@ export type ProductionDetail = Production & {
       supply: { id: string; name: string; unit: string }
     }[]
   }
-  compositionNeeded: CompositionNeeded[]
+  items: (ProductionItem & {
+    product: ProductionItem['product'] & {
+      composition: {
+        id: string
+        supplyId: string
+        quantity: number
+        supply: { id: string; name: string; unit: string }
+      }[]
+    }
+  })[]
 }

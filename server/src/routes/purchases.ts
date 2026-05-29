@@ -8,6 +8,7 @@ purchaseRoutes.use('*', authMiddleware)
 
 const PURCHASE_SELECT = {
   id: true,
+  vendorId: true,
   supplier: true,
   status: true,
   notes: true,
@@ -16,6 +17,9 @@ const PURCHASE_SELECT = {
   reversedAt: true,
   createdAt: true,
   updatedAt: true,
+  vendor: {
+    select: { id: true, name: true, phone: true, status: true },
+  },
   items: {
     select: {
       id: true,
@@ -45,14 +49,19 @@ purchaseRoutes.get('/', async (c) => {
 
 purchaseRoutes.post('/', async (c) => {
   const body = await c.req.json()
-  const { supplier, notes, items } = body as {
-    supplier: string
+  const { vendorId, notes, items } = body as {
+    vendorId: string
     notes?: string
     items: { supplyId: string; packages: number }[]
   }
 
-  if (!supplier) {
+  if (!vendorId) {
     return c.json({ error: 'Fornecedor é obrigatório.' }, 400)
+  }
+
+  const vendor = await prisma.vendor.findUnique({ where: { id: vendorId } })
+  if (!vendor || vendor.status !== 'active') {
+    return c.json({ error: 'Fornecedor não encontrado ou inativo.' }, 404)
   }
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -63,6 +72,9 @@ purchaseRoutes.post('/', async (c) => {
     if (!item.supplyId || !item.packages || item.packages <= 0) {
       return c.json({ error: 'Cada item deve ter insumo e número de embalagens (> 0).' }, 400)
     }
+  }
+  if (new Set(items.map((item) => item.supplyId)).size !== items.length) {
+    return c.json({ error: 'Não é permitido repetir o mesmo insumo na compra.' }, 400)
   }
 
   const supplyIds = items.map((i) => i.supplyId)
@@ -84,7 +96,8 @@ purchaseRoutes.post('/', async (c) => {
 
   const purchase = await prisma.purchase.create({
     data: {
-      supplier,
+      vendorId,
+      supplier: vendor.name,
       notes: notes || '',
       status: 'pending',
       items: {
@@ -115,8 +128,8 @@ purchaseRoutes.get('/:id', async (c) => {
 purchaseRoutes.patch('/:id', async (c) => {
   const purchaseId = c.req.param('id')
   const body = await c.req.json()
-  const { supplier, notes, items } = body as {
-    supplier?: string
+  const { vendorId, notes, items } = body as {
+    vendorId?: string
     notes?: string
     items?: { supplyId: string; packages: number }[]
   }
@@ -130,17 +143,30 @@ purchaseRoutes.patch('/:id', async (c) => {
     return c.json({ error: 'Apenas compras pendentes podem ser editadas.' }, 400)
   }
 
+  const vendor = vendorId
+    ? await prisma.vendor.findUnique({ where: { id: vendorId } })
+    : null
+  if (vendorId && (!vendor || vendor.status !== 'active')) {
+    return c.json({ error: 'Fornecedor não encontrado ou inativo.' }, 404)
+  }
+
   if (items) {
     for (const item of items) {
       if (!item.supplyId || !item.packages || item.packages <= 0) {
         return c.json({ error: 'Cada item deve ter insumo e número de embalagens (> 0).' }, 400)
       }
     }
+    if (new Set(items.map((item) => item.supplyId)).size !== items.length) {
+      return c.json({ error: 'Não é permitido repetir o mesmo insumo na compra.' }, 400)
+    }
   }
 
   await prisma.$transaction(async (tx) => {
-    const data: { supplier?: string; notes?: string } = {}
-    if (supplier) data.supplier = supplier
+    const data: { vendorId?: string; supplier?: string; notes?: string } = {}
+    if (vendor) {
+      data.vendorId = vendor.id
+      data.supplier = vendor.name
+    }
     if (notes !== undefined) data.notes = notes
 
     await tx.purchase.update({
@@ -178,6 +204,7 @@ purchaseRoutes.patch('/:id', async (c) => {
 
 purchaseRoutes.post('/:id/complete', async (c) => {
   const purchaseId = c.req.param('id')
+  const userId = c.get('userId') as string
 
   const existing = await prisma.purchase.findUnique({
     where: { id: purchaseId },
@@ -210,10 +237,19 @@ purchaseRoutes.post('/:id/complete', async (c) => {
     })
 
     for (const item of existing.items) {
+      const stockResult = await tx.stockMovement.aggregate({
+        where: { supplyId: item.supplyId },
+        _sum: { quantity: true },
+      })
+      const stockBefore = stockResult._sum.quantity || 0
+
       await tx.stockMovement.create({
         data: {
           supplyId: item.supplyId,
+          authorId: userId,
           quantity: item.quantity,
+          stockBefore,
+          stockAfter: stockBefore + item.quantity,
           type: 'purchase',
           referenceId: purchaseId,
           notes: `Compra de ${existing.supplier} — ${item.packages} ${item.supply.packageUnit || 'embalagem'}(s) de ${item.supply.name} → ${item.quantity} ${item.supply.unit}`,
@@ -278,10 +314,20 @@ purchaseRoutes.post('/:id/reverse', async (c) => {
     })
 
     for (const item of existing.items) {
+      const quantity = -item.quantity
+      const stockResult = await tx.stockMovement.aggregate({
+        where: { supplyId: item.supplyId },
+        _sum: { quantity: true },
+      })
+      const stockBefore = stockResult._sum.quantity || 0
+
       await tx.stockMovement.create({
         data: {
           supplyId: item.supplyId,
-          quantity: -item.quantity,
+          authorId: userId,
+          quantity,
+          stockBefore,
+          stockAfter: stockBefore + quantity,
           type: 'purchase_reversal',
           referenceId: purchaseId,
           notes: `Estorno da compra de ${existing.supplier} — ${item.quantity} ${item.supply.unit} de ${item.supply.name} | Motivo: ${reason.trim()} | Autor: ${authorName}`,

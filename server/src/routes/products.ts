@@ -47,6 +47,53 @@ productRoutes.get('/', async (c) => {
   return c.json({ products: productsWithStock })
 })
 
+productRoutes.get('/search', async (c) => {
+  const q = (c.req.query('q') || '').trim()
+  const status = c.req.query('status')
+  const includeStock = c.req.query('includeStock') === 'true'
+  const requestedLimit = Number(c.req.query('limit') || 20)
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.min(Math.max(requestedLimit, 1), 50)
+    : 20
+
+  if (!q) {
+    return c.json({ products: [] })
+  }
+
+  const where = {
+    name: { contains: q, mode: 'insensitive' as const },
+    ...(status && status !== 'all' ? { status } : {}),
+  }
+
+  const products = await prisma.product.findMany({
+    where,
+    select: {
+      id: true,
+      name: true,
+      unit: true,
+      status: true,
+    },
+    orderBy: { name: 'asc' },
+    take: limit,
+  })
+
+  if (!includeStock) {
+    return c.json({ products })
+  }
+
+  const productsWithStock = await Promise.all(
+    products.map(async (product) => {
+      const stockResult = await prisma.stockMovement.aggregate({
+        where: { productId: product.id },
+        _sum: { quantity: true },
+      })
+      return { ...product, stock: stockResult._sum.quantity || 0 }
+    })
+  )
+
+  return c.json({ products: productsWithStock })
+})
+
 productRoutes.post('/', async (c) => {
   const body = await c.req.json()
   const { name, description, unit, status } = body

@@ -21,10 +21,15 @@ stockRoutes.get('/movements', async (c) => {
       productId: true,
       supplyId: true,
       quantity: true,
+      stockBefore: true,
+      stockAfter: true,
       type: true,
       referenceId: true,
       notes: true,
       createdAt: true,
+      author: {
+        select: { id: true, firstName: true, lastName: true },
+      },
       product: {
         select: { id: true, name: true, unit: true },
       },
@@ -36,6 +41,90 @@ stockRoutes.get('/movements', async (c) => {
   })
 
   return c.json({ movements })
+})
+
+stockRoutes.post('/adjustments', async (c) => {
+  const userId = c.get('userId') as string
+  const body = await c.req.json()
+  const { itemType, itemId, quantity, reason } = body as {
+    itemType: 'product' | 'supply'
+    itemId: string
+    quantity: number
+    reason: string
+  }
+
+  if (itemType !== 'product' && itemType !== 'supply') {
+    return c.json({ error: 'Tipo de item inválido.' }, 400)
+  }
+
+  if (!itemId) {
+    return c.json({ error: 'Item é obrigatório.' }, 400)
+  }
+
+  if (!Number.isInteger(quantity) || quantity === 0) {
+    return c.json({ error: 'Quantidade deve ser um número inteiro diferente de zero.' }, 400)
+  }
+
+  if (!reason || !reason.trim()) {
+    return c.json({ error: 'Motivo é obrigatório.' }, 400)
+  }
+
+  if (itemType === 'product') {
+    const product = await prisma.product.findUnique({ where: { id: itemId } })
+    if (!product) {
+      return c.json({ error: 'Produto não encontrado.' }, 404)
+    }
+  } else {
+    const supply = await prisma.supply.findUnique({ where: { id: itemId } })
+    if (!supply) {
+      return c.json({ error: 'Insumo não encontrado.' }, 404)
+    }
+  }
+
+  const stockResult = await prisma.stockMovement.aggregate({
+    where:
+      itemType === 'product'
+        ? { productId: itemId }
+        : { supplyId: itemId },
+    _sum: { quantity: true },
+  })
+  const stockBefore = stockResult._sum.quantity || 0
+
+  const movement = await prisma.stockMovement.create({
+    data: {
+      productId: itemType === 'product' ? itemId : null,
+      supplyId: itemType === 'supply' ? itemId : null,
+      authorId: userId,
+      quantity,
+      stockBefore,
+      stockAfter: stockBefore + quantity,
+      type: 'adjustment',
+      notes: reason.trim(),
+    },
+    select: {
+      id: true,
+      productId: true,
+      supplyId: true,
+      quantity: true,
+      stockBefore: true,
+      stockAfter: true,
+      type: true,
+      referenceId: true,
+      notes: true,
+      createdAt: true,
+      author: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      product: {
+        select: { id: true, name: true, unit: true },
+      },
+      supply: {
+        select: { id: true, name: true, unit: true },
+      },
+    },
+  })
+
+  return c.json({ movement }, 201)
 })
 
 stockRoutes.get('/balances', async (c) => {

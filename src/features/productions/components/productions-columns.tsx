@@ -12,16 +12,43 @@ const statusMap: Record<string, { label: string; variant: 'default' | 'secondary
   cancelled: { label: 'Cancelada', variant: 'destructive' },
 }
 
+function getProductionItems(row: Production) {
+  return row.items?.length
+    ? row.items
+    : [
+        {
+          id: row.id,
+          productId: row.productId,
+          quantity: row.quantity,
+          product: row.product,
+        },
+      ]
+}
+
 export const productionsColumns: ColumnDef<Production>[] = [
   {
     accessorKey: 'product',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Produto' />
     ),
-    cell: ({ row }) => (
-      <span className='ps-3 font-medium'>{row.original.product.name}</span>
-    ),
-    accessorFn: (row) => row.product.name,
+    cell: ({ row }) => {
+      const items = getProductionItems(row.original)
+      const firstItem = items[0]
+      return (
+        <span className='ps-3 font-medium'>
+          {firstItem.product.name}
+          {items.length > 1 && (
+            <span className='ms-2 text-xs font-normal text-muted-foreground'>
+              +{items.length - 1} itens
+            </span>
+          )}
+        </span>
+      )
+    },
+    accessorFn: (row) =>
+      getProductionItems(row)
+        .map((item) => item.product.name)
+        .join(' '),
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)]',
@@ -35,11 +62,21 @@ export const productionsColumns: ColumnDef<Production>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Quantidade' />
     ),
-    cell: ({ row }) => (
-      <div className='ps-2 text-nowrap'>
-        {row.original.quantity} {row.original.product.unit}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const items = getProductionItems(row.original)
+      const firstItem = items[0]
+
+      return (
+        <div className='ps-2 text-nowrap'>
+          {firstItem.quantity} {firstItem.product.unit}
+          {items.length > 1 && (
+            <span className='ms-2 text-xs text-muted-foreground'>
+              em {items.length} itens
+            </span>
+          )}
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'status',

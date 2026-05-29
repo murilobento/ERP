@@ -6,6 +6,7 @@ import { cors } from 'hono/cors'
 import { authRoutes } from './routes/auth'
 import { userRoutes } from './routes/users'
 import { clientRoutes } from './routes/clients'
+import { vendorRoutes } from './routes/vendors'
 import { supplyRoutes } from './routes/supplies'
 import { productRoutes } from './routes/products'
 import { productionRoutes } from './routes/productions'
@@ -28,6 +29,7 @@ app.use(
 app.route('/api/auth', authRoutes)
 app.route('/api/users', userRoutes)
 app.route('/api/clients', clientRoutes)
+app.route('/api/vendors', vendorRoutes)
 app.route('/api/supplies', supplyRoutes)
 app.route('/api/products', productRoutes)
 app.route('/api/productions', productionRoutes)
