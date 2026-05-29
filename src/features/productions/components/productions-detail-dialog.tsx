@@ -1,0 +1,284 @@
+import { useState } from 'react'
+import { Loader2, CheckCircle2, Clock, XCircle, RotateCcw } from 'lucide-react'
+import { toast } from 'sonner'
+import { useQueryClient, useQuery } from '@tanstack/react-query'
+import api from '@/lib/api'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { type ProductionDetail } from '../data/schema'
+import { useProductions } from './productions-provider'
+
+const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'success' }> = {
+  draft: { label: 'Rascunho', variant: 'secondary' },
+  in_production: { label: 'Em Produção', variant: 'default' },
+  completed: { label: 'Concluída', variant: 'success' },
+  cancelled: { label: 'Cancelada', variant: 'destructive' },
+}
+
+export function ProductionsDetailDialog() {
+  const { open, setOpen, currentRow, setCurrentRow } = useProductions()
+  const [isLoading, setIsLoading] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<'complete' | 'cancel' | 'reverse' | null>(null)
+  const [reverseReason, setReverseReason] = useState('')
+  const queryClient = useQueryClient()
+
+  const { data: detail } = useQuery({
+    queryKey: ['production', currentRow?.id],
+    queryFn: async () => {
+      const res = await api.get(`/productions/${currentRow?.id}`)
+      return res.data as { production: ProductionDetail; compositionNeeded: ProductionDetail['compositionNeeded'] }
+    },
+    enabled: open === 'view' && !!currentRow,
+  })
+
+  const production = detail?.production
+  const compositionNeeded = detail?.compositionNeeded || []
+  const status = production?.status || currentRow?.status || 'draft'
+  const statusConfig = statusMap[status] || { label: status, variant: 'secondary' as const }
+
+  async function handleAction(action: 'start' | 'complete' | 'cancel') {
+    if (!currentRow) return
+    setIsLoading(true)
+    try {
+      await api.post(`/productions/${currentRow.id}/${action}`)
+      queryClient.invalidateQueries({ queryKey: ['productions'] })
+      queryClient.invalidateQueries({ queryKey: ['production'] })
+      const messages = {
+        start: 'Produção iniciada.',
+        complete: 'Produção concluída. Estoque atualizado.',
+        cancel: 'Produção cancelada.',
+      }
+      toast.success(messages[action])
+      setOpen(null)
+      setCurrentRow(null)
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || 'Algo deu errado.'
+      toast.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function handleReverse() {
+    if (!currentRow || !reverseReason.trim()) return
+    setIsLoading(true)
+    try {
+      await api.post(`/productions/${currentRow.id}/reverse`, { reason: reverseReason.trim() })
+      queryClient.invalidateQueries({ queryKey: ['productions'] })
+      queryClient.invalidateQueries({ queryKey: ['production'] })
+      queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
+      toast.success('Estorno realizado. Estoque revertido.')
+      setConfirmAction(null)
+      setReverseReason('')
+      setOpen(null)
+      setCurrentRow(null)
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || 'Algo deu errado.'
+      toast.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <Dialog
+      open={open === 'view'}
+      onOpenChange={(state) => {
+        if (!state) {
+          setConfirmAction(null)
+          setReverseReason('')
+          setOpen(null)
+          setTimeout(() => setCurrentRow(null), 300)
+        }
+      }}
+    >
+      <DialogContent className='sm:max-w-lg'>
+        <DialogHeader className='text-start'>
+          <div className='flex items-center justify-between'>
+            <DialogTitle>Detalhes da Produção</DialogTitle>
+            <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+          </div>
+          <DialogDescription>
+            {production?.product?.name || currentRow?.product?.name} —{' '}
+            {production?.quantity || currentRow?.quantity}{' '}
+            {production?.product?.unit || currentRow?.product?.unit}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className='space-y-4'>
+          {confirmAction === 'complete' && (
+            <>
+              <div className='rounded-md border border-green-600/50 bg-green-600/10 px-4 py-3 text-sm'>
+                <p className='font-medium text-green-600 dark:text-green-400'>Confirmar conclusão da produção?</p>
+                <p className='mt-1 text-muted-foreground'>O estoque do produto será atualizado e os insumos serão descontados. Esta ação não pode ser desfeita.</p>
+              </div>
+              <DialogFooter className='gap-2'>
+                <Button variant='outline' onClick={() => setConfirmAction(null)} disabled={isLoading}>
+                  Voltar
+                </Button>
+                <Button onClick={() => handleAction('complete')} disabled={isLoading}>
+                  {isLoading ? <Loader2 className='animate-spin' /> : <CheckCircle2 size={16} className='me-1' />}
+                  Confirmar Conclusão
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {confirmAction === 'cancel' && (
+            <>
+              <div className='rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm'>
+                <p className='font-medium text-destructive'>Confirmar cancelamento da produção?</p>
+                <p className='mt-1 text-muted-foreground'>Esta ação não pode ser desfeita.</p>
+              </div>
+              <DialogFooter className='gap-2'>
+                <Button variant='outline' onClick={() => setConfirmAction(null)} disabled={isLoading}>
+                  Voltar
+                </Button>
+                <Button variant='destructive' onClick={() => handleAction('cancel')} disabled={isLoading}>
+                  {isLoading ? <Loader2 className='animate-spin' /> : <XCircle size={16} className='me-1' />}
+                  Confirmar Cancelamento
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {confirmAction === 'reverse' && (
+            <>
+              <div className='rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm'>
+                <p className='font-medium text-destructive'>Confirmar estorno da produção?</p>
+                <p className='mt-1 text-muted-foreground'>O estoque do produto será revertido e os insumos serão devolvidos. A produção voltará para "Em Produção".</p>
+              </div>
+              <div className='space-y-2 rounded-md border border-destructive/50 p-3'>
+                <Label className='text-sm font-medium text-destructive'>Motivo do Estorno *</Label>
+                <Input
+                  placeholder='Informe o motivo do estorno...'
+                  value={reverseReason}
+                  onChange={(e) => setReverseReason(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <DialogFooter className='gap-2'>
+                <Button variant='outline' onClick={() => { setConfirmAction(null); setReverseReason('') }} disabled={isLoading}>
+                  Voltar
+                </Button>
+                <Button variant='destructive' onClick={handleReverse} disabled={isLoading || !reverseReason.trim()}>
+                  {isLoading ? <Loader2 className='animate-spin' /> : <RotateCcw size={16} className='me-1' />}
+                  Confirmar Estorno
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {!confirmAction && (
+            <>
+              {compositionNeeded.length > 0 && (
+                <div>
+                  <h4 className='mb-2 text-sm font-medium'>Insumos Necessários</h4>
+                  <div className='space-y-1'>
+                    {compositionNeeded.map((item) => (
+                      <div
+                        key={item.supplyId}
+                        className='flex items-center justify-between rounded-md border px-3 py-2 text-sm'
+                      >
+                        <span>{item.supplyName}</span>
+                        <div className='flex items-center gap-2'>
+                          <span className='text-muted-foreground'>
+                            {item.needed} {item.unit}
+                          </span>
+                          <Badge variant={item.sufficient ? 'default' : 'destructive'}>
+                            {item.available} disp.
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(production?.notes || currentRow?.notes) && (
+                <div>
+                  <h4 className='mb-1 text-sm font-medium'>Observação</h4>
+                  <p className='text-sm text-muted-foreground'>
+                    {production?.notes || currentRow?.notes}
+                  </p>
+                </div>
+              )}
+
+              {production?.completedAt && (
+                <div>
+                  <h4 className='mb-1 text-sm font-medium'>Concluída em</h4>
+                  <p className='text-sm text-muted-foreground'>
+                    {new Date(production.completedAt).toLocaleString()}
+                  </p>
+                </div>
+              )}
+
+              {(production?.reversedAt || currentRow?.reversedAt) && (
+                <div className='rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2'>
+                  <h4 className='mb-1 text-sm font-medium text-destructive'>Estorno</h4>
+                  <p className='text-sm text-muted-foreground'>
+                    {new Date(production?.reversedAt || currentRow?.reversedAt || '').toLocaleString()}
+                  </p>
+                  {(production?.reversalReason || currentRow?.reversalReason) && (
+                    <p className='mt-1 text-sm'>Motivo: {production?.reversalReason || currentRow?.reversalReason}</p>
+                  )}
+                </div>
+              )}
+
+              <DialogFooter className='gap-2'>
+                {status === 'draft' && (
+                  <Button onClick={() => handleAction('start')} disabled={isLoading}>
+                    {isLoading ? <Loader2 className='animate-spin' /> : <Clock size={16} className='me-1' />}
+                    Iniciar Produção
+                  </Button>
+                )}
+                {status === 'in_production' && (
+                  <>
+                    <Button onClick={() => setConfirmAction('complete')} disabled={isLoading}>
+                      {isLoading ? <Loader2 className='animate-spin' /> : <CheckCircle2 size={16} className='me-1' />}
+                      Concluir
+                    </Button>
+                    <Button variant='destructive' onClick={() => setConfirmAction('cancel')} disabled={isLoading}>
+                      {isLoading ? <Loader2 className='animate-spin' /> : <XCircle size={16} className='me-1' />}
+                      Cancelar
+                    </Button>
+                  </>
+                )}
+                {status === 'completed' && (
+                  <>
+                    <Button variant='destructive' onClick={() => setConfirmAction('reverse')}>
+                      <RotateCcw size={16} className='me-1' />
+                      Estornar
+                    </Button>
+                    <Button variant='outline' onClick={() => setOpen(null)}>
+                      Fechar
+                    </Button>
+                  </>
+                )}
+                {status === 'cancelled' && (
+                  <Button variant='outline' onClick={() => setOpen(null)}>
+                    Fechar
+                  </Button>
+                )}
+              </DialogFooter>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

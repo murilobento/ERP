@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id           String   @id @default(cuid())
+  name         String
+  phone        String
+  zipCode      String
+  street       String
+  number       String
+  complement   String   @default("")
+  neighborhood String
+  city         String
+  state        String
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  unit        String   @default("un")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  composition   ProductComposition[]
+  productions   Production[]
+  stockMovements StockMovement[]
+}
+
+model Supply {
+  id              String   @id @default(cuid())
+  name            String
+  description     String   @default("")
+  unit            String   @default("un")
+  packageUnit     String   @default("")
+  packageQuantity Float    @default(1)
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  compositions  ProductComposition[]
+  stockMovements StockMovement[]
+  purchaseItems  PurchaseItem[]
+}
+
+model ProductComposition {
+  id        String @id @default(cuid())
+  productId String
+  supplyId  String
+  quantity  Float
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supply  Supply  @relation(fields: [supplyId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, supplyId])
+}
+
+model Production {
+  id              String    @id @default(cuid())
+  productId       String
+  quantity        Float
+  status          String    @default("draft")
+  notes           String    @default("")
+  reversalReason  String    @default("")
+  reversedBy      String?
+  reversedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  completedAt     DateTime?
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Purchase {
+  id              String    @id @default(cuid())
+  supplier        String
+  status          String    @default("pending")
+  notes           String    @default("")
+  reversalReason  String    @default("")
+  reversedBy      String?
+  reversedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items PurchaseItem[]
+}
+
+model PurchaseItem {
+  id         String @id @default(cuid())
+  purchaseId String
+  supplyId   String
+  packages   Float
+  quantity   Float
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  supply   Supply  @relation(fields: [supplyId], references: [id])
+}
+
+model StockMovement {
+  id          String   @id @default(cuid())
+  productId   String?
+  supplyId    String?
+  quantity    Float
+  type        String
+  referenceId String?
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+
+  product Product? @relation(fields: [productId], references: [id])
+  supply  Supply?  @relation(fields: [supplyId], references: [id])
+}
