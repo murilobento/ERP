@@ -1,5 +1,4 @@
 import {
-  LayoutDashboard,
   Users,
   UserCheck,
   Command,
@@ -17,8 +16,6 @@ import {
   Building2,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
-
-const dashboard = { title: 'Painel', url: '/', icon: LayoutDashboard }
 
 export const sidebarData: SidebarData = {
   user: {
@@ -45,23 +42,17 @@ export const sidebarData: SidebarData = {
     { name: 'Estoque', icon: Package },
   ],
   navGroupsByModule: {
-    Financeiro: [
-      {
-        title: 'Geral',
-        items: [dashboard],
-      },
-    ],
+    Financeiro: [],
     Administrativo: [
       {
         title: 'Geral',
-        items: [dashboard, { title: 'Usuários', url: '/users', icon: Users }],
+        items: [{ title: 'Usuários', url: '/users', icon: Users }],
       },
     ],
     Comercial: [
       {
         title: 'Geral',
         items: [
-          dashboard,
           { title: 'Clientes', url: '/clients', icon: UserCheck },
           { title: 'Fornecedores', url: '/vendors', icon: Building2 },
         ],
@@ -71,7 +62,6 @@ export const sidebarData: SidebarData = {
       {
         title: 'Geral',
         items: [
-          dashboard,
           { title: 'Produtos', url: '/products', icon: BoxesIcon },
           { title: 'Insumos', url: '/supplies', icon: PackagePlus },
           { title: 'Produções', url: '/productions', icon: Factory },

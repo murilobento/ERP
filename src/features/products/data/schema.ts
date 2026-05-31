@@ -3,11 +3,14 @@ export type Product = {
   name: string
   description: string
   unit: string
+  margin: number
   status: string
   createdAt: string
   updatedAt: string
   composition: CompositionItem[]
   stock: number
+  costPrice: number
+  salePrice: number
 }
 
 export type CompositionItem = {
@@ -18,5 +21,6 @@ export type CompositionItem = {
     id: string
     name: string
     unit: string
+    costPrice: number
   }
 }

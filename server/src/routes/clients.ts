@@ -34,7 +34,7 @@ clientRoutes.post('/', async (c) => {
   const body = await c.req.json()
   const { name, phone, zipCode, street, number, complement, neighborhood, city, state, status } = body
 
-  if (!name || !phone || !zipCode || !street || !number || !neighborhood || !city || !state) {
+  if (!name || !phone) {
     return c.json({ error: 'All required fields must be provided' }, 400)
   }
 
@@ -42,13 +42,13 @@ clientRoutes.post('/', async (c) => {
     data: {
       name,
       phone,
-      zipCode,
-      street,
-      number,
+      zipCode: zipCode || '',
+      street: street || '',
+      number: number || '',
       complement: complement || '',
-      neighborhood,
-      city,
-      state,
+      neighborhood: neighborhood || '',
+      city: city || '',
+      state: state || '',
       status: status || 'active',
     },
     select: CLIENT_SELECT,

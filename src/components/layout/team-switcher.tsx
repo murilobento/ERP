@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Link } from '@tanstack/react-router'
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -20,11 +21,13 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton size='lg'>
+        <SidebarMenuButton size='lg' asChild>
+          <Link to='/'>
           <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
             <Logo className='size-4' />
           </div>
           <span className='truncate font-semibold text-sm'>{team.name}</span>
+          </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>

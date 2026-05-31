@@ -203,6 +203,14 @@ export function PurchasesDetailDialog() {
                     >
                       <span>{item.supply.name}</span>
                       <div className='flex items-center gap-2'>
+                        {item.packageCost > 0 && (
+                          <>
+                            <span className='text-muted-foreground'>
+                              R$ {item.packageCost.toFixed(2)}/{item.supply.packageUnit || 'emb.'}
+                            </span>
+                            <span className='text-muted-foreground'>·</span>
+                          </>
+                        )}
                         <span className='text-muted-foreground'>
                           {item.packages} {item.supply.packageUnit || 'emb.'}(s)
                         </span>

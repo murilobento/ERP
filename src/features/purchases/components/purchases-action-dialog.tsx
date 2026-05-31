@@ -35,6 +35,7 @@ import { usePurchases } from './purchases-provider'
 type ItemForm = {
   supplyId: string
   packages: number
+  packageCost: number
 }
 
 type PurchasesActionDialogProps = {
@@ -50,7 +51,7 @@ export function PurchasesActionDialog({
   const [vendorId, setVendorId] = useState('')
   const [selectedVendor, setSelectedVendor] = useState<VendorSearchItem | null>(null)
   const [notes, setNotes] = useState('')
-  const [draftItem, setDraftItem] = useState<ItemForm>({ supplyId: '', packages: 1 })
+  const [draftItem, setDraftItem] = useState<ItemForm>({ supplyId: '', packages: 1, packageCost: 0 })
   const [items, setItems] = useState<ItemForm[]>([])
   const [selectedSupplies, setSelectedSupplies] = useState<
     Record<string, ProductSupplySearchItem>
@@ -65,11 +66,12 @@ export function PurchasesActionDialog({
       setVendorId(currentRow.vendorId || '')
       setSelectedVendor(currentRow.vendor)
       setNotes(currentRow.notes)
-      setDraftItem({ supplyId: '', packages: 1 })
+      setDraftItem({ supplyId: '', packages: 1, packageCost: 0 })
       setItems(
         currentRow.items.map((i) => ({
           supplyId: i.supplyId,
           packages: i.packages,
+          packageCost: i.packageCost,
         }))
       )
       setSelectedSupplies(
@@ -79,7 +81,7 @@ export function PurchasesActionDialog({
       setVendorId('')
       setSelectedVendor(null)
       setNotes('')
-      setDraftItem({ supplyId: '', packages: 1 })
+      setDraftItem({ supplyId: '', packages: 1, packageCost: 0 })
       setItems([])
       setSelectedSupplies({})
     }
@@ -101,7 +103,7 @@ export function PurchasesActionDialog({
     }
 
     setItems([...items, draftItem])
-    setDraftItem({ supplyId: '', packages: 1 })
+    setDraftItem({ supplyId: '', packages: 1, packageCost: 0 })
   }
 
   function removeItem(index: number) {
@@ -189,7 +191,7 @@ export function PurchasesActionDialog({
 
           <div className='space-y-2'>
             <Label className='mb-2 block text-sm font-medium'>Itens</Label>
-            <div className='grid grid-cols-[1fr_7rem_auto] items-end gap-2'>
+            <div className='grid grid-cols-[1fr_7rem_7rem_auto] items-end gap-2'>
               <div>
                 <Label className='text-xs text-muted-foreground'>Insumo</Label>
                 <ProductSupplyCombobox
@@ -218,6 +220,21 @@ export function PurchasesActionDialog({
                   }
                 />
               </div>
+              <div>
+                <Label className='text-xs text-muted-foreground'>Preço emb. (R$)</Label>
+                <Input
+                  type='number'
+                  min='0'
+                  step='0.01'
+                  value={draftItem.packageCost || ''}
+                  onChange={(e) =>
+                    setDraftItem((current) => ({
+                      ...current,
+                      packageCost: parseFloat(e.target.value) || 0,
+                    }))
+                  }
+                />
+              </div>
               <Button type='button' onClick={addItem}>
                 <Plus size={16} />
                 Adicionar
@@ -230,6 +247,7 @@ export function PurchasesActionDialog({
                   <TableRow>
                     <TableHead>Insumo</TableHead>
                     <TableHead>Embalagens</TableHead>
+                    <TableHead>Preço emb.</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead className='w-10' />
                   </TableRow>
@@ -237,7 +255,7 @@ export function PurchasesActionDialog({
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className='h-16 text-center text-muted-foreground'>
+                      <TableCell colSpan={5} className='h-16 text-center text-muted-foreground'>
                         Nenhum item adicionado.
                       </TableCell>
                     </TableRow>
@@ -255,6 +273,11 @@ export function PurchasesActionDialog({
                           </TableCell>
                           <TableCell>
                             {item.packages} {supply?.packageUnit || 'emb.'}(s)
+                          </TableCell>
+                          <TableCell>
+                            {item.packageCost > 0
+                              ? `R$ ${item.packageCost.toFixed(2)}`
+                              : '—'}
                           </TableCell>
                           <TableCell>
                             {total} {supply?.unit || ''}

@@ -31,6 +31,7 @@ import { type Product } from '../data/schema'
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
   unit: z.string().min(1, 'Unidade é obrigatória.'),
+  margin: z.number().min(0, 'Margem deve ser >= 0.'),
   status: z.string().min(1, 'Status é obrigatório.'),
 })
 
@@ -57,11 +58,13 @@ export function ProductsActionDialog({
       ? {
           name: currentRow.name,
           unit: currentRow.unit,
+          margin: currentRow.margin,
           status: currentRow.status,
         }
       : {
           name: '',
           unit: 'un',
+          margin: 0,
           status: 'active',
         },
   })
@@ -147,6 +150,27 @@ export function ProductsActionDialog({
                   <FormLabel className='col-span-2 text-end'>Unidade</FormLabel>
                   <FormControl>
                     <Input placeholder='un, kg, lt, m...' className='col-span-4' autoComplete='off' {...field} />
+                  </FormControl>
+                  <FormMessage className='col-span-4 col-start-3' />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='margin'
+              render={({ field }) => (
+                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormLabel className='col-span-2 text-end'>Margem (%)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min='0'
+                      step='1'
+                      className='col-span-4'
+                      autoComplete='off'
+                      value={field.value || ''}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
                   </FormControl>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>

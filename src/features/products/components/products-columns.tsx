@@ -74,6 +74,40 @@ export const productsColumns: ColumnDef<Product>[] = [
     },
   },
   {
+    accessorKey: 'costPrice',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Custo' />
+    ),
+    cell: ({ row }) => {
+      const costPrice = row.getValue('costPrice') as number
+      const unit = row.original.unit
+      if (!costPrice) return <span className='text-muted-foreground'>—</span>
+      return <span>R$ {costPrice.toFixed(2)}/{unit}</span>
+    },
+  },
+  {
+    accessorKey: 'margin',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Margem' />
+    ),
+    cell: ({ row }) => {
+      const margin = row.getValue('margin') as number
+      return <span>{margin}%</span>
+    },
+  },
+  {
+    accessorKey: 'salePrice',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Venda' />
+    ),
+    cell: ({ row }) => {
+      const salePrice = row.getValue('salePrice') as number
+      const unit = row.original.unit
+      if (!salePrice) return <span className='text-muted-foreground'>—</span>
+      return <span>R$ {salePrice.toFixed(2)}/{unit}</span>
+    },
+  },
+  {
     id: 'compositionCount',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Composição' />

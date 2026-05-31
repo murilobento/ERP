@@ -44,13 +44,13 @@ function formatZipCode(value: string): string {
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
   phone: z.string().min(1, 'Telefone é obrigatório.'),
-  zipCode: z.string().min(1, 'CEP é obrigatório.'),
-  street: z.string().min(1, 'Rua é obrigatória.'),
-  number: z.string().min(1, 'Número é obrigatório.'),
+  zipCode: z.string(),
+  street: z.string(),
+  number: z.string(),
   complement: z.string(),
-  neighborhood: z.string().min(1, 'Bairro é obrigatório.'),
-  city: z.string().min(1, 'Cidade é obrigatória.'),
-  state: z.string().min(1, 'Estado é obrigatório.'),
+  neighborhood: z.string(),
+  city: z.string(),
+  state: z.string(),
   status: z.string().min(1, 'Status é obrigatório.'),
 })
 

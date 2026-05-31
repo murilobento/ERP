@@ -64,7 +64,7 @@ vendorRoutes.post('/', async (c) => {
   const body = await c.req.json()
   const { name, phone, zipCode, street, number, complement, neighborhood, city, state, status } = body
 
-  if (!name || !phone || !zipCode || !street || !number || !neighborhood || !city || !state) {
+  if (!name || !phone) {
     return c.json({ error: 'Todos os campos obrigatórios devem ser preenchidos.' }, 400)
   }
 
@@ -72,13 +72,13 @@ vendorRoutes.post('/', async (c) => {
     data: {
       name,
       phone,
-      zipCode,
-      street,
-      number,
+      zipCode: zipCode || '',
+      street: street || '',
+      number: number || '',
       complement: complement || '',
-      neighborhood,
-      city,
-      state,
+      neighborhood: neighborhood || '',
+      city: city || '',
+      state: state || '',
       status: status || 'active',
     },
     select: VENDOR_SELECT,

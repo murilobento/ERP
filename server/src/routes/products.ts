@@ -11,40 +11,51 @@ const PRODUCT_SELECT = {
   name: true,
   description: true,
   unit: true,
+  margin: true,
   status: true,
   createdAt: true,
   updatedAt: true,
+}
+
+const COMPOSITION_SELECT = {
+  id: true,
+  supplyId: true,
+  quantity: true,
+  supply: {
+    select: { id: true, name: true, unit: true, costPrice: true },
+  },
+}
+
+function computeProductPrices(product: { margin: number; composition: { quantity: number; supply: { costPrice: number } }[] }) {
+  const costPrice = product.composition.reduce(
+    (sum, c) => sum + c.quantity * c.supply.costPrice,
+    0
+  )
+  const salePrice = costPrice * (1 + product.margin / 100)
+  return { costPrice, salePrice }
 }
 
 productRoutes.get('/', async (c) => {
   const products = await prisma.product.findMany({
     select: {
       ...PRODUCT_SELECT,
-      composition: {
-        select: {
-          id: true,
-          supplyId: true,
-          quantity: true,
-          supply: {
-            select: { id: true, name: true, unit: true },
-          },
-        },
-      },
+      composition: { select: COMPOSITION_SELECT },
     },
     orderBy: { createdAt: 'desc' },
   })
 
-  const productsWithStock = await Promise.all(
+  const productsWithMeta = await Promise.all(
     products.map(async (product) => {
       const stockResult = await prisma.stockMovement.aggregate({
         where: { productId: product.id },
         _sum: { quantity: true },
       })
-      return { ...product, stock: stockResult._sum.quantity || 0 }
+      const prices = computeProductPrices(product)
+      return { ...product, stock: stockResult._sum.quantity || 0, ...prices }
     })
   )
 
-  return c.json({ products: productsWithStock })
+  return c.json({ products: productsWithMeta })
 })
 
 productRoutes.get('/search', async (c) => {
@@ -71,6 +82,7 @@ productRoutes.get('/search', async (c) => {
       id: true,
       name: true,
       unit: true,
+      margin: true,
       status: true,
     },
     orderBy: { name: 'asc' },
@@ -96,7 +108,7 @@ productRoutes.get('/search', async (c) => {
 
 productRoutes.post('/', async (c) => {
   const body = await c.req.json()
-  const { name, description, unit, status } = body
+  const { name, description, unit, margin, status } = body
 
   if (!name) {
     return c.json({ error: 'Nome é obrigatório.' }, 400)
@@ -107,6 +119,7 @@ productRoutes.post('/', async (c) => {
       name,
       description: description || '',
       unit: unit || 'un',
+      margin: margin ?? 0,
       status: status || 'active',
     },
     select: PRODUCT_SELECT,
@@ -122,16 +135,7 @@ productRoutes.get('/:id', async (c) => {
     where: { id: productId },
     select: {
       ...PRODUCT_SELECT,
-      composition: {
-        select: {
-          id: true,
-          supplyId: true,
-          quantity: true,
-          supply: {
-            select: { id: true, name: true, unit: true },
-          },
-        },
-      },
+      composition: { select: COMPOSITION_SELECT },
     },
   })
 
@@ -144,26 +148,30 @@ productRoutes.get('/:id', async (c) => {
     _sum: { quantity: true },
   })
 
+  const prices = computeProductPrices(product)
+
   return c.json({
     product,
     stock: stockResult._sum.quantity || 0,
+    ...prices,
   })
 })
 
 productRoutes.patch('/:id', async (c) => {
   const productId = c.req.param('id')
   const body = await c.req.json()
-  const { name, description, unit, status } = body
+  const { name, description, unit, margin, status } = body
 
   const existing = await prisma.product.findUnique({ where: { id: productId } })
   if (!existing) {
     return c.json({ error: 'Produto não encontrado.' }, 404)
   }
 
-  const data: { name?: string; description?: string; unit?: string; status?: string } = {}
+  const data: { name?: string; description?: string; unit?: string; margin?: number; status?: string } = {}
   if (name) data.name = name
   if (description !== undefined) data.description = description
   if (unit) data.unit = unit
+  if (margin !== undefined) data.margin = margin
   if (status) data.status = status
 
   const product = await prisma.product.update({
@@ -197,14 +205,7 @@ productRoutes.get('/:id/composition', async (c) => {
 
   const composition = await prisma.productComposition.findMany({
     where: { productId },
-    select: {
-      id: true,
-      supplyId: true,
-      quantity: true,
-      supply: {
-        select: { id: true, name: true, unit: true },
-      },
-    },
+    select: COMPOSITION_SELECT,
   })
 
   return c.json({ composition })
@@ -245,14 +246,7 @@ productRoutes.put('/:id/composition', async (c) => {
 
   const composition = await prisma.productComposition.findMany({
     where: { productId },
-    select: {
-      id: true,
-      supplyId: true,
-      quantity: true,
-      supply: {
-        select: { id: true, name: true, unit: true },
-      },
-    },
+    select: COMPOSITION_SELECT,
   })
 
   return c.json({ composition })

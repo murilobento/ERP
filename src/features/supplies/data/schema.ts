@@ -5,6 +5,7 @@ export type Supply = {
   unit: string
   packageUnit: string
   packageQuantity: number
+  costPrice: number
   status: string
   createdAt: string
   updatedAt: string

@@ -26,6 +26,7 @@ export type ProductSupplySearchItem = {
   stock?: number
   packageUnit?: string
   packageQuantity?: number
+  costPrice?: number
 }
 
 type ProductSupplyComboboxProps = {

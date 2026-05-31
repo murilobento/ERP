@@ -77,6 +77,20 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
     ),
   },
   {
+    accessorKey: 'costPrice',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Preço de custo' />
+    ),
+    cell: ({ row }) => {
+      const costPrice = row.getValue('costPrice') as number
+      if (!costPrice) return <span className='text-muted-foreground'>—</span>
+      const unit = row.original.unit
+      return (
+        <span>R$ {costPrice.toFixed(2)}/{unit}</span>
+      )
+    },
+  },
+  {
     accessorKey: 'stock',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Estoque' />

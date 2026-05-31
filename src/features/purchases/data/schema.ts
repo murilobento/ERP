@@ -4,6 +4,7 @@ export type PurchaseItem = {
   supplyId: string
   packages: number
   quantity: number
+  packageCost: number
   supply: {
     id: string
     name: string

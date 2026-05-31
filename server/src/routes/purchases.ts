@@ -6,6 +6,32 @@ const purchaseRoutes = new Hono()
 
 purchaseRoutes.use('*', authMiddleware)
 
+async function recalcSupplyCostPrice(tx: typeof prisma, supplyId: string) {
+  const supply = await tx.supply.findUnique({ where: { id: supplyId } })
+  if (!supply) return
+
+  const lastItems = await tx.purchaseItem.findMany({
+    where: {
+      supplyId,
+      purchase: { status: 'completed' },
+    },
+    orderBy: { purchase: { updatedAt: 'desc' } },
+    take: 3,
+  })
+
+  if (lastItems.length === 0) {
+    await tx.supply.update({ where: { id: supplyId }, data: { costPrice: 0 } })
+    return
+  }
+
+  const pkgQty = supply.packageQuantity || 1
+  const avg =
+    lastItems.reduce((sum, item) => sum + item.packageCost / pkgQty, 0) /
+    lastItems.length
+
+  await tx.supply.update({ where: { id: supplyId }, data: { costPrice: avg } })
+}
+
 const PURCHASE_SELECT = {
   id: true,
   vendorId: true,
@@ -26,6 +52,7 @@ const PURCHASE_SELECT = {
       supplyId: true,
       packages: true,
       quantity: true,
+      packageCost: true,
       supply: {
         select: { id: true, name: true, unit: true, packageUnit: true, packageQuantity: true },
       },
@@ -52,7 +79,7 @@ purchaseRoutes.post('/', async (c) => {
   const { vendorId, notes, items } = body as {
     vendorId: string
     notes?: string
-    items: { supplyId: string; packages: number }[]
+    items: { supplyId: string; packages: number; packageCost: number }[]
   }
 
   if (!vendorId) {
@@ -92,6 +119,7 @@ purchaseRoutes.post('/', async (c) => {
     supplyId: item.supplyId,
     packages: item.packages,
     quantity: item.packages * (supplyMap.get(item.supplyId)?.packageQuantity || 1),
+    packageCost: item.packageCost || 0,
   }))
 
   const purchase = await prisma.purchase.create({
@@ -131,7 +159,7 @@ purchaseRoutes.patch('/:id', async (c) => {
   const { vendorId, notes, items } = body as {
     vendorId?: string
     notes?: string
-    items?: { supplyId: string; packages: number }[]
+    items?: { supplyId: string; packages: number; packageCost: number }[]
   }
 
   const existing = await prisma.purchase.findUnique({ where: { id: purchaseId } })
@@ -188,6 +216,7 @@ purchaseRoutes.patch('/:id', async (c) => {
         supplyId: item.supplyId,
         packages: item.packages,
         quantity: item.packages * (supplyMap.get(item.supplyId)?.packageQuantity || 1),
+        packageCost: item.packageCost || 0,
       }))
 
       await tx.purchaseItem.createMany({ data: itemsWithQuantity })
@@ -255,6 +284,11 @@ purchaseRoutes.post('/:id/complete', async (c) => {
           notes: `Compra de ${existing.supplier} — ${item.packages} ${item.supply.packageUnit || 'embalagem'}(s) de ${item.supply.name} → ${item.quantity} ${item.supply.unit}`,
         },
       })
+    }
+
+    const affectedSupplyIds = [...new Set(existing.items.map((i) => i.supplyId))]
+    for (const supplyId of affectedSupplyIds) {
+      await recalcSupplyCostPrice(tx, supplyId)
     }
   })
 
@@ -333,6 +367,11 @@ purchaseRoutes.post('/:id/reverse', async (c) => {
           notes: `Estorno da compra de ${existing.supplier} — ${item.quantity} ${item.supply.unit} de ${item.supply.name} | Motivo: ${reason.trim()} | Autor: ${authorName}`,
         },
       })
+    }
+
+    const affectedSupplyIds = [...new Set(existing.items.map((i) => i.supplyId))]
+    for (const supplyId of affectedSupplyIds) {
+      await recalcSupplyCostPrice(tx, supplyId)
     }
   })
 

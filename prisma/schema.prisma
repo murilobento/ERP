@@ -23,13 +23,13 @@ model Client {
   id           String   @id @default(cuid())
   name         String
   phone        String
-  zipCode      String
-  street       String
-  number       String
+  zipCode      String   @default("")
+  street       String   @default("")
+  number       String   @default("")
   complement   String   @default("")
-  neighborhood String
-  city         String
-  state        String
+  neighborhood String   @default("")
+  city         String   @default("")
+  state        String   @default("")
   status       String   @default("active")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -39,13 +39,13 @@ model Vendor {
   id           String   @id @default(cuid())
   name         String
   phone        String
-  zipCode      String
-  street       String
-  number       String
+  zipCode      String   @default("")
+  street       String   @default("")
+  number       String   @default("")
   complement   String   @default("")
-  neighborhood String
-  city         String
-  state        String
+  neighborhood String   @default("")
+  city         String   @default("")
+  state        String   @default("")
   status       String   @default("active")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -58,6 +58,7 @@ model Product {
   name        String
   description String   @default("")
   unit        String   @default("un")
+  margin      Float    @default(0)
   status      String   @default("active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -75,6 +76,7 @@ model Supply {
   unit            String   @default("un")
   packageUnit     String   @default("")
   packageQuantity Float    @default(1)
+  costPrice       Float    @default(0)
   status          String   @default("active")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -142,11 +144,12 @@ model Purchase {
 }
 
 model PurchaseItem {
-  id         String @id @default(cuid())
-  purchaseId String
-  supplyId   String
-  packages   Float
-  quantity   Float
+  id          String @id @default(cuid())
+  purchaseId  String
+  supplyId    String
+  packages    Float
+  quantity    Float
+  packageCost Float  @default(0)
 
   purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   supply   Supply   @relation(fields: [supplyId], references: [id])
