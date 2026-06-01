@@ -129,11 +129,16 @@ export function SalesKanban({ data }: SalesKanbanProps) {
                           {formatCurrency(getSaleTotal(sale))}
                         </span>
                       </div>
-                      <div className='mt-0.5 text-[11px] leading-4 text-muted-foreground'>
+                      <div className='mt-0.5 flex items-center gap-2 text-[11px] leading-4 text-muted-foreground'>
                         <span>
                           {sale.items.length}{' '}
                           {sale.items.length === 1 ? 'item' : 'itens'}
                         </span>
+                        {sale.deliveryDate && (
+                          <span>
+                            ENTREGA - {new Date(sale.deliveryDate).toLocaleDateString('pt-BR')}
+                          </span>
+                        )}
                       </div>
                     </button>
                   ))

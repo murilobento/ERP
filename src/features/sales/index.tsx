@@ -15,7 +15,7 @@ import { Main } from "@/components/layout/main";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import api from "@/lib/api";
 import { SalesDialogs } from "./components/sales-dialogs";
@@ -68,73 +68,59 @@ export function Sales() {
 				<ProfileDropdown />
 			</Header>
 
-			<Main className="flex flex-1 flex-col gap-4 sm:gap-6">
-				<div className="flex flex-wrap items-end justify-between gap-2">
-					<div>
+			<Main className="flex flex-1 flex-col gap-3 sm:gap-6">
+				<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+					<div className="min-w-0">
 						<h2 className="text-2xl font-bold tracking-tight">Vendas</h2>
-						<p className="text-muted-foreground">
+						<p className="text-sm text-muted-foreground sm:text-base">
 							Gerencie vendas, entrega, pagamento e conclusão.
 						</p>
 					</div>
 					<SalesPrimaryButtons />
 				</div>
 
-				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-					<Card>
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">Pedidos</CardTitle>
+				<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+					<Card className="p-2.5 sm:p-3">
+						<div className="flex min-w-0 items-center justify-between gap-2">
+							<div className="min-w-0">
+								<p className="text-sm font-medium text-muted-foreground">Pedidos</p>
+								<div className="text-xl font-bold sm:text-2xl">{kpis.orderCount}</div>
+							</div>
 							<ShoppingCart className="h-4 w-4 text-muted-foreground" />
-						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold">{kpis.orderCount}</div>
-							<p className="text-xs text-muted-foreground">
-								{kpis.orderCount === 1
-									? "pedido encontrado"
-									: "pedidos encontrados"}
-							</p>
-						</CardContent>
+						</div>
 					</Card>
-					<Card>
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">Valor Total</CardTitle>
+					<Card className="p-2.5 sm:p-3">
+						<div className="flex min-w-0 items-center justify-between gap-2">
+							<div className="min-w-0">
+								<p className="text-sm font-medium text-muted-foreground">Valor Total</p>
+								<div className="text-xl font-bold sm:text-2xl">
+									{formatCurrency(kpis.totalValue)}
+								</div>
+							</div>
 							<DollarSign className="h-4 w-4 text-muted-foreground" />
-						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold">
-								{formatCurrency(kpis.totalValue)}
-							</div>
-							<p className="text-xs text-muted-foreground">
-								soma de todos os pedidos
-							</p>
-						</CardContent>
+						</div>
 					</Card>
-					<Card>
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">Pagos</CardTitle>
+					<Card className="p-2.5 sm:p-3">
+						<div className="flex min-w-0 items-center justify-between gap-2">
+							<div className="min-w-0">
+								<p className="text-sm font-medium text-muted-foreground">Pagos</p>
+								<div className="text-xl font-bold sm:text-2xl">
+									{formatCurrency(kpis.paidValue)}
+								</div>
+							</div>
 							<CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold">
-								{formatCurrency(kpis.paidValue)}
-							</div>
-							<p className="text-xs text-muted-foreground">
-								vendas concluídas com pagamento
-							</p>
-						</CardContent>
+						</div>
 					</Card>
-					<Card>
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">A Receber</CardTitle>
-							<Clock className="h-4 w-4 text-muted-foreground" />
-						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold">
-								{formatCurrency(kpis.toReceiveValue)}
+					<Card className="p-2.5 sm:p-3">
+						<div className="flex min-w-0 items-center justify-between gap-2">
+							<div className="min-w-0">
+								<p className="text-sm font-medium text-muted-foreground">A Receber</p>
+								<div className="text-xl font-bold sm:text-2xl">
+									{formatCurrency(kpis.toReceiveValue)}
+								</div>
 							</div>
-							<p className="text-xs text-muted-foreground">
-								pendentes de pagamento
-							</p>
-						</CardContent>
+							<Clock className="h-4 w-4 text-muted-foreground" />
+						</div>
 					</Card>
 				</div>
 
@@ -145,13 +131,13 @@ export function Sales() {
 					onValueChange={(value) => setView(value as "table" | "kanban")}
 					className="flex flex-1 flex-col"
 				>
-					<TabsList>
-						<TabsTrigger value="table">
-							<Table2 />
+					<TabsList className="grid h-9 w-full grid-cols-2 sm:inline-flex sm:h-10 sm:w-auto">
+						<TabsTrigger value="table" className="gap-1.5 text-sm">
+							<Table2 className="size-4" />
 							Tabela
 						</TabsTrigger>
-						<TabsTrigger value="kanban">
-							<Kanban />
+						<TabsTrigger value="kanban" className="gap-1.5 text-sm">
+							<Kanban className="size-4" />
 							Kanban
 						</TabsTrigger>
 					</TabsList>
