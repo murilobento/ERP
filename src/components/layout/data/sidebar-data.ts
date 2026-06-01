@@ -14,6 +14,8 @@ import {
   BoxesIcon,
   Truck,
   Building2,
+  BadgeDollarSign,
+  Tag,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -55,6 +57,7 @@ export const sidebarData: SidebarData = {
         items: [
           { title: 'Clientes', url: '/clients', icon: UserCheck },
           { title: 'Fornecedores', url: '/vendors', icon: Building2 },
+          { title: 'Vendas', url: '/sales', icon: BadgeDollarSign },
         ],
       },
     ],
@@ -63,6 +66,7 @@ export const sidebarData: SidebarData = {
         title: 'Geral',
         items: [
           { title: 'Produtos', url: '/products', icon: BoxesIcon },
+          { title: 'Categorias', url: '/categories', icon: Tag },
           { title: 'Insumos', url: '/supplies', icon: PackagePlus },
           { title: 'Produções', url: '/productions', icon: Factory },
           { title: 'Compras', url: '/purchases', icon: Truck },

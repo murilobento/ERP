@@ -30,6 +30,36 @@ clientRoutes.get('/', async (c) => {
   return c.json({ clients })
 })
 
+clientRoutes.get('/search', async (c) => {
+  const q = (c.req.query('q') || '').trim()
+  const status = c.req.query('status')
+  const requestedLimit = Number(c.req.query('limit') || 20)
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.min(Math.max(requestedLimit, 1), 50)
+    : 20
+
+  if (!q) {
+    return c.json({ clients: [] })
+  }
+
+  const clients = await prisma.client.findMany({
+    where: {
+      name: { contains: q, mode: 'insensitive' },
+      ...(status && status !== 'all' ? { status } : {}),
+    },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      status: true,
+    },
+    orderBy: { name: 'asc' },
+    take: limit,
+  })
+
+  return c.json({ clients })
+})
+
 clientRoutes.post('/', async (c) => {
   const body = await c.req.json()
   const { name, phone, zipCode, street, number, complement, neighborhood, city, state, status } = body

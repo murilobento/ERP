@@ -60,6 +60,19 @@ export const productsColumns: ColumnDef<Product>[] = [
     ),
   },
   {
+    id: 'categoryName',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Categoria' />
+    ),
+    accessorFn: (row) => row.category?.name || '',
+    cell: ({ row }) => {
+      const category = row.original.category
+      return (
+        <span className='ps-2'>{category?.name || '—'}</span>
+      )
+    },
+  },
+  {
     accessorKey: 'stock',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Estoque' />

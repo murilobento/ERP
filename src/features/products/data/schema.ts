@@ -5,8 +5,13 @@ export type Product = {
   unit: string
   margin: number
   status: string
+  categoryId: string
   createdAt: string
   updatedAt: string
+  category: {
+    id: string
+    name: string
+  }
   composition: CompositionItem[]
   stock: number
   costPrice: number

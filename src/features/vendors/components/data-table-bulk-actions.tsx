@@ -1,8 +1,8 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,7 +26,9 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
     const ids = selectedRows.map((row) => row.original.id)
     try {
       await Promise.all(ids.map((id) => api.delete(`/vendors/${id}`)))
-      toast.success(`${ids.length} fornecedor${ids.length > 1 ? 's' : ''} excluído${ids.length > 1 ? 's' : ''}.`)
+      toast.success(
+        `${ids.length} fornecedor${ids.length > 1 ? 's' : ''} excluído${ids.length > 1 ? 's' : ''}.`
+      )
       table.resetRowSelection()
       queryClient.invalidateQueries({ queryKey: ['vendors'] })
     } catch {
@@ -39,7 +41,11 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
 
   return (
     <>
-      <BulkActionsToolbar table={table} entityName='fornecedor'>
+      <BulkActionsToolbar
+        table={table}
+        entityName='fornecedor'
+        entityNamePlural='fornecedores'
+      >
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -63,7 +69,10 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       {showDeleteConfirm && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
           <div className='rounded-lg border bg-background p-6 shadow-lg'>
-            <h3 className='text-lg font-semibold'>Excluir {selectedRows.length} fornecedor{selectedRows.length > 1 ? 's' : ''}?</h3>
+            <h3 className='text-lg font-semibold'>
+              Excluir {selectedRows.length} fornecedor
+              {selectedRows.length > 1 ? 's' : ''}?
+            </h3>
             <p className='mt-2 text-sm text-muted-foreground'>
               Esta ação não pode ser desfeita.
             </p>

@@ -9,6 +9,8 @@ const typeMap: Record<string, string> = {
   production_consumption: 'Consumo na Produção',
   purchase: 'Compra',
   purchase_reversal: 'Estorno de Compra',
+  sale_delivery: 'Entrega de Venda',
+  sale_reversal: 'Estorno de Venda',
   adjustment: 'Ajuste Manual',
 }
 

@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,13 +26,26 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { type Product } from '../data/schema'
+
+type CategoryOption = {
+  id: string
+  name: string
+}
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
   unit: z.string().min(1, 'Unidade é obrigatória.'),
   margin: z.number().min(0, 'Margem deve ser >= 0.'),
   status: z.string().min(1, 'Status é obrigatório.'),
+  categoryId: z.string().min(1, 'Categoria é obrigatória.'),
 })
 
 type ProductForm = z.infer<typeof formSchema>
@@ -52,6 +65,14 @@ export function ProductsActionDialog({
   const [isLoading, setIsLoading] = useState(false)
   const queryClient = useQueryClient()
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const res = await api.get('/categories')
+      return res.data.categories as CategoryOption[]
+    },
+  })
+
   const form = useForm<ProductForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
@@ -60,12 +81,14 @@ export function ProductsActionDialog({
           unit: currentRow.unit,
           margin: currentRow.margin,
           status: currentRow.status,
+          categoryId: currentRow.categoryId,
         }
       : {
           name: '',
           unit: 'un',
           margin: 0,
           status: 'active',
+          categoryId: '',
         },
   })
 
@@ -138,6 +161,30 @@ export function ProductsActionDialog({
                   <FormControl>
                     <Input placeholder='Bolo de Chocolate' className='col-span-4' autoComplete='off' {...field} />
                   </FormControl>
+                  <FormMessage className='col-span-4 col-start-3' />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='categoryId'
+              render={({ field }) => (
+                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormLabel className='col-span-2 text-end'>Categoria</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className='col-span-4'>
+                        <SelectValue placeholder='Selecione uma categoria' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
               )}

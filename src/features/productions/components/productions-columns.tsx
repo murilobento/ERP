@@ -1,11 +1,18 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { type Production } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
 
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'success' }> = {
+const statusMap: Record<
+  string,
+  {
+    label: string
+    variant: 'default' | 'secondary' | 'destructive' | 'success'
+  }
+> = {
   draft: { label: 'Rascunho', variant: 'secondary' },
   in_production: { label: 'Em Produção', variant: 'default' },
   completed: { label: 'Concluída', variant: 'success' },
@@ -26,6 +33,33 @@ function getProductionItems(row: Production) {
 }
 
 export const productionsColumns: ColumnDef<Production>[] = [
+  {
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label='Selecionar todos'
+        className='translate-y-0.5'
+      />
+    ),
+    meta: {
+      className: cn('inset-s-0 z-10 rounded-tl-[inherit] max-md:sticky'),
+    },
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label='Selecionar linha'
+        className='translate-y-0.5'
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: 'product',
     header: ({ column }) => (
@@ -85,7 +119,10 @@ export const productionsColumns: ColumnDef<Production>[] = [
     ),
     cell: ({ row }) => {
       const status = row.getValue('status') as string
-      const config = statusMap[status] || { label: status, variant: 'secondary' as const }
+      const config = statusMap[status] || {
+        label: status,
+        variant: 'secondary' as const,
+      }
       return <Badge variant={config.variant}>{config.label}</Badge>
     },
   },

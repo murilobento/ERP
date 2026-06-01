@@ -9,6 +9,7 @@
     "dev:server": "tsx watch server/src/index.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "prisma:generate": "prisma generate",
     "preview": "vite preview",
     "format:check": "prettier --check .",
     "format": "prettier --write .",

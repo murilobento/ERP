@@ -1,4 +1,5 @@
 import 'dotenv/config'
+/* eslint-disable no-console */
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
@@ -12,6 +13,8 @@ import { productRoutes } from './routes/products'
 import { productionRoutes } from './routes/productions'
 import { stockRoutes } from './routes/stock'
 import { purchaseRoutes } from './routes/purchases'
+import { saleRoutes } from './routes/sales'
+import { categoryRoutes } from './routes/categories'
 import prisma from './lib/prisma'
 import { hashPassword } from './lib/auth'
 
@@ -35,6 +38,8 @@ app.route('/api/products', productRoutes)
 app.route('/api/productions', productionRoutes)
 app.route('/api/stock', stockRoutes)
 app.route('/api/purchases', purchaseRoutes)
+app.route('/api/sales', saleRoutes)
+app.route('/api/categories', categoryRoutes)
 
 app.get('/api/health', (c) => c.json({ status: 'ok' }))
 

@@ -13,6 +13,7 @@ const PRODUCT_SELECT = {
   unit: true,
   margin: true,
   status: true,
+  categoryId: true,
   createdAt: true,
   updatedAt: true,
 }
@@ -40,6 +41,7 @@ productRoutes.get('/', async (c) => {
     select: {
       ...PRODUCT_SELECT,
       composition: { select: COMPOSITION_SELECT },
+      category: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -108,10 +110,14 @@ productRoutes.get('/search', async (c) => {
 
 productRoutes.post('/', async (c) => {
   const body = await c.req.json()
-  const { name, description, unit, margin, status } = body
+  const { name, description, unit, margin, status, categoryId } = body
 
   if (!name) {
     return c.json({ error: 'Nome é obrigatório.' }, 400)
+  }
+
+  if (!categoryId) {
+    return c.json({ error: 'Categoria é obrigatória.' }, 400)
   }
 
   const product = await prisma.product.create({
@@ -121,6 +127,7 @@ productRoutes.post('/', async (c) => {
       unit: unit || 'un',
       margin: margin ?? 0,
       status: status || 'active',
+      categoryId,
     },
     select: PRODUCT_SELECT,
   })
@@ -136,6 +143,7 @@ productRoutes.get('/:id', async (c) => {
     select: {
       ...PRODUCT_SELECT,
       composition: { select: COMPOSITION_SELECT },
+      category: { select: { id: true, name: true } },
     },
   })
 
@@ -160,19 +168,20 @@ productRoutes.get('/:id', async (c) => {
 productRoutes.patch('/:id', async (c) => {
   const productId = c.req.param('id')
   const body = await c.req.json()
-  const { name, description, unit, margin, status } = body
+  const { name, description, unit, margin, status, categoryId } = body
 
   const existing = await prisma.product.findUnique({ where: { id: productId } })
   if (!existing) {
     return c.json({ error: 'Produto não encontrado.' }, 404)
   }
 
-  const data: { name?: string; description?: string; unit?: string; margin?: number; status?: string } = {}
+  const data: { name?: string; description?: string; unit?: string; margin?: number; status?: string; categoryId?: string } = {}
   if (name) data.name = name
   if (description !== undefined) data.description = description
   if (unit) data.unit = unit
   if (margin !== undefined) data.margin = margin
   if (status) data.status = status
+  if (categoryId) data.categoryId = categoryId
 
   const product = await prisma.product.update({
     where: { id: productId },

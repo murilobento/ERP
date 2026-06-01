@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -7,17 +8,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 type DatePickerProps = {
   selected: Date | undefined
   onSelect: (date: Date | undefined) => void
   placeholder?: string
+  className?: string
+  disabled?: (date: Date) => boolean
 }
 
 export function DatePicker({
   selected,
   onSelect,
   placeholder = 'Selecione uma data',
+  className,
+  disabled,
 }: DatePickerProps) {
   return (
     <Popover>
@@ -25,10 +31,13 @@ export function DatePicker({
         <Button
           variant='outline'
           data-empty={!selected}
-          className='w-60 justify-start text-start font-normal data-[empty=true]:text-muted-foreground'
+          className={cn(
+            'w-60 justify-start text-start font-normal data-[empty=true]:text-muted-foreground',
+            className
+          )}
         >
           {selected ? (
-            format(selected, 'MMM d, yyyy')
+            format(selected, 'd MMM yyyy', { locale: ptBR })
           ) : (
             <span>{placeholder}</span>
           )}
@@ -41,9 +50,7 @@ export function DatePicker({
           captionLayout='dropdown'
           selected={selected}
           onSelect={onSelect}
-          disabled={(date: Date) =>
-            date > new Date() || date < new Date('1900-01-01')
-          }
+          disabled={disabled}
         />
       </PopoverContent>
     </Popover>

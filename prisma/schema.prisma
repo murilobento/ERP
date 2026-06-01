@@ -33,6 +33,8 @@ model Client {
   status       String   @default("active")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  sales Sale[]
 }
 
 model Vendor {
@@ -53,6 +55,16 @@ model Vendor {
   purchases Purchase[]
 }
 
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
 model Product {
   id          String   @id @default(cuid())
   name        String
@@ -60,13 +72,16 @@ model Product {
   unit        String   @default("un")
   margin      Float    @default(0)
   status      String   @default("active")
+  categoryId  String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  category        Category           @relation(fields: [categoryId], references: [id])
   composition     ProductComposition[]
   productions     Production[]
   productionItems ProductionItem[]
   stockMovements  StockMovement[]
+  saleItems        SaleItem[]
 }
 
 model Supply {
@@ -153,6 +168,41 @@ model PurchaseItem {
 
   purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   supply   Supply   @relation(fields: [supplyId], references: [id])
+}
+
+model Sale {
+  id             String    @id @default(cuid())
+  clientId       String
+  customer       String
+  status         String    @default("in_preparation")
+  notes          String    @default("")
+  paymentMethod  String    @default("")
+  paidAt         DateTime?
+  paymentNotes   String    @default("")
+  reversalReason String    @default("")
+  reversedBy     String?
+  reversedAt     DateTime?
+  deliveredAt    DateTime?
+  deliveryDate   DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  client Client     @relation(fields: [clientId], references: [id])
+  items  SaleItem[]
+}
+
+model SaleItem {
+  id        String @id @default(cuid())
+  saleId    String
+  productId String
+  quantity  Float
+  unitPrice Float  @default(0)
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([saleId, productId])
 }
 
 model StockMovement {

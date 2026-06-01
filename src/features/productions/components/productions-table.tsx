@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { type Production } from '../data/schema'
+import { DataTableBulkActions } from './data-table-bulk-actions'
 import { productionsColumns as columns } from './productions-columns'
 
 type DataTableProps = {
@@ -69,7 +70,9 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
       const items = row.original.items?.length
         ? row.original.items
         : [{ product: row.original.product }]
-      return items.some((item) => item.product.name.toLowerCase().includes(search))
+      return items.some((item) =>
+        item.product.name.toLowerCase().includes(search)
+      )
     },
     getPaginationRowModel: getPaginationRowModel(),
     getCoreRowModel: getCoreRowModel(),
@@ -82,7 +85,12 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
   }, [table, ensurePageInRange])
 
   return (
-    <div className={cn('max-sm:has-[div[role="toolbar"]]:mb-16', 'flex flex-1 flex-col gap-4')}>
+    <div
+      className={cn(
+        'max-sm:has-[div[role="toolbar"]]:mb-16',
+        'flex flex-1 flex-col gap-4'
+      )}
+    >
       <DataTableToolbar
         table={table}
         searchPlaceholder='Filtrar por produto...'
@@ -111,7 +119,10 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -120,7 +131,11 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className='group/row'>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                  className='group/row'
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
@@ -130,14 +145,20 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
                         cell.column.columnDef.meta?.tdClassName
                       )}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
                   Nenhum resultado.
                 </TableCell>
               </TableRow>
@@ -146,6 +167,7 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
         </Table>
       </div>
       <DataTablePagination table={table} className='mt-auto' />
+      <DataTableBulkActions table={table} />
     </div>
   )
 }
