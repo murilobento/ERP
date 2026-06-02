@@ -30,7 +30,20 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: [
+      '@tanstack/react-query',
+      '@radix-ui/react-select',
+      '@radix-ui/react-popover',
+      'cmdk',
+      'date-fns',
+      'date-fns/locale',
+      'react-day-picker',
+    ],
+  },
   test: {
+    include: ['src/**/*.test.{ts,tsx}'],
+    exclude: ['server/**'],
     silent: 'passed-only',
     unstubEnvs: true,
     browser: {
