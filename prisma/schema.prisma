@@ -19,6 +19,31 @@ model User {
   stockMovements StockMovement[]
 }
 
+model Company {
+  id           String   @id @default(cuid())
+  singletonKey String   @unique @default("default")
+  name         String
+  tradeName    String   @default("")
+  cnpj         String   @default("")
+  email        String   @default("")
+  phone        String   @default("")
+  logoUrl      String   @default("")
+  zipCode      String   @default("")
+  street       String   @default("")
+  number       String   @default("")
+  complement   String   @default("")
+  neighborhood String   @default("")
+  city         String   @default("")
+  state        String   @default("")
+  website      String   @default("")
+  instagram    String   @default("")
+  facebook     String   @default("")
+  linkedin     String   @default("")
+  whatsapp     String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model Client {
   id           String   @id @default(cuid())
   name         String

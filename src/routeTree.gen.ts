@@ -25,6 +25,7 @@ import { Route as AuthenticatedSalesIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPurchasesIndexRouteImport } from './routes/_authenticated/purchases/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedProductionsIndexRouteImport } from './routes/_authenticated/productions/index'
+import { Route as AuthenticatedCompanyIndexRouteImport } from './routes/_authenticated/company/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedStockMovementsRouteImport } from './routes/_authenticated/stock/movements'
@@ -114,6 +115,12 @@ const AuthenticatedProductionsIndexRoute =
     path: '/productions/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCompanyIndexRoute =
+  AuthenticatedCompanyIndexRouteImport.update({
+    id: '/company/',
+    path: '/company/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
@@ -151,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/stock/movements': typeof AuthenticatedStockMovementsRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
+  '/company/': typeof AuthenticatedCompanyIndexRoute
   '/productions/': typeof AuthenticatedProductionsIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
   '/purchases/': typeof AuthenticatedPurchasesIndexRoute
@@ -172,6 +180,7 @@ export interface FileRoutesByTo {
   '/stock/movements': typeof AuthenticatedStockMovementsRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
+  '/company': typeof AuthenticatedCompanyIndexRoute
   '/productions': typeof AuthenticatedProductionsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/purchases': typeof AuthenticatedPurchasesIndexRoute
@@ -195,6 +204,7 @@ export interface FileRoutesById {
   '/_authenticated/stock/movements': typeof AuthenticatedStockMovementsRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
+  '/_authenticated/company/': typeof AuthenticatedCompanyIndexRoute
   '/_authenticated/productions/': typeof AuthenticatedProductionsIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/purchases/': typeof AuthenticatedPurchasesIndexRoute
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/stock/movements'
     | '/categories/'
     | '/clients/'
+    | '/company/'
     | '/productions/'
     | '/products/'
     | '/purchases/'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/stock/movements'
     | '/categories'
     | '/clients'
+    | '/company'
     | '/productions'
     | '/products'
     | '/purchases'
@@ -261,6 +273,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stock/movements'
     | '/_authenticated/categories/'
     | '/_authenticated/clients/'
+    | '/_authenticated/company/'
     | '/_authenticated/productions/'
     | '/_authenticated/products/'
     | '/_authenticated/purchases/'
@@ -395,6 +408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductionsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/company/': {
+      id: '/_authenticated/company/'
+      path: '/company'
+      fullPath: '/company/'
+      preLoaderRoute: typeof AuthenticatedCompanyIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
@@ -432,6 +452,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStockMovementsRoute: typeof AuthenticatedStockMovementsRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
+  AuthenticatedCompanyIndexRoute: typeof AuthenticatedCompanyIndexRoute
   AuthenticatedProductionsIndexRoute: typeof AuthenticatedProductionsIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedPurchasesIndexRoute: typeof AuthenticatedPurchasesIndexRoute
@@ -448,6 +469,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStockMovementsRoute: AuthenticatedStockMovementsRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
+  AuthenticatedCompanyIndexRoute: AuthenticatedCompanyIndexRoute,
   AuthenticatedProductionsIndexRoute: AuthenticatedProductionsIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedPurchasesIndexRoute: AuthenticatedPurchasesIndexRoute,

@@ -1,8 +1,6 @@
 import {
   Users,
   UserCheck,
-  Command,
-  GalleryVerticalEnd,
   Wallet,
   Shield,
   ShoppingCart,
@@ -25,18 +23,6 @@ export const sidebarData: SidebarData = {
     email: '',
     avatar: '',
   },
-  teams: [
-    {
-      name: 'Shadcn Admin',
-      logo: Command,
-      plan: 'Free',
-    },
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
-    },
-  ],
   modules: [
     { name: 'Financeiro', icon: Wallet },
     { name: 'Administrativo', icon: Shield },
@@ -48,7 +34,10 @@ export const sidebarData: SidebarData = {
     Administrativo: [
       {
         title: 'Geral',
-        items: [{ title: 'Usuários', url: '/users', icon: Users }],
+        items: [
+          { title: 'Empresa', url: '/company', icon: Building2 },
+          { title: 'Usuários', url: '/users', icon: Users },
+        ],
       },
     ],
     Comercial: [

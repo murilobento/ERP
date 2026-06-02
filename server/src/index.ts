@@ -15,6 +15,7 @@ import { stockRoutes } from './routes/stock'
 import { purchaseRoutes } from './routes/purchases'
 import { saleRoutes } from './routes/sales'
 import { categoryRoutes } from './routes/categories'
+import { companyRoutes } from './routes/company'
 import prisma from './lib/prisma'
 import { hashPassword } from './lib/auth'
 
@@ -40,6 +41,7 @@ app.route('/api/stock', stockRoutes)
 app.route('/api/purchases', purchaseRoutes)
 app.route('/api/sales', saleRoutes)
 app.route('/api/categories', categoryRoutes)
+app.route('/api/company', companyRoutes)
 
 app.get('/api/health', (c) => c.json({ status: 'ok' }))
 

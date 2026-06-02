@@ -1,1 +1,1 @@
-ALTER TABLE "Sale" ADD COLUMN "deliveryDate" DateTime;
+ALTER TABLE "Sale" ADD COLUMN "deliveryDate" TIMESTAMP(3);

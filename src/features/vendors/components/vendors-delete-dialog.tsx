@@ -31,8 +31,10 @@ export function VendorsDeleteDialog({
       queryClient.invalidateQueries({ queryKey: ['vendors'] })
       toast.success('Fornecedor excluído com sucesso.')
       onOpenChange(false)
-    } catch (error) {
-      const message = error?.response?.data?.error || 'Falha ao excluir fornecedor.'
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || 'Falha ao excluir fornecedor.'
       toast.error(message)
     }
   }
