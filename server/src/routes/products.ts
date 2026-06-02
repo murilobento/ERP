@@ -195,9 +195,26 @@ productRoutes.patch('/:id', async (c) => {
 productRoutes.delete('/:id', async (c) => {
   const productId = c.req.param('id')
 
-  const existing = await prisma.product.findUnique({ where: { id: productId } })
+  const existing = await prisma.product.findUnique({
+    where: { id: productId },
+    include: {
+      _count: {
+        select: { productions: true, productionItems: true, saleItems: true },
+      },
+    },
+  })
   if (!existing) {
     return c.json({ error: 'Produto não encontrado.' }, 404)
+  }
+
+  const { productions, productionItems, saleItems } = existing._count
+  const reasons: string[] = []
+  if (productions > 0) reasons.push('produções')
+  if (productionItems > 0) reasons.push('itens de produção')
+  if (saleItems > 0) reasons.push('vendas')
+
+  if (reasons.length > 0) {
+    return c.json({ error: `Não é possível excluir este produto pois existem ${reasons.join(', ')} vinculados.` }, 400)
   }
 
   await prisma.product.delete({ where: { id: productId } })

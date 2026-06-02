@@ -31,8 +31,9 @@ export function ClientsDeleteDialog({
       queryClient.invalidateQueries({ queryKey: ['clients'] })
       toast.success('Cliente excluído com sucesso.')
       onOpenChange(false)
-    } catch {
-      toast.error('Falha ao excluir cliente.')
+    } catch (error) {
+      const message = error?.response?.data?.error || 'Falha ao excluir cliente.'
+      toast.error(message)
     }
   }
 

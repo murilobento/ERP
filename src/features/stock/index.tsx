@@ -14,6 +14,7 @@ import {
 } from '@/components/product-supply-combobox'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
+import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 import {
@@ -104,6 +105,7 @@ export function Stock() {
       <Header fixed>
         <Search className='me-auto' />
         <ThemeSwitch />
+        <FullscreenToggle />
         <ConfigDrawer />
         <ProfileDropdown />
       </Header>

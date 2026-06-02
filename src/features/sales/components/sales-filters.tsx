@@ -22,8 +22,6 @@ type SalesFilterValues = {
   filter: string
   status: SaleStatus[]
   payment: 'confirmed' | 'pending' | undefined
-  createdFrom: string
-  createdTo: string
   paidFrom: string
   paidTo: string
   deliveryFrom: string
@@ -35,14 +33,14 @@ const statusOptions = Object.entries(saleStatusMap).map(([value, config]) => ({
   label: config.label,
 }))
 
-type DeliveryPreset = 'today' | 'tomorrow' | 'yesterday' | 'this_month' | 'last_month'
+type DatePreset = 'today' | 'tomorrow' | 'yesterday' | 'this_month' | 'last_month'
 
-type DeliveryPresetOption = {
-  value: DeliveryPreset
+type DatePresetOption = {
+  value: DatePreset
   label: string
 }
 
-const deliveryPresetOptions: DeliveryPresetOption[] = [
+const datePresetOptions: DatePresetOption[] = [
   { value: 'today', label: 'Hoje' },
   { value: 'tomorrow', label: 'Amanhã' },
   { value: 'yesterday', label: 'Ontem' },
@@ -64,7 +62,7 @@ function formatFilterDate(date: Date | undefined) {
   return `${year}-${month}-${day}`
 }
 
-function getDeliveryPresetRange(preset: DeliveryPreset) {
+function getPresetRange(preset: DatePreset) {
   const base = new Date()
   base.setHours(0, 0, 0, 0)
 
@@ -110,9 +108,6 @@ function getFilters(search: Record<string, unknown>): SalesFilterValues {
       search.payment === 'confirmed' || search.payment === 'pending'
         ? search.payment
         : undefined,
-    createdFrom:
-      typeof search.createdFrom === 'string' ? search.createdFrom : '',
-    createdTo: typeof search.createdTo === 'string' ? search.createdTo : '',
     paidFrom: typeof search.paidFrom === 'string' ? search.paidFrom : '',
     paidTo: typeof search.paidTo === 'string' ? search.paidTo : '',
     deliveryFrom:
@@ -127,8 +122,6 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
     !!filters.filter ||
     filters.status.length > 0 ||
     !!filters.payment ||
-    !!filters.createdFrom ||
-    !!filters.createdTo ||
     !!filters.paidFrom ||
     !!filters.paidTo ||
     !!filters.deliveryFrom ||
@@ -148,12 +141,6 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
             : undefined,
         payment:
           patch.payment !== undefined ? patch.payment || undefined : undefined,
-        createdFrom:
-          patch.createdFrom !== undefined
-            ? patch.createdFrom || undefined
-            : undefined,
-        createdTo:
-          patch.createdTo !== undefined ? patch.createdTo || undefined : undefined,
         paidFrom:
           patch.paidFrom !== undefined ? patch.paidFrom || undefined : undefined,
         paidTo: patch.paidTo !== undefined ? patch.paidTo || undefined : undefined,
@@ -192,8 +179,6 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
         filter: undefined,
         status: undefined,
         payment: undefined,
-        createdFrom: undefined,
-        createdTo: undefined,
         paidFrom: undefined,
         paidTo: undefined,
         deliveryFrom: undefined,
@@ -202,21 +187,22 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
     })
   }
 
-  function applyDeliveryPreset(preset: DeliveryPreset) {
-    const range = getDeliveryPresetRange(preset)
-    updateFilter({
-      ...filters,
-      deliveryFrom: range.from,
-      deliveryTo: range.to,
-    })
+  function applyPreset(
+    preset: DatePreset,
+    fromKey: 'deliveryFrom' | 'paidFrom',
+    toKey: 'deliveryTo' | 'paidTo'
+  ) {
+    const range = getPresetRange(preset)
+    updateFilter({ ...filters, [fromKey]: range.from, [toKey]: range.to })
   }
 
-  function isDeliveryPresetActive(preset: DeliveryPreset) {
-    const range = getDeliveryPresetRange(preset)
-    return (
-      filters.deliveryFrom === range.from &&
-      filters.deliveryTo === range.to
-    )
+  function isPresetActive(
+    preset: DatePreset,
+    from: string,
+    to: string
+  ) {
+    const range = getPresetRange(preset)
+    return from === range.from && to === range.to
   }
 
   return (
@@ -281,24 +267,7 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
         </div>
       </div>
 
-      <div className='grid gap-2 lg:grid-cols-3'>
-        <div className='grid grid-cols-2 items-center gap-1.5 sm:grid-cols-[3.25rem_minmax(8.75rem,1fr)_minmax(8.75rem,1fr)]'>
-          <span className='col-span-2 text-xs font-medium text-muted-foreground sm:col-span-1'>
-            Criado
-          </span>
-          <DatePicker
-            selected={parseFilterDate(filters.createdFrom)}
-            onSelect={(date) => setField('createdFrom', formatFilterDate(date))}
-            placeholder='De'
-            className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
-          />
-          <DatePicker
-            selected={parseFilterDate(filters.createdTo)}
-            onSelect={(date) => setField('createdTo', formatFilterDate(date))}
-            placeholder='Até'
-            className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
-          />
-        </div>
+      <div className='grid gap-2 lg:grid-cols-[1fr_auto_1fr]'>
         <div className='grid grid-cols-2 items-center gap-1.5 sm:grid-cols-[3.25rem_minmax(8.75rem,1fr)_minmax(8.75rem,1fr)]'>
           <span className='col-span-2 text-xs font-medium text-muted-foreground sm:col-span-1'>
             Entrega
@@ -317,15 +286,21 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
           />
           <div className='col-span-2 -mx-0.5 overflow-x-auto pb-0.5 sm:col-span-3'>
             <div className='flex min-w-max gap-1 px-0.5'>
-            {deliveryPresetOptions.map((option) => {
-              const selected = isDeliveryPresetActive(option.value)
+            {datePresetOptions.map((option) => {
+              const selected = isPresetActive(
+                option.value,
+                filters.deliveryFrom,
+                filters.deliveryTo
+              )
               return (
                 <Button
                   key={option.value}
                   type='button'
                   variant={selected ? 'default' : 'outline'}
                   size='sm'
-                  onClick={() => applyDeliveryPreset(option.value)}
+                  onClick={() =>
+                    applyPreset(option.value, 'deliveryFrom', 'deliveryTo')
+                  }
                   className={cn(
                     'h-7 whitespace-nowrap px-2 text-[11px]',
                     !selected && 'bg-background'
@@ -337,6 +312,9 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
             })}
             </div>
           </div>
+        </div>
+        <div className='hidden items-center justify-center lg:flex'>
+          <span className='text-muted-foreground/40'>|</span>
         </div>
         <div className='grid grid-cols-2 items-center gap-1.5 sm:grid-cols-[3.25rem_minmax(8.75rem,1fr)_minmax(8.75rem,1fr)]'>
           <span className='col-span-2 text-xs font-medium text-muted-foreground sm:col-span-1'>
@@ -354,6 +332,34 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
             placeholder='Até'
             className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
           />
+          <div className='col-span-2 -mx-0.5 overflow-x-auto pb-0.5 sm:col-span-3'>
+            <div className='flex min-w-max gap-1 px-0.5'>
+            {datePresetOptions.map((option) => {
+              const selected = isPresetActive(
+                option.value,
+                filters.paidFrom,
+                filters.paidTo
+              )
+              return (
+                <Button
+                  key={`paid-${option.value}`}
+                  type='button'
+                  variant={selected ? 'default' : 'outline'}
+                  size='sm'
+                  onClick={() =>
+                    applyPreset(option.value, 'paidFrom', 'paidTo')
+                  }
+                  className={cn(
+                    'h-7 whitespace-nowrap px-2 text-[11px]',
+                    !selected && 'bg-background'
+                  )}
+                >
+                  {option.label}
+                </Button>
+              )
+            })}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -171,9 +171,25 @@ supplyRoutes.patch('/:id', async (c) => {
 supplyRoutes.delete('/:id', async (c) => {
   const supplyId = c.req.param('id')
 
-  const existing = await prisma.supply.findUnique({ where: { id: supplyId } })
+  const existing = await prisma.supply.findUnique({
+    where: { id: supplyId },
+    include: {
+      _count: {
+        select: { compositions: true, purchaseItems: true },
+      },
+    },
+  })
   if (!existing) {
     return c.json({ error: 'Insumo não encontrado.' }, 404)
+  }
+
+  const { compositions, purchaseItems } = existing._count
+  const reasons: string[] = []
+  if (compositions > 0) reasons.push('composições de produto')
+  if (purchaseItems > 0) reasons.push('compras')
+
+  if (reasons.length > 0) {
+    return c.json({ error: `Não é possível excluir este insumo pois existem ${reasons.join(', ')} vinculados.` }, 400)
   }
 
   await prisma.supply.delete({ where: { id: supplyId } })

@@ -30,8 +30,9 @@ export function SuppliesDeleteDialog({
       queryClient.invalidateQueries({ queryKey: ['supplies'] })
       toast.success('Insumo excluído com sucesso.')
       onOpenChange(false)
-    } catch {
-      toast.error('Falha ao excluir insumo.')
+    } catch (error) {
+      const message = error?.response?.data?.error || 'Falha ao excluir insumo.'
+      toast.error(message)
     }
   }
 

@@ -30,8 +30,9 @@ export function ProductsDeleteDialog({
       queryClient.invalidateQueries({ queryKey: ['products'] })
       toast.success('Produto excluído com sucesso.')
       onOpenChange(false)
-    } catch {
-      toast.error('Falha ao excluir produto.')
+    } catch (error) {
+      const message = error?.response?.data?.error || 'Falha ao excluir produto.'
+      toast.error(message)
     }
   }
 

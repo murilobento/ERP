@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
+import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
 import api from '@/lib/api'
 import { ProductsDialogs } from './components/products-dialogs'
@@ -32,6 +33,7 @@ export function Products() {
       <Header fixed>
         <Search className='me-auto' />
         <ThemeSwitch />
+        <FullscreenToggle />
         <ConfigDrawer />
         <ProfileDropdown />
       </Header>

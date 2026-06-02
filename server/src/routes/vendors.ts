@@ -132,9 +132,16 @@ vendorRoutes.patch('/:id', async (c) => {
 vendorRoutes.delete('/:id', async (c) => {
   const vendorId = c.req.param('id')
 
-  const existing = await prisma.vendor.findUnique({ where: { id: vendorId } })
+  const existing = await prisma.vendor.findUnique({
+    where: { id: vendorId },
+    include: { _count: { select: { purchases: true } } },
+  })
   if (!existing) {
     return c.json({ error: 'Fornecedor não encontrado.' }, 404)
+  }
+
+  if (existing._count.purchases > 0) {
+    return c.json({ error: 'Não é possível excluir este fornecedor pois existem compras vinculadas.' }, 400)
   }
 
   await prisma.vendor.delete({ where: { id: vendorId } })

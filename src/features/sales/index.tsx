@@ -14,6 +14,7 @@ import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
+import { FullscreenToggle } from "@/components/fullscreen-toggle";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -64,6 +65,7 @@ export function Sales() {
 			<Header fixed>
 				<Search className="me-auto" />
 				<ThemeSwitch />
+				<FullscreenToggle />
 				<ConfigDrawer />
 				<ProfileDropdown />
 			</Header>

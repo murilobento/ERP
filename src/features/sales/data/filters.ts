@@ -4,8 +4,6 @@ type SalesFilterValues = {
   filter: string
   status: SaleStatus[]
   payment: 'confirmed' | 'pending' | undefined
-  createdFrom: string
-  createdTo: string
   paidFrom: string
   paidTo: string
   deliveryFrom: string
@@ -26,9 +24,6 @@ function getFilters(search: Record<string, unknown>): SalesFilterValues {
       search.payment === 'confirmed' || search.payment === 'pending'
         ? search.payment
         : undefined,
-    createdFrom:
-      typeof search.createdFrom === 'string' ? search.createdFrom : '',
-    createdTo: typeof search.createdTo === 'string' ? search.createdTo : '',
     paidFrom: typeof search.paidFrom === 'string' ? search.paidFrom : '',
     paidTo: typeof search.paidTo === 'string' ? search.paidTo : '',
     deliveryFrom:
@@ -86,12 +81,6 @@ export function filterSales(sales: Sale[], search: Record<string, unknown>) {
 
     if (filters.payment === 'confirmed' && !sale.paidAt) return false
     if (filters.payment === 'pending' && sale.paidAt) return false
-
-    if (
-      !isWithinRange(sale.createdAt, filters.createdFrom, filters.createdTo)
-    ) {
-      return false
-    }
 
     if (!isWithinRange(sale.paidAt, filters.paidFrom, filters.paidTo)) {
       return false

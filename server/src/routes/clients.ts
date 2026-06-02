@@ -132,9 +132,16 @@ clientRoutes.patch('/:id', async (c) => {
 clientRoutes.delete('/:id', async (c) => {
   const clientId = c.req.param('id')
 
-  const existing = await prisma.client.findUnique({ where: { id: clientId } })
+  const existing = await prisma.client.findUnique({
+    where: { id: clientId },
+    include: { _count: { select: { sales: true } } },
+  })
   if (!existing) {
-    return c.json({ error: 'Client not found' }, 404)
+    return c.json({ error: 'Cliente não encontrado.' }, 404)
+  }
+
+  if (existing._count.sales > 0) {
+    return c.json({ error: 'Não é possível excluir este cliente pois existem vendas vinculadas.' }, 400)
   }
 
   await prisma.client.delete({ where: { id: clientId } })
