@@ -44,6 +44,10 @@ export function createApp({ enableLogger = true } = {}) {
 
   app.get('/api/health', (c) => c.json({ status: 'ok' }))
 
+  app.onError((_err, c) => {
+    return c.json({ error: 'Erro interno do servidor.' }, 500)
+  })
+
   return app
 }
 

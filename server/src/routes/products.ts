@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
+import { getProductStock, getProductStockMap } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
 
 const productRoutes = new Hono()
@@ -46,16 +47,14 @@ productRoutes.get('/', async (c) => {
     orderBy: { createdAt: 'desc' },
   })
 
-  const productsWithMeta = await Promise.all(
-    products.map(async (product) => {
-      const stockResult = await prisma.stockMovement.aggregate({
-        where: { productId: product.id },
-        _sum: { quantity: true },
-      })
-      const prices = computeProductPrices(product)
-      return { ...product, stock: stockResult._sum.quantity || 0, ...prices }
-    })
+  const stockByProduct = await getProductStockMap(
+    products.map((product) => product.id)
   )
+
+  const productsWithMeta = products.map((product) => {
+    const prices = computeProductPrices(product)
+    return { ...product, stock: stockByProduct.get(product.id) ?? 0, ...prices }
+  })
 
   return c.json({ products: productsWithMeta })
 })
@@ -95,15 +94,13 @@ productRoutes.get('/search', async (c) => {
     return c.json({ products })
   }
 
-  const productsWithStock = await Promise.all(
-    products.map(async (product) => {
-      const stockResult = await prisma.stockMovement.aggregate({
-        where: { productId: product.id },
-        _sum: { quantity: true },
-      })
-      return { ...product, stock: stockResult._sum.quantity || 0 }
-    })
+  const stockByProduct = await getProductStockMap(
+    products.map((product) => product.id)
   )
+  const productsWithStock = products.map((product) => ({
+    ...product,
+    stock: stockByProduct.get(product.id) ?? 0,
+  }))
 
   return c.json({ products: productsWithStock })
 })
@@ -151,16 +148,11 @@ productRoutes.get('/:id', async (c) => {
     return c.json({ error: 'Produto não encontrado.' }, 404)
   }
 
-  const stockResult = await prisma.stockMovement.aggregate({
-    where: { productId },
-    _sum: { quantity: true },
-  })
-
   const prices = computeProductPrices(product)
 
   return c.json({
     product,
-    stock: stockResult._sum.quantity || 0,
+    stock: await getProductStock(productId),
     ...prices,
   })
 })
@@ -286,12 +278,7 @@ productRoutes.get('/:id/stock', async (c) => {
     return c.json({ error: 'Produto não encontrado.' }, 404)
   }
 
-  const result = await prisma.stockMovement.aggregate({
-    where: { productId },
-    _sum: { quantity: true },
-  })
-
-  return c.json({ stock: result._sum.quantity || 0 })
+  return c.json({ stock: await getProductStock(productId) })
 })
 
 export { productRoutes }

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import prisma from "../lib/prisma";
+import { getProductStockMap } from "../lib/stock";
 import { authMiddleware } from "../middleware/auth";
 
 const saleRoutes = new Hono();
@@ -70,12 +71,12 @@ function validateSaleItems(items: SaleItemInput[]) {
 async function ensureProductsAvailable(
 	items: { productId: string; quantity: number; product: { name: string } }[],
 ) {
+	const stockByProduct = await getProductStockMap(
+		items.map((item) => item.productId),
+	);
+
 	for (const item of items) {
-		const stockResult = await prisma.stockMovement.aggregate({
-			where: { productId: item.productId },
-			_sum: { quantity: true },
-		});
-		const available = stockResult._sum.quantity || 0;
+		const available = stockByProduct.get(item.productId) ?? 0;
 		if (available < item.quantity) {
 			return `Estoque insuficiente para ${item.product.name}. Disponível: ${available}.`;
 		}
@@ -320,13 +321,14 @@ saleRoutes.post("/:id/deliver", async (c) => {
 			data: { status: "delivered", deliveredAt: new Date() },
 		});
 
+		const stockByProduct = await getProductStockMap(
+			existing.items.map((item) => item.productId),
+			tx,
+		);
+
 		for (const item of existing.items) {
 			const quantity = -item.quantity;
-			const stockResult = await tx.stockMovement.aggregate({
-				where: { productId: item.productId },
-				_sum: { quantity: true },
-			});
-			const stockBefore = stockResult._sum.quantity || 0;
+			const stockBefore = stockByProduct.get(item.productId) ?? 0;
 
 			await tx.stockMovement.create({
 				data: {
@@ -434,12 +436,13 @@ saleRoutes.post("/:id/reverse", async (c) => {
 			},
 		});
 
+		const stockByProduct = await getProductStockMap(
+			existing.items.map((item) => item.productId),
+			tx,
+		);
+
 		for (const item of existing.items) {
-			const stockResult = await tx.stockMovement.aggregate({
-				where: { productId: item.productId },
-				_sum: { quantity: true },
-			});
-			const stockBefore = stockResult._sum.quantity || 0;
+			const stockBefore = stockByProduct.get(item.productId) ?? 0;
 
 			await tx.stockMovement.create({
 				data: {

@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
+import { getProductStockMap, getSupplyStockMap } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
 
 const stockRoutes = new Hono()
@@ -148,39 +149,28 @@ stockRoutes.get('/balances', async (c) => {
     },
   })
 
-  const productBalances = await Promise.all(
-    products.map(async (product) => {
-      const result = await prisma.stockMovement.aggregate({
-        where: { productId: product.id },
-        _sum: { quantity: true },
-      })
-      return {
-        type: 'product' as const,
-        id: product.id,
-        name: product.name,
-        unit: product.unit,
-        stock: result._sum.quantity || 0,
-      }
-    })
-  )
+  const [productStock, supplyStock] = await Promise.all([
+    getProductStockMap(products.map((product) => product.id)),
+    getSupplyStockMap(supplies.map((supply) => supply.id)),
+  ])
 
-  const supplyBalances = await Promise.all(
-    supplies.map(async (supply) => {
-      const result = await prisma.stockMovement.aggregate({
-        where: { supplyId: supply.id },
-        _sum: { quantity: true },
-      })
-      return {
-        type: 'supply' as const,
-        id: supply.id,
-        name: supply.name,
-        unit: supply.unit,
-        packageUnit: supply.packageUnit,
-        packageQuantity: supply.packageQuantity,
-        stock: result._sum.quantity || 0,
-      }
-    })
-  )
+  const productBalances = products.map((product) => ({
+    type: 'product' as const,
+    id: product.id,
+    name: product.name,
+    unit: product.unit,
+    stock: productStock.get(product.id) ?? 0,
+  }))
+
+  const supplyBalances = supplies.map((supply) => ({
+    type: 'supply' as const,
+    id: supply.id,
+    name: supply.name,
+    unit: supply.unit,
+    packageUnit: supply.packageUnit,
+    packageQuantity: supply.packageQuantity,
+    stock: supplyStock.get(supply.id) ?? 0,
+  }))
 
   return c.json({ balances: [...productBalances, ...supplyBalances] })
 })

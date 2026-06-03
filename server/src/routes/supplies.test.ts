@@ -12,6 +12,7 @@ const prisma = vi.hoisted(() => ({
   },
   stockMovement: {
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
   },
 }))
 
@@ -52,7 +53,9 @@ describe('supply routes', () => {
         costPrice: 10,
       },
     ])
-    prisma.stockMovement.aggregate.mockResolvedValue({ _sum: { quantity: 12 } })
+    prisma.stockMovement.groupBy.mockResolvedValue([
+      { supplyId: 'supply-1', _sum: { quantity: 12 } },
+    ])
 
     const response = await app.request(
       '/api/supplies/search?q=farinha&limit=999&includeStock=true&status=active',

@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
+import { getSupplyStockMap } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
 
 const purchaseRoutes = new Hono()
@@ -265,12 +266,13 @@ purchaseRoutes.post('/:id/complete', async (c) => {
       },
     })
 
+    const stockBySupply = await getSupplyStockMap(
+      existing.items.map((item) => item.supplyId),
+      tx
+    )
+
     for (const item of existing.items) {
-      const stockResult = await tx.stockMovement.aggregate({
-        where: { supplyId: item.supplyId },
-        _sum: { quantity: true },
-      })
-      const stockBefore = stockResult._sum.quantity || 0
+      const stockBefore = stockBySupply.get(item.supplyId) ?? 0
 
       await tx.stockMovement.create({
         data: {
@@ -347,13 +349,14 @@ purchaseRoutes.post('/:id/reverse', async (c) => {
       },
     })
 
+    const stockBySupply = await getSupplyStockMap(
+      existing.items.map((item) => item.supplyId),
+      tx
+    )
+
     for (const item of existing.items) {
       const quantity = -item.quantity
-      const stockResult = await tx.stockMovement.aggregate({
-        where: { supplyId: item.supplyId },
-        _sum: { quantity: true },
-      })
-      const stockBefore = stockResult._sum.quantity || 0
+      const stockBefore = stockBySupply.get(item.supplyId) ?? 0
 
       await tx.stockMovement.create({
         data: {

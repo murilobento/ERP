@@ -21,6 +21,7 @@ const prisma = vi.hoisted(() => ({
   },
   stockMovement: {
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
   },
   $transaction: vi.fn(async (callback: (transaction: typeof tx) => Promise<void>) =>
     callback(tx)
@@ -54,7 +55,9 @@ describe('product routes', () => {
         ],
       },
     ])
-    prisma.stockMovement.aggregate.mockResolvedValue({ _sum: { quantity: 4 } })
+    prisma.stockMovement.groupBy.mockResolvedValue([
+      { productId: 'product-1', _sum: { quantity: 4 } },
+    ])
 
     const response = await app.request('/api/products', {
       headers: authHeaders,

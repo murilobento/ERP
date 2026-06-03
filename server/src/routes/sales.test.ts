@@ -8,6 +8,7 @@ const tx = vi.hoisted(() => ({
   },
   stockMovement: {
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
     create: vi.fn(),
   },
 }))
@@ -26,6 +27,7 @@ const prisma = vi.hoisted(() => ({
   },
   stockMovement: {
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
   },
   $transaction: vi.fn(async (callback: (transaction: typeof tx) => Promise<void>) =>
     callback(tx)
@@ -151,7 +153,9 @@ describe('sale routes', () => {
         },
       ],
     })
-    prisma.stockMovement.aggregate.mockResolvedValue({ _sum: { quantity: 2 } })
+    prisma.stockMovement.groupBy.mockResolvedValue([
+      { productId: 'product-1', _sum: { quantity: 2 } },
+    ])
 
     const response = await app.request('/api/sales/sale-1/deliver', {
       method: 'POST',
@@ -178,8 +182,12 @@ describe('sale routes', () => {
         ],
       })
       .mockResolvedValueOnce({ id: 'sale-1', status: 'delivered' })
-    prisma.stockMovement.aggregate.mockResolvedValue({ _sum: { quantity: 10 } })
-    tx.stockMovement.aggregate.mockResolvedValue({ _sum: { quantity: 10 } })
+    prisma.stockMovement.groupBy.mockResolvedValue([
+      { productId: 'product-1', _sum: { quantity: 10 } },
+    ])
+    tx.stockMovement.groupBy.mockResolvedValue([
+      { productId: 'product-1', _sum: { quantity: 10 } },
+    ])
 
     const response = await app.request('/api/sales/sale-1/deliver', {
       method: 'POST',
@@ -266,7 +274,9 @@ describe('sale routes', () => {
         ],
       })
       .mockResolvedValueOnce({ id: 'sale-1', status: 'in_preparation' })
-    tx.stockMovement.aggregate.mockResolvedValue({ _sum: { quantity: 8 } })
+    tx.stockMovement.groupBy.mockResolvedValue([
+      { productId: 'product-1', _sum: { quantity: 8 } },
+    ])
 
     const response = await app.request('/api/sales/sale-1/reverse', {
       method: 'POST',

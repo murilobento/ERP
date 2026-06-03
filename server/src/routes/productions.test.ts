@@ -8,6 +8,7 @@ const tx = vi.hoisted(() => ({
   },
   stockMovement: {
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
     create: vi.fn(),
   },
 }))
@@ -71,10 +72,16 @@ const production = {
 describe('production routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    tx.stockMovement.aggregate
-      .mockResolvedValueOnce({ _sum: { quantity: 5 } })
-      .mockResolvedValueOnce({ _sum: { quantity: 20 } })
-      .mockResolvedValueOnce({ _sum: { quantity: 10 } })
+    tx.stockMovement.groupBy.mockImplementation(async (args) => {
+      if (args.by.includes('productId')) {
+        return [{ productId: 'product-1', _sum: { quantity: 5 } }]
+      }
+
+      return [
+        { supplyId: 'supply-1', _sum: { quantity: 20 } },
+        { supplyId: 'supply-2', _sum: { quantity: 10 } },
+      ]
+    })
   })
 
   it('rejects completing productions that are not in production', async () => {

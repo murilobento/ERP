@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
+import { getProductStockMap, getSupplyStockMap } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
 
 const productionRoutes = new Hono()
@@ -215,19 +216,17 @@ productionRoutes.get('/:id', async (c) => {
   }
 
   const compositionNeeded = Array.from(compositionMap.values())
-  const suppliesStockCheck = await Promise.all(
-    compositionNeeded.map(async (item) => {
-      const result = await prisma.stockMovement.aggregate({
-        where: { supplyId: item.supplyId },
-        _sum: { quantity: true },
-      })
-      return {
-        ...item,
-        available: result._sum.quantity || 0,
-        sufficient: (result._sum.quantity || 0) >= item.needed,
-      }
-    })
+  const stockBySupply = await getSupplyStockMap(
+    compositionNeeded.map((item) => item.supplyId)
   )
+  const suppliesStockCheck = compositionNeeded.map((item) => {
+    const available = stockBySupply.get(item.supplyId) ?? 0
+    return {
+      ...item,
+      available,
+      sufficient: available >= item.needed,
+    }
+  })
 
   return c.json({ production, compositionNeeded: suppliesStockCheck })
 })
@@ -372,12 +371,13 @@ productionRoutes.post('/:id/complete', async (c) => {
       data: { status: 'completed', completedAt: new Date() },
     })
 
+    const productStockById = await getProductStockMap(
+      productionItems.map((item) => item.productId),
+      tx
+    )
+
     for (const item of productionItems) {
-      const productStockResult = await tx.stockMovement.aggregate({
-        where: { productId: item.productId },
-        _sum: { quantity: true },
-      })
-      const productStockBefore = productStockResult._sum.quantity || 0
+      const productStockBefore = productStockById.get(item.productId) ?? 0
 
       await tx.stockMovement.create({
         data: {
@@ -415,13 +415,14 @@ productionRoutes.post('/:id/complete', async (c) => {
       }
     }
 
+    const supplyStockById = await getSupplyStockMap(
+      [...supplyConsumption.keys()],
+      tx
+    )
+
     for (const [supplyId, comp] of supplyConsumption) {
       const quantity = -comp.quantity
-      const supplyStockResult = await tx.stockMovement.aggregate({
-        where: { supplyId },
-        _sum: { quantity: true },
-      })
-      const supplyStockBefore = supplyStockResult._sum.quantity || 0
+      const supplyStockBefore = supplyStockById.get(supplyId) ?? 0
 
       await tx.stockMovement.create({
         data: {
@@ -534,12 +535,13 @@ productionRoutes.post('/:id/reverse', async (c) => {
       },
     })
 
+    const productStockById = await getProductStockMap(
+      productionItems.map((item) => item.productId),
+      tx
+    )
+
     for (const item of productionItems) {
-      const productStockResult = await tx.stockMovement.aggregate({
-        where: { productId: item.productId },
-        _sum: { quantity: true },
-      })
-      const productStockBefore = productStockResult._sum.quantity || 0
+      const productStockBefore = productStockById.get(item.productId) ?? 0
       const productQuantity = -item.quantity
 
       await tx.stockMovement.create({
@@ -578,12 +580,10 @@ productionRoutes.post('/:id/reverse', async (c) => {
       }
     }
 
+    const supplyStockById = await getSupplyStockMap([...supplyReturns.keys()], tx)
+
     for (const [supplyId, comp] of supplyReturns) {
-      const supplyStockResult = await tx.stockMovement.aggregate({
-        where: { supplyId },
-        _sum: { quantity: true },
-      })
-      const supplyStockBefore = supplyStockResult._sum.quantity || 0
+      const supplyStockBefore = supplyStockById.get(supplyId) ?? 0
 
       await tx.stockMovement.create({
         data: {

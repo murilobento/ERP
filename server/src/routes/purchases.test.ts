@@ -8,6 +8,7 @@ const tx = vi.hoisted(() => ({
   },
   stockMovement: {
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
     create: vi.fn(),
   },
   supply: {
@@ -68,7 +69,9 @@ const completedPurchase = {
 describe('purchase routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    tx.stockMovement.aggregate.mockResolvedValue({ _sum: { quantity: 20 } })
+    tx.stockMovement.groupBy.mockResolvedValue([
+      { supplyId: 'supply-1', _sum: { quantity: 20 } },
+    ])
     tx.supply.findUnique.mockResolvedValue(supply)
     tx.purchaseItem.findMany.mockResolvedValue([
       { packageCost: 50 },
