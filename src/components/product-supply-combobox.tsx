@@ -27,6 +27,7 @@ export type ProductSupplySearchItem = {
   packageUnit?: string
   packageQuantity?: number
   costPrice?: number
+  salePrice?: number
 }
 
 type ProductSupplyComboboxProps = {
@@ -80,7 +81,11 @@ export function ProductSupplyCombobox({
   const endpoint = type === 'product' ? '/products/search' : '/supplies/search'
   const selected = selectedItem || internalSelectedItem
 
-  const { data: items = [], isFetching, isError } = useQuery({
+  const {
+    data: items = [],
+    isFetching,
+    isError,
+  } = useQuery({
     queryKey: [
       type,
       'search',
@@ -99,9 +104,9 @@ export function ProductSupplyCombobox({
           limit,
         },
       })
-      return (type === 'product'
-        ? res.data.products
-        : res.data.supplies) as ProductSupplySearchItem[]
+      return (
+        type === 'product' ? res.data.products : res.data.supplies
+      ) as ProductSupplySearchItem[]
     },
     enabled: open && debouncedSearch.trim().length > 0,
   })
@@ -137,7 +142,10 @@ export function ProductSupplyCombobox({
           <ChevronsUpDown className='ms-2 size-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className='w-(--radix-popover-trigger-width) p-0' align='start'>
+      <PopoverContent
+        className='w-(--radix-popover-trigger-width) p-0'
+        align='start'
+      >
         <Command shouldFilter={false}>
           <CommandInput
             value={search}

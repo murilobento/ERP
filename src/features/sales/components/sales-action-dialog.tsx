@@ -1,17 +1,8 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
-import { DatePicker } from '@/components/date-picker'
-import {
-  ProductSupplyCombobox,
-  type ProductSupplySearchItem,
-} from '@/components/product-supply-combobox'
-import {
-  ClientCombobox,
-  type ClientSearchItem,
-} from '@/components/client-combobox'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -31,6 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  ClientCombobox,
+  type ClientSearchItem,
+} from '@/components/client-combobox'
+import { DatePicker } from '@/components/date-picker'
+import {
+  ProductSupplyCombobox,
+  type ProductSupplySearchItem,
+} from '@/components/product-supply-combobox'
 import { formatCurrency } from '../data/schema'
 import { useSales } from './sales-provider'
 
@@ -80,7 +80,9 @@ export function SalesActionDialog({
     Record<string, ProductSupplySearchItem>
   >(
     isEdit
-      ? Object.fromEntries(currentRow.items.map((i) => [i.productId, i.product]))
+      ? Object.fromEntries(
+          currentRow.items.map((i) => [i.productId, i.product])
+        )
       : {}
   )
   const queryClient = useQueryClient()
@@ -111,9 +113,19 @@ export function SalesActionDialog({
     setItems(items.filter((_, i) => i !== index))
   }
 
+  function updateItemQuantity(index: number, quantity: number) {
+    setItems((current) =>
+      current.map((item, i) => (i === index ? { ...item, quantity } : item))
+    )
+  }
+
   function updateSelectedProduct(item: ProductSupplySearchItem | null) {
     if (!item) return
     setSelectedProducts((current) => ({ ...current, [item.id]: item }))
+    if (item.salePrice !== undefined) {
+      const rounded = Math.round(item.salePrice * 100) / 100
+      setDraftItem((current) => ({ ...current, unitPrice: rounded }))
+    }
   }
 
   async function onSubmit() {
@@ -123,6 +135,10 @@ export function SalesActionDialog({
     }
     if (!deliveryDate) {
       toast.error('Data de entrega é obrigatória.')
+      return
+    }
+    if (items.some((item) => item.quantity <= 0)) {
+      toast.error('A quantidade de cada item deve ser maior que zero.')
       return
     }
     const validItems = items.filter((i) => i.productId && i.quantity > 0)
@@ -173,7 +189,9 @@ export function SalesActionDialog({
         <DialogHeader className='text-start'>
           <DialogTitle>{isEdit ? 'Editar Venda' : 'Nova Venda'}</DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Atualize os dados da venda.' : 'Registre uma nova venda.'}
+            {isEdit
+              ? 'Atualize os dados da venda.'
+              : 'Registre uma nova venda.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -230,7 +248,9 @@ export function SalesActionDialog({
                 />
               </div>
               <div className='min-w-0'>
-                <Label className='text-xs text-muted-foreground'>Quantidade</Label>
+                <Label className='text-xs text-muted-foreground'>
+                  Quantidade
+                </Label>
                 <Input
                   type='number'
                   min='1'
@@ -245,7 +265,9 @@ export function SalesActionDialog({
                 />
               </div>
               <div className='min-w-0'>
-                <Label className='text-xs text-muted-foreground'>Preço un. (R$)</Label>
+                <Label className='text-xs text-muted-foreground'>
+                  Preço un. (R$)
+                </Label>
                 <Input
                   type='number'
                   min='0'
@@ -283,7 +305,10 @@ export function SalesActionDialog({
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className='h-16 text-center text-muted-foreground'>
+                      <TableCell
+                        colSpan={5}
+                        className='h-16 text-center text-muted-foreground'
+                      >
                         Nenhum item adicionado.
                       </TableCell>
                     </TableRow>
@@ -291,6 +316,7 @@ export function SalesActionDialog({
                     items.map((item, index) => {
                       const product = selectedProducts[item.productId]
                       const total = item.quantity * item.unitPrice
+                      const quantityInvalid = item.quantity <= 0
 
                       return (
                         <TableRow key={item.productId}>
@@ -298,9 +324,31 @@ export function SalesActionDialog({
                             {product?.name || item.productId}
                           </TableCell>
                           <TableCell>
-                            {item.quantity} {product?.unit || ''}
+                            <div className='flex items-center gap-2'>
+                              <Input
+                                type='number'
+                                min='1'
+                                step='1'
+                                aria-invalid={quantityInvalid}
+                                className='h-8 w-20'
+                                value={item.quantity || ''}
+                                onChange={(e) =>
+                                  updateItemQuantity(
+                                    index,
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
+                              />
+                              {product?.unit && (
+                                <span className='text-xs text-muted-foreground'>
+                                  {product.unit}
+                                </span>
+                              )}
+                            </div>
                           </TableCell>
-                          <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
+                          <TableCell>
+                            {formatCurrency(item.unitPrice)}
+                          </TableCell>
                           <TableCell>{formatCurrency(total)}</TableCell>
                           <TableCell>
                             <Button

@@ -99,7 +99,14 @@ describe('product routes', () => {
 
   it('caps product search limit and avoids stock lookup when not requested', async () => {
     prisma.product.findMany.mockResolvedValue([
-      { id: 'product-1', name: 'Bolo', unit: 'un', margin: 20, status: 'active' },
+      {
+        id: 'product-1',
+        name: 'Bolo',
+        unit: 'un',
+        margin: 20,
+        status: 'active',
+        composition: [],
+      },
     ])
 
     const response = await app.request('/api/products/search?q=bolo&limit=500', {
@@ -111,6 +118,46 @@ describe('product routes', () => {
       expect.objectContaining({ take: 50 })
     )
     expect(prisma.stockMovement.aggregate).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      products: [
+        expect.objectContaining({
+          id: 'product-1',
+          costPrice: 0,
+          salePrice: 0,
+        }),
+      ],
+    })
+  })
+
+  it('returns computed cost and sale prices in product search results', async () => {
+    prisma.product.findMany.mockResolvedValue([
+      {
+        id: 'product-1',
+        name: 'Bolo',
+        unit: 'un',
+        margin: 50,
+        status: 'active',
+        composition: [
+          { quantity: 2, supply: { costPrice: 10 } },
+          { quantity: 1, supply: { costPrice: 5 } },
+        ],
+      },
+    ])
+
+    const response = await app.request('/api/products/search?q=bolo', {
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      products: [
+        expect.objectContaining({
+          id: 'product-1',
+          costPrice: 25,
+          salePrice: 37.5,
+        }),
+      ],
+    })
   })
 
   it('replaces product composition in a transaction', async () => {

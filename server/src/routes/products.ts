@@ -85,19 +85,27 @@ productRoutes.get('/search', async (c) => {
       unit: true,
       margin: true,
       status: true,
+      composition: {
+        select: { quantity: true, supply: { select: { costPrice: true } } },
+      },
     },
     orderBy: { name: 'asc' },
     take: limit,
   })
 
+  const productsWithPrices = products.map((product) => ({
+    ...product,
+    ...computeProductPrices(product),
+  }))
+
   if (!includeStock) {
-    return c.json({ products })
+    return c.json({ products: productsWithPrices })
   }
 
   const stockByProduct = await getProductStockMap(
     products.map((product) => product.id)
   )
-  const productsWithStock = products.map((product) => ({
+  const productsWithStock = productsWithPrices.map((product) => ({
     ...product,
     stock: stockByProduct.get(product.id) ?? 0,
   }))

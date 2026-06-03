@@ -21,11 +21,18 @@ const client: ClientSearchItem = {
   status: 'active',
 }
 
-const product = {
+const product: {
+  id: string
+  name: string
+  unit: string
+  status: 'active'
+  salePrice: number
+} = {
   id: 'product-1',
   name: 'Bolo de Chocolate',
   unit: 'un',
   status: 'active',
+  salePrice: 42.5,
 }
 
 vi.mock('@/lib/api', () => ({
@@ -235,6 +242,49 @@ describe('SalesActionDialog', () => {
     expect(apiPost).not.toHaveBeenCalled()
   })
 
+  it('auto-fills the unit price with the suggested sale price on selection', async () => {
+    await renderDialog()
+
+    await userEvent.click(document.body.querySelectorAll('button')[2])
+
+    expect(numberInput(1).value).toBe('42.5')
+  })
+
+  it('rounds the suggested sale price to the nearest cent', async () => {
+    product.salePrice = 16.46666666666667
+    try {
+      await renderDialog()
+
+      await userEvent.click(document.body.querySelectorAll('button')[2])
+
+      expect(numberInput(1).value).toBe('16.47')
+    } finally {
+      product.salePrice = 42.5
+    }
+  })
+
+  it('allows overriding the auto-filled suggested price', async () => {
+    const { getByRole } = await renderDialog()
+
+    await selectClientAndDate()
+    await userEvent.click(document.body.querySelectorAll('button')[2])
+    expect(numberInput(1).value).toBe('42.5')
+    await userEvent.clear(numberInput(0))
+    await userEvent.type(numberInput(0), '3')
+    await userEvent.clear(numberInput(1))
+    await userEvent.type(numberInput(1), '99.9')
+    await userEvent.click(document.body.querySelectorAll('button')[3])
+    await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))
+
+    await vi.waitFor(() => expect(apiPost).toHaveBeenCalledOnce())
+    expect(apiPost).toHaveBeenCalledWith('/sales', {
+      clientId: 'client-1',
+      notes: '',
+      deliveryDate: '2026-01-15',
+      items: [{ productId: 'product-1', quantity: 3, unitPrice: 99.9 }],
+    })
+  })
+
   it('creates sales with formatted delivery date and item payload', async () => {
     const onOpenChange = vi.fn()
     const { getByRole } = await renderDialog({
@@ -296,5 +346,45 @@ describe('SalesActionDialog', () => {
     )
     expect(onOpenChange).not.toHaveBeenCalledWith(false)
     expect(invalidateQueries).not.toHaveBeenCalled()
+  })
+
+  it('edits the quantity of an added item from the table and recalculates the total', async () => {
+    const { getByRole, getByText } = await renderDialog()
+
+    await selectClientAndDate()
+    await addSaleItem('2', '30')
+    const rowQuantityInput = numberInput(2)
+    expect(rowQuantityInput.value).toBe('2')
+    expect(getByText('R$ 60,00')).toBeTruthy()
+
+    await userEvent.clear(rowQuantityInput)
+    await userEvent.type(rowQuantityInput, '5')
+    expect(getByText('R$ 150,00')).toBeTruthy()
+
+    await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))
+
+    await vi.waitFor(() => expect(apiPost).toHaveBeenCalledOnce())
+    expect(apiPost).toHaveBeenCalledWith('/sales', {
+      clientId: 'client-1',
+      notes: '',
+      deliveryDate: '2026-01-15',
+      items: [{ productId: 'product-1', quantity: 5, unitPrice: 30 }],
+    })
+  })
+
+  it('blocks submit when an item has invalid quantity', async () => {
+    const { getByRole } = await renderDialog()
+
+    await selectClientAndDate()
+    await addSaleItem('2', '30')
+    const rowQuantityInput = numberInput(2)
+    await userEvent.clear(rowQuantityInput)
+
+    await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))
+
+    expect(toastError).toHaveBeenCalledWith(
+      'A quantidade de cada item deve ser maior que zero.'
+    )
+    expect(apiPost).not.toHaveBeenCalled()
   })
 })
