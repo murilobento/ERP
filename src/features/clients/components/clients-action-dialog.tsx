@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { z } from 'zod'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
@@ -152,7 +152,7 @@ export function ClientsActionDialog({
     }
   }
 
-  const statusValue = form.watch('status')
+  const statusValue = useWatch({ control: form.control, name: 'status' })
 
   return (
     <Dialog

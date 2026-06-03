@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { z } from 'zod'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -95,9 +95,10 @@ export function SuppliesActionDialog({
     }
   }
 
-  const statusValue = form.watch('status')
-  const unit = form.watch('unit')
-  const packageQuantity = form.watch('packageQuantity')
+  const [statusValue, unit, packageQuantity] = useWatch({
+    control: form.control,
+    name: ['status', 'unit', 'packageQuantity'],
+  })
 
   return (
     <Dialog
