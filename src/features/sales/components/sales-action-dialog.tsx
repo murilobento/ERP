@@ -169,7 +169,7 @@ export function SalesActionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className='sm:max-w-2xl'>
+      <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <DialogTitle>{isEdit ? 'Editar Venda' : 'Nova Venda'}</DialogTitle>
           <DialogDescription>
@@ -178,21 +178,21 @@ export function SalesActionDialog({
         </DialogHeader>
 
         <div className='space-y-4'>
-          <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
-            <Label className='col-span-2 text-end'>Cliente</Label>
+          <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
+            <Label className='sm:col-span-2 sm:text-end'>Cliente</Label>
             <ClientCombobox
               value={clientId}
               onValueChange={setClientId}
               onClientChange={setSelectedClient}
               selectedClient={selectedClient}
-              className='col-span-4'
+              className='min-w-0 sm:col-span-4'
             />
           </div>
 
-          <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
-            <Label className='col-span-2 text-end'>Observação</Label>
+          <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
+            <Label className='sm:col-span-2 sm:text-end'>Observação</Label>
             <Input
-              className='col-span-4'
+              className='min-w-0 sm:col-span-4'
               placeholder='Opcional'
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -200,9 +200,9 @@ export function SalesActionDialog({
             />
           </div>
 
-          <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
-            <Label className='col-span-2 text-end'>Data de entrega</Label>
-            <div className='col-span-4'>
+          <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
+            <Label className='sm:col-span-2 sm:text-end'>Data de entrega</Label>
+            <div className='min-w-0 sm:col-span-4'>
               <DatePicker
                 selected={deliveryDate}
                 onSelect={setDeliveryDate}
@@ -214,8 +214,8 @@ export function SalesActionDialog({
 
           <div className='space-y-2'>
             <Label className='mb-2 block text-sm font-medium'>Itens</Label>
-            <div className='grid grid-cols-[1fr_7rem_8rem_auto] items-end gap-2'>
-              <div>
+            <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]'>
+              <div className='min-w-0 sm:col-span-2 md:col-span-1'>
                 <Label className='text-xs text-muted-foreground'>Produto</Label>
                 <ProductSupplyCombobox
                   type='product'
@@ -229,7 +229,7 @@ export function SalesActionDialog({
                   placeholder='Selecione...'
                 />
               </div>
-              <div>
+              <div className='min-w-0'>
                 <Label className='text-xs text-muted-foreground'>Quantidade</Label>
                 <Input
                   type='number'
@@ -244,7 +244,7 @@ export function SalesActionDialog({
                   }
                 />
               </div>
-              <div>
+              <div className='min-w-0'>
                 <Label className='text-xs text-muted-foreground'>Preço un. (R$)</Label>
                 <Input
                   type='number'
@@ -259,7 +259,11 @@ export function SalesActionDialog({
                   }
                 />
               </div>
-              <Button type='button' onClick={addItem}>
+              <Button
+                type='button'
+                onClick={addItem}
+                className='w-full sm:col-span-2 md:col-span-1 md:w-auto'
+              >
                 <Plus size={16} />
                 Adicionar
               </Button>

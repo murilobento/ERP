@@ -1,8 +1,17 @@
-import { X } from 'lucide-react'
-import { type NavigateFn } from '@/hooks/use-table-url-state'
+import { Filter, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { DatePicker } from '@/components/date-picker'
+import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -11,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DatePicker } from '@/components/date-picker'
 import { saleStatusMap, type SaleStatus } from '../data/schema'
 
 type SalesFiltersProps = {
@@ -33,7 +43,12 @@ const statusOptions = Object.entries(saleStatusMap).map(([value, config]) => ({
   label: config.label,
 }))
 
-type DatePreset = 'today' | 'tomorrow' | 'yesterday' | 'this_month' | 'last_month'
+type DatePreset =
+  | 'today'
+  | 'tomorrow'
+  | 'yesterday'
+  | 'this_month'
+  | 'last_month'
 
 type DatePresetOption = {
   value: DatePreset
@@ -96,6 +111,24 @@ function getPresetRange(preset: DatePreset) {
   return { from: formatFilterDate(from), to: formatFilterDate(to) }
 }
 
+function getDatePresetLabel(from: string, to: string) {
+  const preset = datePresetOptions.find((option) => {
+    const range = getPresetRange(option.value)
+    return from === range.from && to === range.to
+  })
+
+  return preset?.label
+}
+
+function getDateRangeLabel(from: string, to: string) {
+  const presetLabel = getDatePresetLabel(from, to)
+  if (presetLabel) return presetLabel
+  if (from && to) return `${from} até ${to}`
+  if (from) return `A partir de ${from}`
+  if (to) return `Até ${to}`
+  return ''
+}
+
 function getFilters(search: Record<string, unknown>): SalesFilterValues {
   return {
     filter: typeof search.filter === 'string' ? search.filter : '',
@@ -118,40 +151,52 @@ function getFilters(search: Record<string, unknown>): SalesFilterValues {
 
 export function SalesFilters({ search, navigate }: SalesFiltersProps) {
   const filters = getFilters(search)
-  const hasFilters =
+  const todayRange = getPresetRange('today')
+  const deliveryIsDefault =
+    filters.deliveryFrom === todayRange.from &&
+    filters.deliveryTo === todayRange.to
+  const hasRemovableFilters =
     !!filters.filter ||
     filters.status.length > 0 ||
     !!filters.payment ||
     !!filters.paidFrom ||
     !!filters.paidTo ||
-    !!filters.deliveryFrom ||
-    !!filters.deliveryTo
+    !deliveryIsDefault
+  const activeFilterCount = [
+    filters.status.length > 0,
+    !!filters.payment,
+    !!filters.deliveryFrom || !!filters.deliveryTo,
+    !!filters.paidFrom || !!filters.paidTo,
+  ].filter(Boolean).length
+  const summaryItems = [
+    filters.status.length > 0 ? `Status: ${filters.status.length}` : undefined,
+    filters.payment === 'confirmed'
+      ? 'Pagamento confirmado'
+      : filters.payment === 'pending'
+        ? 'Pagamento pendente'
+        : undefined,
+    filters.deliveryFrom || filters.deliveryTo
+      ? `Entrega: ${getDateRangeLabel(filters.deliveryFrom, filters.deliveryTo)}`
+      : undefined,
+    filters.paidFrom || filters.paidTo
+      ? `Pago: ${getDateRangeLabel(filters.paidFrom, filters.paidTo)}`
+      : undefined,
+  ].filter((item): item is string => Boolean(item))
 
   function updateFilter(patch: Partial<SalesFilterValues>) {
+    const next = { ...filters, ...patch }
+
     navigate({
       search: (prev) => ({
         ...(prev as Record<string, unknown>),
         page: undefined,
-        filter: patch.filter !== undefined ? patch.filter || undefined : undefined,
-        status:
-          patch.status !== undefined
-            ? patch.status.length > 0
-              ? patch.status
-              : undefined
-            : undefined,
-        payment:
-          patch.payment !== undefined ? patch.payment || undefined : undefined,
-        paidFrom:
-          patch.paidFrom !== undefined ? patch.paidFrom || undefined : undefined,
-        paidTo: patch.paidTo !== undefined ? patch.paidTo || undefined : undefined,
-        deliveryFrom:
-          patch.deliveryFrom !== undefined
-            ? patch.deliveryFrom || undefined
-            : undefined,
-        deliveryTo:
-          patch.deliveryTo !== undefined
-            ? patch.deliveryTo || undefined
-            : undefined,
+        filter: next.filter || undefined,
+        status: next.status.length > 0 ? next.status : undefined,
+        payment: next.payment || undefined,
+        paidFrom: next.paidFrom || undefined,
+        paidTo: next.paidTo || undefined,
+        deliveryFrom: next.deliveryFrom || undefined,
+        deliveryTo: next.deliveryTo || undefined,
       }),
     })
   }
@@ -172,6 +217,8 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
   }
 
   function resetFilters() {
+    const defaultDelivery = getPresetRange('today')
+
     navigate({
       search: (prev) => ({
         ...(prev as Record<string, unknown>),
@@ -181,8 +228,8 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
         payment: undefined,
         paidFrom: undefined,
         paidTo: undefined,
-        deliveryFrom: undefined,
-        deliveryTo: undefined,
+        deliveryFrom: defaultDelivery.from,
+        deliveryTo: defaultDelivery.to,
       }),
     })
   }
@@ -196,172 +243,267 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
     updateFilter({ ...filters, [fromKey]: range.from, [toKey]: range.to })
   }
 
-  function isPresetActive(
-    preset: DatePreset,
-    from: string,
-    to: string
-  ) {
+  function isPresetActive(preset: DatePreset, from: string, to: string) {
     const range = getPresetRange(preset)
     return from === range.from && to === range.to
   }
 
   return (
     <div className='grid gap-2 rounded-md border bg-muted/20 p-2'>
-      <div className='grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(16rem,1fr)_auto_auto_auto]'>
+      <div className='flex flex-col gap-2 lg:flex-row lg:items-center'>
         <Input
           value={filters.filter}
           onChange={(event) => setField('filter', event.target.value)}
           placeholder='Cliente, produto ou observação...'
-          className='h-8 min-w-0 bg-background px-2 text-sm'
+          className='h-8 min-w-0 bg-background px-2 text-sm lg:flex-1'
         />
-        <div className='flex flex-wrap gap-1 md:col-span-2 xl:col-span-1'>
-          {statusOptions.map((option) => {
-            const selected = filters.status.includes(option.value)
-            return (
+        <div className='grid grid-cols-[1fr_auto] gap-2 sm:flex sm:justify-end'>
+          <Dialog>
+            <DialogTrigger asChild>
               <Button
-                key={option.value}
                 type='button'
-                variant={selected ? 'default' : 'outline'}
+                variant='outline'
                 size='sm'
-                onClick={() => toggleStatus(option.value)}
-                className={cn(
-                  'h-7 px-2 text-xs sm:h-8',
-                  !selected && 'bg-background'
-                )}
+                className='h-8 justify-start bg-background px-2 text-xs sm:min-w-32 sm:justify-center'
               >
-                {option.label}
+                <Filter className='size-4' />
+                Filtros
+                {activeFilterCount > 0 && (
+                  <span className='rounded-sm bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground'>
+                    {activeFilterCount}
+                  </span>
+                )}
               </Button>
-            )
-          })}
-        </div>
-        <div className='grid grid-cols-2 gap-2 md:col-span-2 xl:col-span-2 xl:grid-cols-[minmax(8rem,1fr)_auto]'>
-          <Select
-            value={filters.payment || 'all'}
-            onValueChange={(value) =>
-              setField(
-                'payment',
-                value === 'all' ? undefined : (value as 'confirmed' | 'pending')
-              )
-            }
-          >
-            <SelectTrigger className='h-8 w-full bg-background px-2 text-sm xl:w-40'>
-              <SelectValue placeholder='Pagamento' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>Todos</SelectItem>
-              <SelectItem value='confirmed'>Pagamento confirmado</SelectItem>
-              <SelectItem value='pending'>Pagamento pendente</SelectItem>
-            </SelectContent>
-          </Select>
+            </DialogTrigger>
+            <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
+              <DialogHeader className='text-start'>
+                <DialogTitle>Filtros de vendas</DialogTitle>
+                <DialogDescription>
+                  Refine a listagem por status, pagamento, entrega e data de
+                  pagamento.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className='grid gap-5'>
+                <section className='grid gap-2'>
+                  <div>
+                    <h3 className='text-sm font-medium'>Status</h3>
+                    <p className='text-xs text-muted-foreground'>
+                      Selecione uma ou mais etapas da venda.
+                    </p>
+                  </div>
+                  <div className='flex flex-wrap gap-1.5'>
+                    {statusOptions.map((option) => {
+                      const selected = filters.status.includes(option.value)
+                      return (
+                        <Button
+                          key={option.value}
+                          type='button'
+                          variant={selected ? 'default' : 'outline'}
+                          size='sm'
+                          onClick={() => toggleStatus(option.value)}
+                          className={cn(
+                            'h-8 px-2 text-xs',
+                            !selected && 'bg-background'
+                          )}
+                        >
+                          {option.label}
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </section>
+
+                <section className='grid gap-2 border-t pt-4'>
+                  <div>
+                    <h3 className='text-sm font-medium'>Pagamento</h3>
+                    <p className='text-xs text-muted-foreground'>
+                      Filtre vendas pagas ou pendentes.
+                    </p>
+                  </div>
+                  <Select
+                    value={filters.payment || 'all'}
+                    onValueChange={(value) =>
+                      setField(
+                        'payment',
+                        value === 'all'
+                          ? undefined
+                          : (value as 'confirmed' | 'pending')
+                      )
+                    }
+                  >
+                    <SelectTrigger className='h-8 w-full bg-background px-2 text-sm sm:w-56'>
+                      <SelectValue placeholder='Pagamento' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>Todos</SelectItem>
+                      <SelectItem value='confirmed'>
+                        Pagamento confirmado
+                      </SelectItem>
+                      <SelectItem value='pending'>
+                        Pagamento pendente
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </section>
+
+                <section className='grid gap-3 border-t pt-4'>
+                  <div>
+                    <h3 className='text-sm font-medium'>Entrega</h3>
+                    <p className='text-xs text-muted-foreground'>
+                      A página abre com entrega de hoje por padrão.
+                    </p>
+                  </div>
+                  <div className='grid gap-2 sm:grid-cols-2'>
+                    <DatePicker
+                      selected={parseFilterDate(filters.deliveryFrom)}
+                      onSelect={(date) =>
+                        setField('deliveryFrom', formatFilterDate(date))
+                      }
+                      placeholder='De'
+                      className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
+                    />
+                    <DatePicker
+                      selected={parseFilterDate(filters.deliveryTo)}
+                      onSelect={(date) =>
+                        setField('deliveryTo', formatFilterDate(date))
+                      }
+                      placeholder='Até'
+                      className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
+                    />
+                  </div>
+                  <div className='-mx-0.5 overflow-x-auto pb-0.5'>
+                    <div className='flex min-w-max gap-1 px-0.5'>
+                      {datePresetOptions.map((option) => {
+                        const selected = isPresetActive(
+                          option.value,
+                          filters.deliveryFrom,
+                          filters.deliveryTo
+                        )
+                        return (
+                          <Button
+                            key={option.value}
+                            type='button'
+                            variant={selected ? 'default' : 'outline'}
+                            size='sm'
+                            onClick={() =>
+                              applyPreset(
+                                option.value,
+                                'deliveryFrom',
+                                'deliveryTo'
+                              )
+                            }
+                            className={cn(
+                              'h-7 px-2 text-[11px] whitespace-nowrap',
+                              !selected && 'bg-background'
+                            )}
+                          >
+                            {option.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </section>
+
+                <section className='grid gap-3 border-t pt-4'>
+                  <div>
+                    <h3 className='text-sm font-medium'>Pago em</h3>
+                    <p className='text-xs text-muted-foreground'>
+                      Use quando precisar conferir recebimentos por período.
+                    </p>
+                  </div>
+                  <div className='grid gap-2 sm:grid-cols-2'>
+                    <DatePicker
+                      selected={parseFilterDate(filters.paidFrom)}
+                      onSelect={(date) =>
+                        setField('paidFrom', formatFilterDate(date))
+                      }
+                      placeholder='De'
+                      className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
+                    />
+                    <DatePicker
+                      selected={parseFilterDate(filters.paidTo)}
+                      onSelect={(date) =>
+                        setField('paidTo', formatFilterDate(date))
+                      }
+                      placeholder='Até'
+                      className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
+                    />
+                  </div>
+                  <div className='-mx-0.5 overflow-x-auto pb-0.5'>
+                    <div className='flex min-w-max gap-1 px-0.5'>
+                      {datePresetOptions.map((option) => {
+                        const selected = isPresetActive(
+                          option.value,
+                          filters.paidFrom,
+                          filters.paidTo
+                        )
+                        return (
+                          <Button
+                            key={`paid-${option.value}`}
+                            type='button'
+                            variant={selected ? 'default' : 'outline'}
+                            size='sm'
+                            onClick={() =>
+                              applyPreset(option.value, 'paidFrom', 'paidTo')
+                            }
+                            className={cn(
+                              'h-7 px-2 text-[11px] whitespace-nowrap',
+                              !selected && 'bg-background'
+                            )}
+                          >
+                            {option.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <DialogFooter className='gap-2'>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  onClick={resetFilters}
+                  disabled={!hasRemovableFilters}
+                >
+                  <X className='size-4' />
+                  Redefinir
+                </Button>
+                <DialogClose asChild>
+                  <Button type='button'>Aplicar</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button
             variant='ghost'
             size='sm'
             onClick={resetFilters}
-            disabled={!hasFilters}
-            className='h-8 justify-start px-2 text-xs xl:justify-center'
+            disabled={!hasRemovableFilters}
+            className='h-8 justify-center px-2 text-xs'
             title='Redefinir filtros'
           >
             <X className='size-4' />
-            <span className='xl:sr-only'>Redefinir</span>
+            <span className='sr-only sm:not-sr-only'>Redefinir</span>
           </Button>
         </div>
       </div>
 
-      <div className='grid gap-2 lg:grid-cols-[1fr_auto_1fr]'>
-        <div className='grid grid-cols-2 items-center gap-1.5 sm:grid-cols-[3.25rem_minmax(8.75rem,1fr)_minmax(8.75rem,1fr)]'>
-          <span className='col-span-2 text-xs font-medium text-muted-foreground sm:col-span-1'>
-            Entrega
-          </span>
-          <DatePicker
-            selected={parseFilterDate(filters.deliveryFrom)}
-            onSelect={(date) => setField('deliveryFrom', formatFilterDate(date))}
-            placeholder='De'
-            className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
-          />
-          <DatePicker
-            selected={parseFilterDate(filters.deliveryTo)}
-            onSelect={(date) => setField('deliveryTo', formatFilterDate(date))}
-            placeholder='Até'
-            className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
-          />
-          <div className='col-span-2 -mx-0.5 overflow-x-auto pb-0.5 sm:col-span-3'>
-            <div className='flex min-w-max gap-1 px-0.5'>
-            {datePresetOptions.map((option) => {
-              const selected = isPresetActive(
-                option.value,
-                filters.deliveryFrom,
-                filters.deliveryTo
-              )
-              return (
-                <Button
-                  key={option.value}
-                  type='button'
-                  variant={selected ? 'default' : 'outline'}
-                  size='sm'
-                  onClick={() =>
-                    applyPreset(option.value, 'deliveryFrom', 'deliveryTo')
-                  }
-                  className={cn(
-                    'h-7 whitespace-nowrap px-2 text-[11px]',
-                    !selected && 'bg-background'
-                  )}
-                >
-                  {option.label}
-                </Button>
-              )
-            })}
-            </div>
-          </div>
+      {summaryItems.length > 0 && (
+        <div className='flex gap-1.5 overflow-x-auto pb-0.5'>
+          {summaryItems.map((item) => (
+            <span
+              key={item}
+              className='inline-flex h-6 shrink-0 items-center rounded-md border bg-background px-2 text-xs text-muted-foreground'
+            >
+              {item}
+            </span>
+          ))}
         </div>
-        <div className='hidden items-center justify-center lg:flex'>
-          <span className='text-muted-foreground/40'>|</span>
-        </div>
-        <div className='grid grid-cols-2 items-center gap-1.5 sm:grid-cols-[3.25rem_minmax(8.75rem,1fr)_minmax(8.75rem,1fr)]'>
-          <span className='col-span-2 text-xs font-medium text-muted-foreground sm:col-span-1'>
-            Pago
-          </span>
-          <DatePicker
-            selected={parseFilterDate(filters.paidFrom)}
-            onSelect={(date) => setField('paidFrom', formatFilterDate(date))}
-            placeholder='De'
-            className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
-          />
-          <DatePicker
-            selected={parseFilterDate(filters.paidTo)}
-            onSelect={(date) => setField('paidTo', formatFilterDate(date))}
-            placeholder='Até'
-            className='h-8 w-full min-w-0 bg-background px-2 text-xs sm:text-sm'
-          />
-          <div className='col-span-2 -mx-0.5 overflow-x-auto pb-0.5 sm:col-span-3'>
-            <div className='flex min-w-max gap-1 px-0.5'>
-            {datePresetOptions.map((option) => {
-              const selected = isPresetActive(
-                option.value,
-                filters.paidFrom,
-                filters.paidTo
-              )
-              return (
-                <Button
-                  key={`paid-${option.value}`}
-                  type='button'
-                  variant={selected ? 'default' : 'outline'}
-                  size='sm'
-                  onClick={() =>
-                    applyPreset(option.value, 'paidFrom', 'paidTo')
-                  }
-                  className={cn(
-                    'h-7 whitespace-nowrap px-2 text-[11px]',
-                    !selected && 'bg-background'
-                  )}
-                >
-                  {option.label}
-                </Button>
-              )
-            })}
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
