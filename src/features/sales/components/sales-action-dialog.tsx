@@ -292,39 +292,120 @@ export function SalesActionDialog({
             </div>
 
             <div className='max-h-[260px] overflow-y-auto rounded-md border'>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Produto</TableHead>
-                    <TableHead>Quantidade</TableHead>
-                    <TableHead>Preço un.</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead className='w-10' />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.length === 0 ? (
+              <div className='hidden sm:block'>
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className='h-16 text-center text-muted-foreground'
-                      >
-                        Nenhum item adicionado.
-                      </TableCell>
+                      <TableHead>Produto</TableHead>
+                      <TableHead>Quantidade</TableHead>
+                      <TableHead>Preço un.</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead className='w-10' />
                     </TableRow>
-                  ) : (
-                    items.map((item, index) => {
-                      const product = selectedProducts[item.productId]
-                      const total = item.quantity * item.unitPrice
-                      const quantityInvalid = item.quantity <= 0
+                  </TableHeader>
+                  <TableBody>
+                    {items.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className='h-16 text-center text-muted-foreground'
+                        >
+                          Nenhum item adicionado.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      items.map((item, index) => {
+                        const product = selectedProducts[item.productId]
+                        const total = item.quantity * item.unitPrice
+                        const quantityInvalid = item.quantity <= 0
 
-                      return (
-                        <TableRow key={item.productId}>
-                          <TableCell className='font-medium'>
+                        return (
+                          <TableRow key={item.productId}>
+                            <TableCell className='font-medium'>
+                              {product?.name || item.productId}
+                            </TableCell>
+                            <TableCell>
+                              <div className='flex items-center gap-2'>
+                                <Input
+                                  type='number'
+                                  min='1'
+                                  step='1'
+                                  aria-invalid={quantityInvalid}
+                                  className='h-8 w-20'
+                                  value={item.quantity || ''}
+                                  onChange={(e) =>
+                                    updateItemQuantity(
+                                      index,
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                />
+                                {product?.unit && (
+                                  <span className='text-xs text-muted-foreground'>
+                                    {product.unit}
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {formatCurrency(item.unitPrice)}
+                            </TableCell>
+                            <TableCell>{formatCurrency(total)}</TableCell>
+                            <TableCell>
+                              <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                className='text-red-500'
+                                onClick={() => removeItem(index)}
+                              >
+                                <Trash2 size={16} />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className='space-y-2 p-2 sm:hidden'>
+                {items.length === 0 ? (
+                  <div className='py-6 text-center text-sm text-muted-foreground'>
+                    Nenhum item adicionado.
+                  </div>
+                ) : (
+                  items.map((item, index) => {
+                    const product = selectedProducts[item.productId]
+                    const total = item.quantity * item.unitPrice
+                    const quantityInvalid = item.quantity <= 0
+
+                    return (
+                      <div
+                        key={item.productId}
+                        className='space-y-2 rounded-md border p-3'
+                      >
+                        <div className='flex items-start justify-between gap-2'>
+                          <div className='font-medium'>
                             {product?.name || item.productId}
-                          </TableCell>
-                          <TableCell>
-                            <div className='flex items-center gap-2'>
+                          </div>
+                          <Button
+                            type='button'
+                            variant='ghost'
+                            size='icon'
+                            className='text-red-500'
+                            onClick={() => removeItem(index)}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                        <div className='grid grid-cols-2 gap-x-3 gap-y-2 text-sm'>
+                          <div>
+                            <Label className='text-xs text-muted-foreground'>
+                              Quantidade
+                            </Label>
+                            <div className='mt-1 flex items-center gap-2'>
                               <Input
                                 type='number'
                                 min='1'
@@ -345,28 +426,29 @@ export function SalesActionDialog({
                                 </span>
                               )}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            {formatCurrency(item.unitPrice)}
-                          </TableCell>
-                          <TableCell>{formatCurrency(total)}</TableCell>
-                          <TableCell>
-                            <Button
-                              type='button'
-                              variant='ghost'
-                              size='icon'
-                              className='text-red-500'
-                              onClick={() => removeItem(index)}
-                            >
-                              <Trash2 size={16} />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })
-                  )}
-                </TableBody>
-              </Table>
+                          </div>
+                          <div>
+                            <Label className='text-xs text-muted-foreground'>
+                              Preço un.
+                            </Label>
+                            <div className='mt-1'>
+                              {formatCurrency(item.unitPrice)}
+                            </div>
+                          </div>
+                          <div className='col-span-2'>
+                            <Label className='text-xs text-muted-foreground'>
+                              Total
+                            </Label>
+                            <div className='mt-1 font-medium'>
+                              {formatCurrency(total)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
             </div>
           </div>
         </div>

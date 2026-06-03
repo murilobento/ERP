@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { type ClientSearchItem } from '@/components/client-combobox'
 import { type ProductSupplySearchItem } from '@/components/product-supply-combobox'
 import { type Sale } from '../data/schema'
@@ -386,5 +386,32 @@ describe('SalesActionDialog', () => {
       'A quantidade de cada item deve ser maior que zero.'
     )
     expect(apiPost).not.toHaveBeenCalled()
+  })
+
+  it('renders stacked item cards on mobile and hides the table', async () => {
+    await page.viewport(375, 720)
+    try {
+      await renderDialog()
+
+      await selectClientAndDate()
+      await addSaleItem('2', '30')
+
+      const card = document.body.querySelector('.sm\\:hidden')
+      expect(card).toBeTruthy()
+      expect(card?.textContent).toContain('Bolo de Chocolate')
+      expect(card?.textContent).toContain('60,00')
+      const cardQuantityInput = card?.querySelector<HTMLInputElement>(
+        'input[type="number"]'
+      )
+      expect(cardQuantityInput?.value).toBe('2')
+
+      const tableContainer = document.body.querySelector(
+        'table[data-slot="table"]'
+      )
+      const tableWrapper = tableContainer?.parentElement?.parentElement
+      expect(tableWrapper?.className ?? '').toContain('hidden')
+    } finally {
+      await page.viewport(1280, 720)
+    }
   })
 })
