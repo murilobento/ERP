@@ -30,6 +30,46 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+
+          if (id.includes('/react/') || id.includes('/react-dom/')) {
+            return 'vendor-react'
+          }
+          if (id.includes('/@tanstack/')) {
+            return 'vendor-tanstack'
+          }
+          if (id.includes('/@radix-ui/')) {
+            return 'vendor-radix'
+          }
+          if (
+            id.includes('/react-hook-form/') ||
+            id.includes('/@hookform/') ||
+            id.includes('/zod/')
+          ) {
+            return 'vendor-forms'
+          }
+          if (
+            id.includes('/date-fns/') ||
+            id.includes('/react-day-picker/')
+          ) {
+            return 'vendor-date'
+          }
+          if (id.includes('/recharts/')) {
+            return 'vendor-charts'
+          }
+          if (id.includes('/lucide-react/')) {
+            return 'vendor-icons'
+          }
+
+          return 'vendor'
+        },
+      },
+    },
+  },
   optimizeDeps: {
     include: [
       '@tanstack/react-query',

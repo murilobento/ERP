@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -14,9 +15,22 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Analytics } from './components/analytics'
-import { Overview } from './components/overview'
 import { RecentSales } from './components/recent-sales'
+
+const Analytics = lazy(() =>
+  import('./components/analytics').then((module) => ({
+    default: module.Analytics,
+  }))
+)
+const Overview = lazy(() =>
+  import('./components/overview').then((module) => ({
+    default: module.Overview,
+  }))
+)
+
+function ChartFallback({ height }: { height: string }) {
+  return <div className='w-full animate-pulse rounded-md bg-muted' style={{ height }} />
+}
 
 export function Dashboard() {
   return (
@@ -165,7 +179,9 @@ export function Dashboard() {
                   <CardTitle>Visão Geral</CardTitle>
                 </CardHeader>
                 <CardContent className='ps-2'>
-                  <Overview />
+                  <Suspense fallback={<ChartFallback height='350px' />}>
+                    <Overview />
+                  </Suspense>
                 </CardContent>
               </Card>
               <Card className='col-span-1 lg:col-span-3'>
@@ -182,11 +198,12 @@ export function Dashboard() {
             </div>
           </TabsContent>
           <TabsContent value='analytics' className='space-y-4'>
-            <Analytics />
+            <Suspense fallback={<ChartFallback height='300px' />}>
+              <Analytics />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </Main>
     </>
   )
 }
-

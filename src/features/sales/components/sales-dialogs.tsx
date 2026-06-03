@@ -1,24 +1,42 @@
-import { SalesActionDialog } from './sales-action-dialog'
-import { SalesDetailDialog } from './sales-detail-dialog'
-import { SalesKanbanActionDialog } from './sales-kanban-action-dialog'
+import { lazy, Suspense } from 'react'
 import { useSales } from './sales-provider'
 
+const SalesActionDialog = lazy(() =>
+  import('./sales-action-dialog').then((module) => ({
+    default: module.SalesActionDialog,
+  }))
+)
+const SalesDetailDialog = lazy(() =>
+  import('./sales-detail-dialog').then((module) => ({
+    default: module.SalesDetailDialog,
+  }))
+)
+const SalesKanbanActionDialog = lazy(() =>
+  import('./sales-kanban-action-dialog').then((module) => ({
+    default: module.SalesKanbanActionDialog,
+  }))
+)
+
 export function SalesDialogs() {
-  const { open, setOpen, currentRow } = useSales()
+  const { open, setOpen, currentRow, kanbanAction } = useSales()
   return (
-    <>
-      <SalesActionDialog
-        key='sale-add'
-        open={open === 'add'}
-        onOpenChange={(state) => setOpen(state ? 'add' : null)}
-      />
-      <SalesActionDialog
-        key={`sale-edit-${currentRow?.id ?? 'none'}-${open === 'edit' ? 'open' : 'closed'}`}
-        open={open === 'edit'}
-        onOpenChange={(state) => setOpen(state ? 'edit' : null)}
-      />
-      <SalesDetailDialog />
-      <SalesKanbanActionDialog />
-    </>
+    <Suspense fallback={null}>
+      {open === 'add' ? (
+        <SalesActionDialog
+          key='sale-add'
+          open
+          onOpenChange={(state) => setOpen(state ? 'add' : null)}
+        />
+      ) : null}
+      {open === 'edit' ? (
+        <SalesActionDialog
+          key={`sale-edit-${currentRow?.id ?? 'none'}-open`}
+          open
+          onOpenChange={(state) => setOpen(state ? 'edit' : null)}
+        />
+      ) : null}
+      {open === 'view' ? <SalesDetailDialog /> : null}
+      {kanbanAction ? <SalesKanbanActionDialog /> : null}
+    </Suspense>
   )
 }

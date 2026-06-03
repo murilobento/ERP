@@ -8,7 +8,7 @@ import {
 	ShoppingCart,
 	Table2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { ConfigDrawer } from "@/components/config-drawer";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
@@ -21,7 +21,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import api from "@/lib/api";
 import { SalesDialogs } from "./components/sales-dialogs";
 import { SalesFilters } from "./components/sales-filters";
-import { SalesKanban } from "./components/sales-kanban";
 import { SalesPrimaryButtons } from "./components/sales-primary-buttons";
 import { SalesProvider } from "./components/sales-provider";
 import { SalesTable } from "./components/sales-table";
@@ -29,6 +28,16 @@ import { filterSales } from "./data/filters";
 import { formatCurrency, getSaleTotal, type Sale } from "./data/schema";
 
 const route = getRouteApi("/_authenticated/sales/");
+
+const SalesKanban = lazy(() =>
+	import("./components/sales-kanban").then((module) => ({
+		default: module.SalesKanban,
+	})),
+);
+
+function SalesKanbanFallback() {
+	return <div className="min-h-[320px] animate-pulse rounded-md bg-muted" />;
+}
 
 export function Sales() {
 	const [view, setView] = useState<"table" | "kanban">("kanban");
@@ -151,7 +160,9 @@ export function Sales() {
 						/>
 					</TabsContent>
 					<TabsContent value="kanban" className="flex flex-1 flex-col">
-						<SalesKanban data={filteredSales} />
+						<Suspense fallback={<SalesKanbanFallback />}>
+							<SalesKanban data={filteredSales} />
+						</Suspense>
 					</TabsContent>
 				</Tabs>
 			</Main>
