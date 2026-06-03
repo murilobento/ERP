@@ -2,12 +2,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	CheckCircle2,
 	Loader2,
-	PackageCheck,
-	Pen,
 	Plus,
 	RotateCcw,
 	Trash2,
-	Truck,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,7 +17,6 @@ import {
 	ProductSupplyCombobox,
 	type ProductSupplySearchItem,
 } from "@/components/product-supply-combobox";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -53,8 +49,12 @@ import {
 	getSaleTotal,
 	paymentMethodMap,
 	type Sale,
-	saleStatusMap,
 } from "../data/schema";
+import {
+	SalesDetailView,
+	SalesStatusBadge,
+	type SalesDetailConfirmAction,
+} from "./sales-detail-view";
 import { useSales } from "./sales-provider";
 
 type SaleResponse = {
@@ -66,13 +66,6 @@ type ItemForm = {
 	quantity: number;
 	unitPrice: number;
 };
-
-type ConfirmAction =
-	| "ready-for-delivery"
-	| "deliver"
-	| "complete"
-	| "reverse"
-	| null;
 
 const actionCopy = {
 	"ready-for-delivery": {
@@ -118,7 +111,8 @@ function setDatePreservingTime(date: Date | undefined, currentValue: string) {
 export function SalesDetailDialog() {
 	const { open, setOpen, currentRow, setCurrentRow } = useSales();
 	const [isLoading, setIsLoading] = useState(false);
-	const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
+	const [confirmAction, setConfirmAction] =
+		useState<SalesDetailConfirmAction>(null);
 	const [reverseReason, setReverseReason] = useState("");
 	const [paymentMethod, setPaymentMethod] = useState("");
 	const [paidAt, setPaidAt] = useState(toDateTimeLocal(new Date()));
@@ -157,10 +151,6 @@ export function SalesDetailDialog() {
 	if (!currentRow) return null;
 
 	const sale = detail ?? currentRow;
-	const statusConfig = saleStatusMap[sale.status] || {
-		label: sale.status,
-		variant: "secondary" as const,
-	};
 	const total = getSaleTotal(sale);
 	const canEdit = sale.status !== "completed";
 
@@ -335,13 +325,13 @@ export function SalesDetailDialog() {
 
 	return (
 		<Dialog open={open === "view"} onOpenChange={handleClose}>
-			<DialogContent className="sm:max-w-2xl">
+			<DialogContent className="max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl">
 				<DialogHeader className="text-start">
 					<div className="flex items-center justify-between">
 						<DialogTitle>
 							{isEditing ? "Editar Venda" : "Detalhes da Venda"}
 						</DialogTitle>
-						<Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+						<SalesStatusBadge sale={sale} />
 					</div>
 					<DialogDescription>
 						Cliente: <strong>{sale.customer}</strong> · Total:{" "}
@@ -352,21 +342,21 @@ export function SalesDetailDialog() {
 				<div className="space-y-4">
 					{isEditing && (
 						<>
-							<div className="grid grid-cols-6 items-center gap-x-4 gap-y-1">
-								<Label className="col-span-2 text-end">Cliente</Label>
+							<div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center">
+								<Label className="sm:col-span-2 sm:text-end">Cliente</Label>
 								<ClientCombobox
 									value={editClientId}
 									onValueChange={setEditClientId}
 									onClientChange={setEditSelectedClient}
 									selectedClient={editSelectedClient}
-									className="col-span-4"
+									className="min-w-0 sm:col-span-4"
 								/>
 							</div>
 
-							<div className="grid grid-cols-6 items-center gap-x-4 gap-y-1">
-								<Label className="col-span-2 text-end">Observação</Label>
+							<div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center">
+								<Label className="sm:col-span-2 sm:text-end">Observação</Label>
 								<Input
-									className="col-span-4"
+									className="min-w-0 sm:col-span-4"
 									placeholder="Opcional"
 									value={editNotes}
 									onChange={(e) => setEditNotes(e.target.value)}
@@ -374,9 +364,9 @@ export function SalesDetailDialog() {
 								/>
 							</div>
 
-							<div className="grid grid-cols-6 items-center gap-x-4 gap-y-1">
-								<Label className="col-span-2 text-end">Data de entrega</Label>
-								<div className="col-span-4">
+							<div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center">
+								<Label className="sm:col-span-2 sm:text-end">Data de entrega</Label>
+								<div className="min-w-0 sm:col-span-4">
 									<DatePicker
 										selected={editDeliveryDate}
 										onSelect={setEditDeliveryDate}
@@ -388,8 +378,8 @@ export function SalesDetailDialog() {
 
 							<div className="space-y-2">
 								<Label className="mb-2 block text-sm font-medium">Itens</Label>
-								<div className="grid grid-cols-[1fr_7rem_8rem_auto] items-end gap-2">
-									<div>
+								<div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]">
+									<div className="min-w-0 sm:col-span-2 md:col-span-1">
 										<Label className="text-xs text-muted-foreground">
 											Produto
 										</Label>
@@ -410,7 +400,7 @@ export function SalesDetailDialog() {
 											placeholder="Selecione..."
 										/>
 									</div>
-									<div>
+									<div className="min-w-0">
 										<Label className="text-xs text-muted-foreground">
 											Quantidade
 										</Label>
@@ -427,7 +417,7 @@ export function SalesDetailDialog() {
 											}
 										/>
 									</div>
-									<div>
+									<div className="min-w-0">
 										<Label className="text-xs text-muted-foreground">
 											Preço un. (R$)
 										</Label>
@@ -444,7 +434,11 @@ export function SalesDetailDialog() {
 											}
 										/>
 									</div>
-									<Button type="button" onClick={addEditItem}>
+									<Button
+										type="button"
+										onClick={addEditItem}
+										className="w-full sm:col-span-2 md:col-span-1 md:w-auto"
+									>
 										<Plus size={16} />
 										Adicionar
 									</Button>
@@ -681,131 +675,14 @@ export function SalesDetailDialog() {
 					)}
 
 					{!isEditing && !confirmAction && (
-						<>
-							<div>
-								<h4 className="mb-2 text-sm font-medium">Itens</h4>
-								<div className="space-y-1">
-									{sale.items.map((item) => (
-										<div
-											key={item.id}
-											className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
-										>
-											<span>{item.product.name}</span>
-											<div className="flex items-center gap-2">
-												<span className="text-muted-foreground">
-													{item.quantity} {item.product.unit}
-												</span>
-												<span className="text-muted-foreground">x</span>
-												<span>{formatCurrency(item.unitPrice)}</span>
-												<strong>
-													{formatCurrency(item.quantity * item.unitPrice)}
-												</strong>
-											</div>
-										</div>
-									))}
-								</div>
-							</div>
-
-							{sale.deliveryDate && (
-								<div>
-									<h4 className="mb-1 text-sm font-medium">Data de entrega</h4>
-									<p className="text-sm text-muted-foreground">
-										{new Date(sale.deliveryDate).toLocaleDateString()}
-									</p>
-								</div>
-							)}
-
-							{sale.paymentMethod && sale.paidAt && (
-								<div className="rounded-md border px-3 py-2">
-									<h4 className="mb-1 text-sm font-medium">Pagamento</h4>
-									<p className="text-sm text-muted-foreground">
-										{paymentMethodMap[sale.paymentMethod] || sale.paymentMethod}{" "}
-										· {new Date(sale.paidAt).toLocaleString()}
-									</p>
-									{sale.paymentNotes && (
-										<p className="mt-1 text-sm">{sale.paymentNotes}</p>
-									)}
-								</div>
-							)}
-
-							{sale.notes && (
-								<div>
-									<h4 className="mb-1 text-sm font-medium">Observação</h4>
-									<p className="text-sm text-muted-foreground">{sale.notes}</p>
-								</div>
-							)}
-
-							{sale.reversedAt && (
-								<div className="rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2">
-									<h4 className="mb-1 text-sm font-medium text-destructive">
-										Estorno
-									</h4>
-									<p className="text-sm text-muted-foreground">
-										{new Date(sale.reversedAt).toLocaleString()}
-									</p>
-									{sale.reversalReason && (
-										<p className="mt-1 text-sm">
-											Motivo: {sale.reversalReason}
-										</p>
-									)}
-								</div>
-							)}
-
-							<div>
-								<h4 className="mb-1 text-sm font-medium">Criada em</h4>
-								<p className="text-sm text-muted-foreground">
-									{new Date(sale.createdAt).toLocaleString()}
-								</p>
-							</div>
-
-							<DialogFooter className="gap-2">
-								{canEdit && (
-									<Button onClick={enterEditMode} disabled={isLoading}>
-										<Pen size={16} className="me-1" />
-										Editar
-									</Button>
-								)}
-								{sale.status === "in_preparation" && (
-									<Button
-										onClick={() => setConfirmAction("ready-for-delivery")}
-										disabled={isLoading}
-									>
-										<Truck size={16} className="me-1" />
-										Pronto para Entrega
-									</Button>
-								)}
-								{sale.status === "ready_for_delivery" && (
-									<Button
-										onClick={() => setConfirmAction("deliver")}
-										disabled={isLoading}
-									>
-										<PackageCheck size={16} className="me-1" />
-										Entregar
-									</Button>
-								)}
-								{sale.status === "delivered" && (
-									<Button
-										onClick={() => setConfirmAction("complete")}
-										disabled={isLoading}
-									>
-										<CheckCircle2 size={16} className="me-1" />
-										Concluir
-									</Button>
-								)}
-								{sale.status === "completed" && (
-									<Button
-										variant="destructive"
-										onClick={() => setConfirmAction("reverse")}
-									>
-										<RotateCcw size={16} className="me-1" />
-										Estornar
-									</Button>
-								)}
-								<Button variant="outline" onClick={() => handleClose(false)}>
-									Fechar
-								</Button>
-							</DialogFooter>
-						</>
+						<SalesDetailView
+							sale={sale}
+							canEdit={canEdit}
+							isLoading={isLoading}
+							onEdit={enterEditMode}
+							onConfirmAction={setConfirmAction}
+							onClose={() => handleClose(false)}
+						/>
 					)}
 				</div>
 			</DialogContent>
