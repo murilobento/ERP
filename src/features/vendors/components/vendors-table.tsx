@@ -2,6 +2,7 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type Vendor } from '../data/schema'
+import { useVendors } from './vendors-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { vendorsColumns as columns } from './vendors-columns'
 
@@ -12,6 +13,7 @@ type DataTableProps = {
 }
 
 export function VendorsTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = useVendors()
   const { table } = useDataTable({
     data,
     columns,
@@ -38,6 +40,10 @@ export function VendorsTable({ data, search, navigate }: DataTableProps) {
       table={table}
       columnCount={columns.length}
       searchPlaceholder='Filtrar por nome, telefone ou endereço...'
+      onRowClick={(row) => {
+        setCurrentRow(row)
+        setOpen('edit')
+      }}
       labels={{
         name: 'Nome',
         phone: 'Telefone',

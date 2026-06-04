@@ -1,8 +1,14 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { InfoIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import {
   formatCurrency,
   getSaleTotal,
@@ -11,6 +17,7 @@ import {
   type SaleStatus,
 } from '../data/schema'
 import { useSales } from './sales-provider'
+import { PreparationSummaryDialog } from './preparation-summary-dialog'
 
 const statusOrder: SaleStatus[] = [
   'in_preparation',
@@ -21,6 +28,7 @@ const statusOrder: SaleStatus[] = [
 
 type SalesKanbanProps = {
   data: Sale[]
+  preparationSales: Sale[]
 }
 
 const allowedDrops: Record<SaleStatus, SaleStatus> = {
@@ -39,10 +47,11 @@ function getItemCountLabel(count: number) {
   return `${count} ${count === 1 ? 'item' : 'itens'}`
 }
 
-export function SalesKanban({ data }: SalesKanbanProps) {
+export function SalesKanban({ data, preparationSales }: SalesKanbanProps) {
   const { setOpen, setCurrentRow, setKanbanAction } = useSales()
   const isMobile = useIsMobile()
   const [draggedSaleId, setDraggedSaleId] = useState<string | null>(null)
+  const [preparationDialogOpen, setPreparationDialogOpen] = useState(false)
   const draggedSale = draggedSaleId
     ? data.find((sale) => sale.id === draggedSaleId)
     : null
@@ -120,6 +129,24 @@ export function SalesKanban({ data }: SalesKanbanProps) {
                   <span className='inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-background px-1.5 text-xs text-muted-foreground'>
                     {sales.length}
                   </span>
+                  {status === 'in_preparation' && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type='button'
+                          aria-label='Ver produtos em preparo'
+                          className='inline-flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPreparationDialogOpen(true)
+                          }}
+                        >
+                          <InfoIcon className='size-3.5' />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>Ver produtos em preparo</TooltipContent>
+                    </Tooltip>
+                  )}
                 </div>
               </div>
               <div className='space-y-2 p-2'>
@@ -169,6 +196,11 @@ export function SalesKanban({ data }: SalesKanbanProps) {
           )
         })}
       </div>
+      <PreparationSummaryDialog
+        open={preparationDialogOpen}
+        onOpenChange={setPreparationDialogOpen}
+        preparationSales={preparationSales}
+      />
     </div>
   )
 }

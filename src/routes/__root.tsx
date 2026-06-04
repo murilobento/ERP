@@ -12,12 +12,6 @@ const ReactQueryDevtools = lazy(() =>
     default: module.ReactQueryDevtools,
   }))
 )
-// eslint-disable-next-line react-refresh/only-export-components
-const TanStackRouterDevtools = lazy(() =>
-  import('@tanstack/react-router-devtools').then((module) => ({
-    default: module.TanStackRouterDevtools,
-  }))
-)
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -31,7 +25,6 @@ export const Route = createRootRouteWithContext<{
         {import.meta.env.MODE === 'development' && (
           <Suspense fallback={null}>
             <ReactQueryDevtools buttonPosition='bottom-left' />
-            <TanStackRouterDevtools position='bottom-right' />
           </Suspense>
         )}
       </>

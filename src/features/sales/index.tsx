@@ -24,7 +24,7 @@ import { SalesFilters } from "./components/sales-filters";
 import { SalesPrimaryButtons } from "./components/sales-primary-buttons";
 import { SalesProvider } from "./components/sales-provider";
 import { SalesTable } from "./components/sales-table";
-import { filterSales } from "./data/filters";
+import { filterSales, isWithinRange } from "./data/filters";
 import { formatCurrency, getSaleTotal, type Sale } from "./data/schema";
 
 const route = getRouteApi("/_authenticated/sales/");
@@ -55,6 +55,14 @@ export function Sales() {
 		() => filterSales(sales, search),
 		[sales, search],
 	);
+	const preparationSales = useMemo(() => {
+		const { deliveryFrom = '', deliveryTo = '' } = search
+		return sales.filter(
+			(sale) =>
+				sale.status === 'in_preparation' &&
+				isWithinRange(sale.deliveryDate, deliveryFrom as string, deliveryTo as string),
+		)
+	}, [sales, search]);
 
 	const kpis = useMemo(() => {
 		const orderCount = filteredSales.length;
@@ -161,7 +169,7 @@ export function Sales() {
 					</TabsContent>
 					<TabsContent value="kanban" className="flex flex-1 flex-col">
 						<Suspense fallback={<SalesKanbanFallback />}>
-							<SalesKanban data={filteredSales} />
+							<SalesKanban data={filteredSales} preparationSales={preparationSales} />
 						</Suspense>
 					</TabsContent>
 				</Tabs>

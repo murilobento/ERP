@@ -4,6 +4,7 @@ import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type Category } from '../data/schema'
 import { categoriesColumns as columns } from './categories-columns'
+import { useCategories } from './categories-provider'
 
 type DataTableProps = {
   data: Category[]
@@ -12,6 +13,7 @@ type DataTableProps = {
 }
 
 export function CategoriesTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = useCategories()
   const { table } = useDataTable({
     data,
     columns,
@@ -29,6 +31,10 @@ export function CategoriesTable({ data, search, navigate }: DataTableProps) {
       table={table}
       columnCount={columns.length}
       searchPlaceholder='Filtrar por nome...'
+      onRowClick={(row) => {
+        setCurrentRow(row)
+        setOpen('edit')
+      }}
       labels={{
         name: 'Nome',
         productCount: 'Produtos',

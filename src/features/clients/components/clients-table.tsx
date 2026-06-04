@@ -2,6 +2,7 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type Client } from '../data/schema'
+import { useClients } from './clients-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { clientsColumns as columns } from './clients-columns'
 
@@ -12,6 +13,7 @@ type DataTableProps = {
 }
 
 export function ClientsTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = useClients()
   const { table } = useDataTable({
     data,
     columns,
@@ -38,6 +40,10 @@ export function ClientsTable({ data, search, navigate }: DataTableProps) {
       table={table}
       columnCount={columns.length}
       searchPlaceholder='Filtrar por nome, telefone ou endereço...'
+      onRowClick={(row) => {
+        setCurrentRow(row)
+        setOpen('edit')
+      }}
       labels={{
         name: 'Nome',
         phone: 'Telefone',

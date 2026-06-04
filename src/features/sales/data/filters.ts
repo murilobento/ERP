@@ -44,7 +44,7 @@ function getDayEnd(value: string) {
   return Number.isNaN(date.getTime()) ? null : date
 }
 
-function isWithinRange(dateValue: string | null, from: string, to: string) {
+export function isWithinRange(dateValue: string | null, from: string, to: string) {
   if (!from && !to) return true
   if (!dateValue) return false
 

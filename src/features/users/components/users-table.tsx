@@ -2,6 +2,7 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type User } from '../data/schema'
+import { useUsers } from './users-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { usersColumns as columns } from './users-columns'
 
@@ -12,6 +13,7 @@ type DataTableProps = {
 }
 
 export function UsersTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = useUsers()
   const { table } = useDataTable({
     data,
     columns,
@@ -27,6 +29,10 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
       searchPlaceholder='Filtrar usuários...'
       searchKey='fullName'
       filters={[]}
+      onRowClick={(row) => {
+        setCurrentRow(row)
+        setOpen('edit')
+      }}
       bulkActions={<DataTableBulkActions table={table} />}
     />
   )

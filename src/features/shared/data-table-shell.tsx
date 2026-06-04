@@ -32,6 +32,7 @@ type DataTableShellProps<TData> = {
   showToolbar?: boolean
   showSearch?: boolean
   bulkActions?: ReactNode
+  onRowClick?: (row: TData) => void
 }
 
 export function DataTableShell<TData>({
@@ -44,6 +45,7 @@ export function DataTableShell<TData>({
   showToolbar = true,
   showSearch,
   bulkActions,
+  onRowClick,
 }: DataTableShellProps<TData>) {
   return (
     <div
@@ -94,7 +96,19 @@ export function DataTableShell<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className='group/row'
+                  className={cn(
+                    'group/row',
+                    onRowClick && 'cursor-pointer'
+                  )}
+                  onClick={
+                    onRowClick
+                      ? (e) => {
+                          const target = e.target as HTMLElement
+                          if (target.closest('button, input, [role="checkbox"], [data-radix-collection-item]')) return
+                          onRowClick(row.original)
+                        }
+                      : undefined
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

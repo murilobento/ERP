@@ -2,6 +2,7 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type Sale } from '../data/schema'
+import { useSales } from './sales-provider'
 import { salesColumns as columns } from './sales-columns'
 
 type SalesTableProps = {
@@ -11,6 +12,7 @@ type SalesTableProps = {
 }
 
 export function SalesTable({ data, search, navigate }: SalesTableProps) {
+  const { setOpen, setCurrentRow } = useSales()
   const { table } = useDataTable({
     data,
     columns,
@@ -33,6 +35,10 @@ export function SalesTable({ data, search, navigate }: SalesTableProps) {
       table={table}
       columnCount={columns.length}
       showSearch={false}
+      onRowClick={(row) => {
+        setCurrentRow(row)
+        setOpen('view')
+      }}
       labels={{
         customer: 'Cliente',
         itemCount: 'Itens',

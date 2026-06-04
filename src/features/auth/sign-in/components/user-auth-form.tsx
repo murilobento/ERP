@@ -63,7 +63,7 @@ export function UserAuthForm({
       auth.setUser(res.data.user)
 
       const targetPath = redirectTo || '/'
-      navigate({ to: targetPath, replace: true })
+      navigate({ href: targetPath, replace: true })
 
       toast.success(`Bem-vindo de volta, ${res.data.user.firstName}!`)
     } catch (error: unknown) {

@@ -4,6 +4,7 @@ import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type SupplyWithStock } from '../data/schema'
 import { suppliesColumns as columns } from './supplies-columns'
+import { useSupplies } from './supplies-provider'
 
 type DataTableProps = {
   data: SupplyWithStock[]
@@ -12,6 +13,7 @@ type DataTableProps = {
 }
 
 export function SuppliesTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = useSupplies()
   const { table } = useDataTable({
     data,
     columns,
@@ -29,6 +31,10 @@ export function SuppliesTable({ data, search, navigate }: DataTableProps) {
       table={table}
       columnCount={columns.length}
       searchPlaceholder='Filtrar por nome...'
+      onRowClick={(row) => {
+        setCurrentRow(row)
+        setOpen('edit')
+      }}
       labels={{
         name: 'Nome',
         unit: 'Unidade',

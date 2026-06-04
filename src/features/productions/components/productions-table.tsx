@@ -2,6 +2,7 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type Production } from '../data/schema'
+import { useProductions } from './productions-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { productionsColumns as columns } from './productions-columns'
 
@@ -12,6 +13,7 @@ type DataTableProps = {
 }
 
 export function ProductionsTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = useProductions()
   const { table } = useDataTable({
     data,
     columns,
@@ -33,6 +35,10 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
       table={table}
       columnCount={columns.length}
       searchPlaceholder='Filtrar por produto...'
+      onRowClick={(row) => {
+        setCurrentRow(row)
+        setOpen('view')
+      }}
       labels={{
         product: 'Produto',
         quantity: 'Quantidade',

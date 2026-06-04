@@ -2,6 +2,7 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type Purchase } from '../data/schema'
+import { usePurchases } from './purchases-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { purchasesColumns as columns } from './purchases-columns'
 
@@ -12,6 +13,7 @@ type DataTableProps = {
 }
 
 export function PurchasesTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = usePurchases()
   const { table } = useDataTable({
     data,
     columns,
@@ -32,6 +34,10 @@ export function PurchasesTable({ data, search, navigate }: DataTableProps) {
       table={table}
       columnCount={columns.length}
       searchPlaceholder='Filtrar por fornecedor ou observação...'
+      onRowClick={(row) => {
+        setCurrentRow(row)
+        setOpen('view')
+      }}
       labels={{
         supplier: 'Fornecedor',
         itemCount: 'Itens',
