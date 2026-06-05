@@ -24,10 +24,10 @@ export const sidebarData: SidebarData = {
     avatar: '',
   },
   modules: [
-    { name: 'Financeiro', icon: Wallet },
     { name: 'Administrativo', icon: Shield },
     { name: 'Comercial', icon: ShoppingCart },
     { name: 'Estoque', icon: Package },
+    { name: 'Financeiro', icon: Wallet },
   ],
   navGroupsByModule: {
     Financeiro: [],
@@ -54,13 +54,13 @@ export const sidebarData: SidebarData = {
       {
         title: 'Geral',
         items: [
-          { title: 'Produtos', url: '/products', icon: BoxesIcon },
-          { title: 'Categorias', url: '/categories', icon: Tag },
-          { title: 'Insumos', url: '/supplies', icon: PackagePlus },
-          { title: 'Produções', url: '/productions', icon: Factory },
-          { title: 'Compras', url: '/purchases', icon: Truck },
           { title: 'Acerto de Estoque', url: '/stock', icon: Warehouse },
+          { title: 'Categorias', url: '/categories', icon: Tag },
+          { title: 'Compras', url: '/purchases', icon: Truck },
+          { title: 'Insumos', url: '/supplies', icon: PackagePlus },
           { title: 'Movimentações', url: '/stock/movements', icon: ClipboardList },
+          { title: 'Produções', url: '/productions', icon: Factory },
+          { title: 'Produtos', url: '/products', icon: BoxesIcon },
         ],
       },
     ],

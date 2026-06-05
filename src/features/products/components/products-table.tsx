@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableDeleteBulkActions } from '@/components/data-table'
 import { DataTableShell } from '@/features/shared/data-table-shell'
@@ -26,11 +27,38 @@ export function ProductsTable({ data, search, navigate }: DataTableProps) {
     },
   })
 
+  const categoryOptions = useMemo(() => {
+    const seen = new Map<string, string>()
+    for (const product of data) {
+      if (product.category?.id && product.category?.name) {
+        seen.set(product.category.id, product.category.name)
+      }
+    }
+    return Array.from(seen.entries())
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([value, label]) => ({ label, value }))
+  }, [data])
+
   return (
     <DataTableShell
       table={table}
       columnCount={columns.length}
       searchPlaceholder='Filtrar por nome...'
+      filters={[
+        {
+          columnId: 'status',
+          title: 'Status',
+          options: [
+            { label: 'Ativo', value: 'active' },
+            { label: 'Inativo', value: 'inactive' },
+          ],
+        },
+        {
+          columnId: 'categoryId',
+          title: 'Categoria',
+          options: categoryOptions,
+        },
+      ]}
       onRowClick={(row) => {
         setCurrentRow(row)
         setOpen('view')

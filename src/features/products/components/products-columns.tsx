@@ -193,6 +193,10 @@ export const productsColumns: ColumnDef<Product>[] = [
     },
   },
   {
+    accessorKey: 'categoryId',
+    enableHiding: true,
+  },
+  {
     id: 'actions',
     cell: DataTableRowActions,
   },

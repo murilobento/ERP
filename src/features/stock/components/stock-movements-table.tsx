@@ -16,23 +16,14 @@ export function StockMovementsTable({ data, search, navigate }: DataTableProps) 
     columns,
     search,
     navigate,
-    globalFilterFn: (row, _columnId, filterValue) => {
-      const search = String(filterValue).toLowerCase()
-      const movement = row.original
-      const name = movement.product?.name || movement.supply?.name || ''
-      const notes = movement.notes || ''
-      return (
-        name.toLowerCase().includes(search) ||
-        notes.toLowerCase().includes(search)
-      )
-    },
+    globalFilterEnabled: false,
   })
 
   return (
     <DataTableShell
       table={table}
       columnCount={columns.length}
-      searchPlaceholder='Filtrar movimentações...'
+      showSearch={false}
       labels={{
         item: 'Item',
         itemType: 'Tipo',

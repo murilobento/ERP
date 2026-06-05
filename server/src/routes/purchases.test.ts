@@ -106,15 +106,18 @@ describe('purchase routes', () => {
     })
 
     expect(response.status).toBe(200)
-    expect(tx.purchase.update).toHaveBeenCalledWith({
-      where: { id: 'purchase-1' },
-      data: {
-        status: 'completed',
-        reversalReason: '',
-        reversedBy: null,
-        reversedAt: null,
-      },
-    })
+    expect(tx.purchase.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'purchase-1' },
+        data: expect.objectContaining({
+          status: 'completed',
+          reversalReason: '',
+          reversedBy: null,
+          reversedAt: null,
+          completedAt: expect.any(Date),
+        }),
+      })
+    )
     expect(tx.stockMovement.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -171,6 +174,7 @@ describe('purchase routes', () => {
           status: 'pending',
           reversalReason: 'Ajuste fiscal',
           reversedBy: 'user-1',
+          completedAt: null,
         }),
       })
     )

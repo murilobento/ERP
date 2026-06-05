@@ -110,6 +110,12 @@ export function PurchasesActionDialog({
     setItems(items.filter((_, i) => i !== index))
   }
 
+  function updateItemPackages(index: number, packages: number) {
+    setItems((current) =>
+      current.map((item, i) => (i === index ? { ...item, packages } : item))
+    )
+  }
+
   function updateSelectedSupply(item: ProductSupplySearchItem | null) {
     if (!item) return
     setSelectedSupplies((current) => ({ ...current, [item.id]: item }))
@@ -118,6 +124,10 @@ export function PurchasesActionDialog({
   async function onSubmit() {
     if (!vendorId) {
       toast.error('Fornecedor é obrigatório.')
+      return
+    }
+    if (items.some((item) => item.packages <= 0)) {
+      toast.error('A quantidade de cada item deve ser maior que zero.')
       return
     }
     const validItems = items.filter((i) => i.supplyId && i.packages > 0)
@@ -157,7 +167,7 @@ export function PurchasesActionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className='sm:max-w-lg'>
+      <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <DialogTitle>{isEdit ? 'Editar Compra' : 'Nova Compra'}</DialogTitle>
           <DialogDescription>
@@ -166,22 +176,22 @@ export function PurchasesActionDialog({
         </DialogHeader>
 
         <div className='space-y-4'>
-          <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
-            <Label className='col-span-2 text-end'>Fornecedor</Label>
+          <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
+            <Label className='sm:col-span-2 sm:text-end'>Fornecedor</Label>
             <VendorCombobox
               value={vendorId}
               onValueChange={setVendorId}
               onVendorChange={setSelectedVendor}
               selectedVendor={selectedVendor}
-              className='col-span-4'
+              className='min-w-0 sm:col-span-4'
               placeholder='Selecione o fornecedor'
             />
           </div>
 
-          <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
-            <Label className='col-span-2 text-end'>Observação</Label>
+          <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
+            <Label className='sm:col-span-2 sm:text-end'>Observação</Label>
             <Input
-              className='col-span-4'
+              className='min-w-0 sm:col-span-4'
               placeholder='Opcional'
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -191,8 +201,8 @@ export function PurchasesActionDialog({
 
           <div className='space-y-2'>
             <Label className='mb-2 block text-sm font-medium'>Itens</Label>
-            <div className='grid grid-cols-[1fr_7rem_7rem_auto] items-end gap-2'>
-              <div>
+            <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]'>
+              <div className='min-w-0 sm:col-span-2 md:col-span-1'>
                 <Label className='text-xs text-muted-foreground'>Insumo</Label>
                 <ProductSupplyCombobox
                   type='supply'
@@ -205,8 +215,8 @@ export function PurchasesActionDialog({
                   placeholder='Selecione...'
                 />
               </div>
-              <div>
-                <Label className='text-xs text-muted-foreground'>Embalagens</Label>
+              <div className='min-w-0'>
+                <Label className='text-xs text-muted-foreground'>Quantidade</Label>
                 <Input
                   type='number'
                   min='1'
@@ -220,7 +230,7 @@ export function PurchasesActionDialog({
                   }
                 />
               </div>
-              <div>
+              <div className='min-w-0'>
                 <Label className='text-xs text-muted-foreground'>Preço emb. (R$)</Label>
                 <Input
                   type='number'
@@ -235,70 +245,181 @@ export function PurchasesActionDialog({
                   }
                 />
               </div>
-              <Button type='button' onClick={addItem}>
+              <Button
+                type='button'
+                onClick={addItem}
+                className='w-full sm:col-span-2 md:col-span-1 md:w-auto'
+              >
                 <Plus size={16} />
                 Adicionar
               </Button>
             </div>
 
             <div className='max-h-[260px] overflow-y-auto rounded-md border'>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Insumo</TableHead>
-                    <TableHead>Embalagens</TableHead>
-                    <TableHead>Preço emb.</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead className='w-10' />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.length === 0 ? (
+              <div className='hidden sm:block'>
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={5} className='h-16 text-center text-muted-foreground'>
-                        Nenhum item adicionado.
-                      </TableCell>
+                      <TableHead>Insumo</TableHead>
+                      <TableHead>Quantidade</TableHead>
+                      <TableHead>Preço emb.</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead className='w-10' />
                     </TableRow>
-                  ) : (
-                    items.map((item, index) => {
-                      const supply = selectedSupplies[item.supplyId]
-                      const total = supply
-                        ? item.packages * (supply.packageQuantity || 1)
-                        : 0
+                  </TableHeader>
+                  <TableBody>
+                    {items.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className='h-16 text-center text-muted-foreground'>
+                          Nenhum item adicionado.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      items.map((item, index) => {
+                        const supply = selectedSupplies[item.supplyId]
+                        const total = supply
+                          ? item.packages * (supply.packageQuantity || 1)
+                          : 0
+                        const packagesInvalid = item.packages <= 0
 
-                      return (
-                        <TableRow key={item.supplyId}>
-                          <TableCell className='font-medium'>
+                        return (
+                          <TableRow key={item.supplyId}>
+                            <TableCell className='font-medium'>
+                              {supply?.name || item.supplyId}
+                            </TableCell>
+                            <TableCell>
+                              <div className='flex items-center gap-2'>
+                                <Input
+                                  type='number'
+                                  min='1'
+                                  step='1'
+                                  aria-invalid={packagesInvalid}
+                                  className='h-8 w-20'
+                                  value={item.packages || ''}
+                                  onChange={(e) =>
+                                    updateItemPackages(
+                                      index,
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                />
+                                {supply?.packageUnit && (
+                                  <span className='text-xs text-muted-foreground'>
+                                    {supply.packageUnit}(s)
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {item.packageCost > 0
+                                ? `R$ ${item.packageCost.toFixed(2)}`
+                                : '—'}
+                            </TableCell>
+                            <TableCell>
+                              {total} {supply?.unit || ''}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                className='text-red-500'
+                                onClick={() => removeItem(index)}
+                              >
+                                <Trash2 size={16} />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className='space-y-2 p-2 sm:hidden'>
+                {items.length === 0 ? (
+                  <div className='py-6 text-center text-sm text-muted-foreground'>
+                    Nenhum item adicionado.
+                  </div>
+                ) : (
+                  items.map((item, index) => {
+                    const supply = selectedSupplies[item.supplyId]
+                    const total = supply
+                      ? item.packages * (supply.packageQuantity || 1)
+                      : 0
+                    const packagesInvalid = item.packages <= 0
+
+                    return (
+                      <div
+                        key={item.supplyId}
+                        className='space-y-2 rounded-md border p-3'
+                      >
+                        <div className='flex items-start justify-between gap-2'>
+                          <div className='font-medium'>
                             {supply?.name || item.supplyId}
-                          </TableCell>
-                          <TableCell>
-                            {item.packages} {supply?.packageUnit || 'emb.'}(s)
-                          </TableCell>
-                          <TableCell>
-                            {item.packageCost > 0
-                              ? `R$ ${item.packageCost.toFixed(2)}`
-                              : '—'}
-                          </TableCell>
-                          <TableCell>
-                            {total} {supply?.unit || ''}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              type='button'
-                              variant='ghost'
-                              size='icon'
-                              className='text-red-500'
-                              onClick={() => removeItem(index)}
-                            >
-                              <Trash2 size={16} />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })
-                  )}
-                </TableBody>
-              </Table>
+                          </div>
+                          <Button
+                            type='button'
+                            variant='ghost'
+                            size='icon'
+                            className='text-red-500'
+                            onClick={() => removeItem(index)}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                        <div className='grid grid-cols-2 gap-x-3 gap-y-2 text-sm'>
+                          <div>
+                            <Label className='text-xs text-muted-foreground'>
+                              Quantidade
+                            </Label>
+                            <div className='mt-1 flex items-center gap-2'>
+                              <Input
+                                type='number'
+                                min='1'
+                                step='1'
+                                aria-invalid={packagesInvalid}
+                                className='h-8 w-20'
+                                value={item.packages || ''}
+                                onChange={(e) =>
+                                  updateItemPackages(
+                                    index,
+                                    parseInt(e.target.value) || 0
+                                  )
+                                }
+                              />
+                              {supply?.packageUnit && (
+                                <span className='text-xs text-muted-foreground'>
+                                  {supply.packageUnit}(s)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <Label className='text-xs text-muted-foreground'>
+                              Preço emb.
+                            </Label>
+                            <div className='mt-1'>
+                              {item.packageCost > 0
+                                ? `R$ ${item.packageCost.toFixed(2)}`
+                                : '—'}
+                            </div>
+                          </div>
+                          <div className='col-span-2'>
+                            <Label className='text-xs text-muted-foreground'>
+                              Total
+                            </Label>
+                            <div className='mt-1 font-medium'>
+                              {total} {supply?.unit || ''}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
             </div>
           </div>
         </div>

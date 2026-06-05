@@ -116,6 +116,10 @@ export function ProductsActionDialog({
   }
 
   const statusValue = useWatch({ control: form.control, name: 'status' })
+  const marginValue = useWatch({ control: form.control, name: 'margin' })
+
+  const costPrice = isEdit ? currentRow.costPrice : 0
+  const salePrice = costPrice * (1 + (marginValue ?? 0) / 100)
 
   return (
     <Dialog
@@ -223,6 +227,30 @@ export function ProductsActionDialog({
                 </FormItem>
               )}
             />
+            {isEdit && (
+              <div className='grid gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm sm:grid-cols-3'>
+                <div>
+                  <Label className='text-muted-foreground'>Custo</Label>
+                  <p className='font-medium'>
+                    {costPrice > 0
+                      ? `R$ ${costPrice.toFixed(2)}/${currentRow.unit}`
+                      : '—'}
+                  </p>
+                </div>
+                <div>
+                  <Label className='text-muted-foreground'>Margem</Label>
+                  <p className='font-medium'>{marginValue ?? 0}%</p>
+                </div>
+                <div>
+                  <Label className='text-muted-foreground'>Preço de venda</Label>
+                  <p className='font-medium'>
+                    {costPrice > 0
+                      ? `R$ ${salePrice.toFixed(2)}/${currentRow.unit}`
+                      : '—'}
+                  </p>
+                </div>
+              </div>
+            )}
           </form>
         </Form>
         <DialogFooter>

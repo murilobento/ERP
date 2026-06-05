@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { ConfigDrawer } from '@/components/config-drawer'
@@ -9,7 +10,9 @@ import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
 import api from '@/lib/api'
 import { type NavigateFn } from '@/hooks/use-table-url-state'
+import { StockMovementsFilters } from './components/stock-movements-filters'
 import { StockMovementsTable } from './components/stock-movements-table'
+import { filterMovements } from './data/filters'
 import { type StockMovement } from './data/schema'
 
 export function StockMovements() {
@@ -24,6 +27,11 @@ export function StockMovements() {
       return res.data.movements as StockMovement[]
     },
   })
+
+  const filteredMovements = useMemo(
+    () => filterMovements(movements, search),
+    [movements, search]
+  )
 
   return (
     <>
@@ -43,7 +51,9 @@ export function StockMovements() {
           </p>
         </div>
 
-        <StockMovementsTable data={movements} search={search} navigate={navigate} />
+        <StockMovementsFilters search={search} navigate={navigate} />
+
+        <StockMovementsTable data={filteredMovements} search={search} navigate={navigate} />
       </Main>
     </>
   )

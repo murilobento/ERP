@@ -40,6 +40,16 @@ export function ClientsTable({ data, search, navigate }: DataTableProps) {
       table={table}
       columnCount={columns.length}
       searchPlaceholder='Filtrar por nome, telefone ou endereço...'
+      filters={[
+        {
+          columnId: 'status',
+          title: 'Status',
+          options: [
+            { label: 'Ativo', value: 'active' },
+            { label: 'Inativo', value: 'inactive' },
+          ],
+        },
+      ]}
       onRowClick={(row) => {
         setCurrentRow(row)
         setOpen('view')

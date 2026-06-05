@@ -116,6 +116,7 @@ const purchase: Purchase = {
   reversalReason: '',
   reversedBy: null,
   reversedAt: null,
+  completedAt: null,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   vendor,
@@ -274,5 +275,44 @@ describe('PurchasesActionDialog', () => {
     )
     expect(onOpenChange).not.toHaveBeenCalledWith(false)
     expect(invalidateQueries).not.toHaveBeenCalled()
+  })
+
+  it('updates the quantity of an added item from the table and recalculates the total', async () => {
+    const { getByRole, getByText } = await renderDialog()
+
+    await userEvent.click(buttonByText('Selecione o fornecedor'))
+    await addSupplyItem()
+    const rowQuantityInput = numberInput(2)
+    expect(rowQuantityInput.value).toBe('3')
+    expect(getByText('15')).toBeTruthy()
+
+    await userEvent.clear(rowQuantityInput)
+    await userEvent.type(rowQuantityInput, '5')
+    expect(getByText('25')).toBeTruthy()
+
+    await userEvent.click(getByRole('button', { name: /^Criar Compra$/i }))
+
+    await vi.waitFor(() => expect(apiPost).toHaveBeenCalledOnce())
+    expect(apiPost).toHaveBeenCalledWith('/purchases', {
+      vendorId: 'vendor-1',
+      notes: '',
+      items: [{ supplyId: 'supply-1', packages: 5, packageCost: 10.5 }],
+    })
+  })
+
+  it('blocks submit when an item has invalid quantity', async () => {
+    const { getByRole } = await renderDialog()
+
+    await userEvent.click(buttonByText('Selecione o fornecedor'))
+    await addSupplyItem()
+    const rowQuantityInput = numberInput(2)
+    await userEvent.clear(rowQuantityInput)
+
+    await userEvent.click(getByRole('button', { name: /^Criar Compra$/i }))
+
+    expect(toastError).toHaveBeenCalledWith(
+      'A quantidade de cada item deve ser maior que zero.'
+    )
+    expect(apiPost).not.toHaveBeenCalled()
   })
 })

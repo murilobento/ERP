@@ -1,19 +1,18 @@
 import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
-import { type Production } from '../data/schema'
-import { useProductions } from './productions-provider'
-import { DataTableBulkActions } from './data-table-bulk-actions'
-import { productionsColumns as columns } from './productions-columns'
+import { type StockAdjustment } from '../data/schema'
+import { useAdjustments } from './adjustments-provider'
+import { adjustmentsColumns as columns } from './adjustments-columns'
 
 type DataTableProps = {
-  data: Production[]
+  data: StockAdjustment[]
   search: Record<string, unknown>
   navigate: NavigateFn
 }
 
-export function ProductionsTable({ data, search, navigate }: DataTableProps) {
-  const { setOpen, setCurrentRow } = useProductions()
+export function AdjustmentsTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = useAdjustments()
   const { table } = useDataTable({
     data,
     columns,
@@ -32,12 +31,14 @@ export function ProductionsTable({ data, search, navigate }: DataTableProps) {
         setOpen('view')
       }}
       labels={{
-        product: 'Produto',
+        item: 'Item',
+        itemType: 'Tipo',
         quantity: 'Quantidade',
+        reason: 'Motivo',
         status: 'Status',
-        createdAt: 'Criado em',
+        author: 'Autor',
+        completedAt: 'Concluído em',
       }}
-      bulkActions={<DataTableBulkActions table={table} />}
     />
   )
 }

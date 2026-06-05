@@ -19,12 +19,14 @@ export function PurchasesTable({ data, search, navigate }: DataTableProps) {
     columns,
     search,
     navigate,
+    globalFilterEnabled: false,
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
-      const { supplier, notes } = row.original
+      const { supplier, notes, items } = row.original
       return (
         supplier.toLowerCase().includes(search) ||
-        (notes || '').toLowerCase().includes(search)
+        (notes || '').toLowerCase().includes(search) ||
+        items.some((item) => item.supply.name.toLowerCase().includes(search))
       )
     },
   })
@@ -33,7 +35,7 @@ export function PurchasesTable({ data, search, navigate }: DataTableProps) {
     <DataTableShell
       table={table}
       columnCount={columns.length}
-      searchPlaceholder='Filtrar por fornecedor ou observação...'
+      showSearch={false}
       onRowClick={(row) => {
         setCurrentRow(row)
         setOpen('view')
@@ -41,8 +43,9 @@ export function PurchasesTable({ data, search, navigate }: DataTableProps) {
       labels={{
         supplier: 'Fornecedor',
         itemCount: 'Itens',
-        totalPackages: 'Total Embalagens',
+        totalPackages: 'Total',
         status: 'Status',
+        completedAt: 'Concluída em',
         createdAt: 'Criado em',
       }}
       bulkActions={<DataTableBulkActions table={table} />}

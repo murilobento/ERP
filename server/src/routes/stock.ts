@@ -44,6 +44,92 @@ stockRoutes.get('/movements', async (c) => {
   return c.json({ movements })
 })
 
+stockRoutes.get('/adjustments', async (c) => {
+  const adjustments = await prisma.stockAdjustment.findMany({
+    select: {
+      id: true,
+      status: true,
+      itemType: true,
+      productId: true,
+      supplyId: true,
+      quantity: true,
+      reason: true,
+      authorId: true,
+      completedById: true,
+      completedAt: true,
+      reversedById: true,
+      reversedAt: true,
+      reversalReason: true,
+      createdAt: true,
+      updatedAt: true,
+      product: {
+        select: { id: true, name: true, unit: true },
+      },
+      supply: {
+        select: { id: true, name: true, unit: true },
+      },
+      author: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      completedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      reversedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return c.json({ adjustments })
+})
+
+stockRoutes.get('/adjustments/:id', async (c) => {
+  const id = c.req.param('id')
+
+  const adjustment = await prisma.stockAdjustment.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      status: true,
+      itemType: true,
+      productId: true,
+      supplyId: true,
+      quantity: true,
+      reason: true,
+      authorId: true,
+      completedById: true,
+      completedAt: true,
+      reversedById: true,
+      reversedAt: true,
+      reversalReason: true,
+      createdAt: true,
+      updatedAt: true,
+      product: {
+        select: { id: true, name: true, unit: true },
+      },
+      supply: {
+        select: { id: true, name: true, unit: true },
+      },
+      author: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      completedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      reversedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+    },
+  })
+
+  if (!adjustment) {
+    return c.json({ error: 'Acerto não encontrado.' }, 404)
+  }
+
+  return c.json({ adjustment })
+})
+
 stockRoutes.post('/adjustments', async (c) => {
   const userId = c.get('userId') as string
   const body = await c.req.json()
@@ -62,8 +148,8 @@ stockRoutes.post('/adjustments', async (c) => {
     return c.json({ error: 'Item é obrigatório.' }, 400)
   }
 
-  if (!Number.isInteger(quantity) || quantity === 0) {
-    return c.json({ error: 'Quantidade deve ser um número inteiro diferente de zero.' }, 400)
+  if (!Number.isFinite(quantity) || quantity === 0) {
+    return c.json({ error: 'Quantidade deve ser diferente de zero.' }, 400)
   }
 
   if (!reason || !reason.trim()) {
@@ -82,50 +168,382 @@ stockRoutes.post('/adjustments', async (c) => {
     }
   }
 
-  const stockResult = await prisma.stockMovement.aggregate({
-    where:
-      itemType === 'product'
-        ? { productId: itemId }
-        : { supplyId: itemId },
-    _sum: { quantity: true },
-  })
-  const stockBefore = stockResult._sum.quantity || 0
-
-  const movement = await prisma.stockMovement.create({
+  const adjustment = await prisma.stockAdjustment.create({
     data: {
+      itemType,
       productId: itemType === 'product' ? itemId : null,
       supplyId: itemType === 'supply' ? itemId : null,
-      authorId: userId,
       quantity,
-      stockBefore,
-      stockAfter: stockBefore + quantity,
-      type: 'adjustment',
-      notes: reason.trim(),
+      reason: reason.trim(),
+      authorId: userId,
     },
     select: {
       id: true,
+      status: true,
+      itemType: true,
       productId: true,
       supplyId: true,
       quantity: true,
-      stockBefore: true,
-      stockAfter: true,
-      type: true,
-      referenceId: true,
-      notes: true,
+      reason: true,
+      authorId: true,
+      completedById: true,
+      completedAt: true,
+      reversedById: true,
+      reversedAt: true,
+      reversalReason: true,
       createdAt: true,
-      author: {
-        select: { id: true, firstName: true, lastName: true },
-      },
+      updatedAt: true,
       product: {
         select: { id: true, name: true, unit: true },
       },
       supply: {
         select: { id: true, name: true, unit: true },
       },
+      author: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      completedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      reversedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
     },
   })
 
-  return c.json({ movement }, 201)
+  return c.json({ adjustment }, 201)
+})
+
+stockRoutes.patch('/adjustments/:id', async (c) => {
+  const userId = c.get('userId') as string
+  const id = c.req.param('id')
+  const body = await c.req.json()
+  const { itemType, itemId, quantity, reason } = body as {
+    itemType?: 'product' | 'supply'
+    itemId?: string
+    quantity?: number
+    reason?: string
+  }
+
+  const existing = await prisma.stockAdjustment.findUnique({ where: { id } })
+  if (!existing) {
+    return c.json({ error: 'Acerto não encontrado.' }, 404)
+  }
+
+  if (existing.status !== 'pending') {
+    return c.json({ error: 'Apenas acertos pendentes podem ser editados.' }, 400)
+  }
+
+  const finalItemType = itemType || existing.itemType
+  const finalItemId = itemId || (existing.productId || existing.supplyId)
+  const finalQuantity = quantity ?? existing.quantity
+  const finalReason = reason !== undefined ? reason.trim() : existing.reason
+
+  if (finalItemType !== 'product' && finalItemType !== 'supply') {
+    return c.json({ error: 'Tipo de item inválido.' }, 400)
+  }
+
+  if (!finalItemId) {
+    return c.json({ error: 'Item é obrigatório.' }, 400)
+  }
+
+  if (!Number.isFinite(finalQuantity) || finalQuantity === 0) {
+    return c.json({ error: 'Quantidade deve ser diferente de zero.' }, 400)
+  }
+
+  if (finalItemType === 'product') {
+    const product = await prisma.product.findUnique({ where: { id: finalItemId } })
+    if (!product) {
+      return c.json({ error: 'Produto não encontrado.' }, 404)
+    }
+  } else {
+    const supply = await prisma.supply.findUnique({ where: { id: finalItemId } })
+    if (!supply) {
+      return c.json({ error: 'Insumo não encontrado.' }, 404)
+    }
+  }
+
+  const adjustment = await prisma.stockAdjustment.update({
+    where: { id },
+    data: {
+      itemType: finalItemType,
+      productId: finalItemType === 'product' ? finalItemId : null,
+      supplyId: finalItemType === 'supply' ? finalItemId : null,
+      quantity: finalQuantity,
+      reason: finalReason,
+    },
+    select: {
+      id: true,
+      status: true,
+      itemType: true,
+      productId: true,
+      supplyId: true,
+      quantity: true,
+      reason: true,
+      authorId: true,
+      completedById: true,
+      completedAt: true,
+      reversedById: true,
+      reversedAt: true,
+      reversalReason: true,
+      createdAt: true,
+      updatedAt: true,
+      product: {
+        select: { id: true, name: true, unit: true },
+      },
+      supply: {
+        select: { id: true, name: true, unit: true },
+      },
+      author: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      completedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      reversedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+    },
+  })
+
+  return c.json({ adjustment })
+})
+
+stockRoutes.post('/adjustments/:id/complete', async (c) => {
+  const userId = c.get('userId') as string
+  const id = c.req.param('id')
+
+  const existing = await prisma.stockAdjustment.findUnique({
+    where: { id },
+    include: {
+      product: true,
+      supply: true,
+    },
+  })
+
+  if (!existing) {
+    return c.json({ error: 'Acerto não encontrado.' }, 404)
+  }
+
+  if (existing.status !== 'pending') {
+    return c.json({ error: 'Apenas acertos pendentes podem ser concluídos.' }, 400)
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.stockAdjustment.update({
+      where: { id },
+      data: {
+        status: 'completed',
+        completedById: userId,
+        completedAt: new Date(),
+      },
+    })
+
+    const itemId = existing.productId || existing.supplyId || ''
+    const isProduct = existing.itemType === 'product'
+
+    let stockBefore = 0
+    if (isProduct) {
+      const map = await getProductStockMap([itemId], tx)
+      stockBefore = map.get(itemId) ?? 0
+    } else {
+      const map = await getSupplyStockMap([itemId], tx)
+      stockBefore = map.get(itemId) ?? 0
+    }
+
+    const itemName = isProduct
+      ? (existing.product?.name || 'Produto')
+      : (existing.supply?.name || 'Insumo')
+    const unit = isProduct
+      ? (existing.product?.unit || 'un')
+      : (existing.supply?.unit || 'un')
+
+    await tx.stockMovement.create({
+      data: {
+        productId: isProduct ? itemId : null,
+        supplyId: isProduct ? null : itemId,
+        authorId: userId,
+        quantity: existing.quantity,
+        stockBefore,
+        stockAfter: stockBefore + existing.quantity,
+        type: 'adjustment',
+        referenceId: id,
+        notes: `Acerto de estoque — ${itemName}: ${existing.quantity > 0 ? '+' : ''}${existing.quantity} ${unit} | Motivo: ${existing.reason}`,
+      },
+    })
+  })
+
+  const adjustment = await prisma.stockAdjustment.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      status: true,
+      itemType: true,
+      productId: true,
+      supplyId: true,
+      quantity: true,
+      reason: true,
+      authorId: true,
+      completedById: true,
+      completedAt: true,
+      reversedById: true,
+      reversedAt: true,
+      reversalReason: true,
+      createdAt: true,
+      updatedAt: true,
+      product: {
+        select: { id: true, name: true, unit: true },
+      },
+      supply: {
+        select: { id: true, name: true, unit: true },
+      },
+      author: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      completedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      reversedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+    },
+  })
+
+  return c.json({ adjustment })
+})
+
+stockRoutes.post('/adjustments/:id/reverse', async (c) => {
+  const userId = c.get('userId') as string
+  const id = c.req.param('id')
+  const body = await c.req.json()
+  const { reason } = body as { reason: string }
+
+  if (!reason || !reason.trim()) {
+    return c.json({ error: 'Motivo do estorno é obrigatório.' }, 400)
+  }
+
+  const existing = await prisma.stockAdjustment.findUnique({
+    where: { id },
+    include: {
+      product: true,
+      supply: true,
+    },
+  })
+
+  if (!existing) {
+    return c.json({ error: 'Acerto não encontrado.' }, 404)
+  }
+
+  if (existing.status !== 'completed') {
+    return c.json({ error: 'Apenas acertos concluídos podem ser estornados.' }, 400)
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { firstName: true, lastName: true },
+  })
+  const authorName = user ? `${user.firstName} ${user.lastName}` : userId
+
+  await prisma.$transaction(async (tx) => {
+    await tx.stockAdjustment.update({
+      where: { id },
+      data: {
+        status: 'reversed',
+        reversedById: userId,
+        reversedAt: new Date(),
+        reversalReason: reason.trim(),
+      },
+    })
+
+    const itemId = existing.productId || existing.supplyId || ''
+    const isProduct = existing.itemType === 'product'
+    const quantity = -existing.quantity
+
+    let stockBefore = 0
+    if (isProduct) {
+      const map = await getProductStockMap([itemId], tx)
+      stockBefore = map.get(itemId) ?? 0
+    } else {
+      const map = await getSupplyStockMap([itemId], tx)
+      stockBefore = map.get(itemId) ?? 0
+    }
+
+    const itemName = isProduct
+      ? (existing.product?.name || 'Produto')
+      : (existing.supply?.name || 'Insumo')
+    const unit = isProduct
+      ? (existing.product?.unit || 'un')
+      : (existing.supply?.unit || 'un')
+
+    await tx.stockMovement.create({
+      data: {
+        productId: isProduct ? itemId : null,
+        supplyId: isProduct ? null : itemId,
+        authorId: userId,
+        quantity,
+        stockBefore,
+        stockAfter: stockBefore + quantity,
+        type: 'adjustment_reversal',
+        referenceId: id,
+        notes: `Estorno do acerto — ${itemName}: ${quantity > 0 ? '+' : ''}${quantity} ${unit} | Motivo: ${reason.trim()} | Autor: ${authorName}`,
+      },
+    })
+  })
+
+  const adjustment = await prisma.stockAdjustment.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      status: true,
+      itemType: true,
+      productId: true,
+      supplyId: true,
+      quantity: true,
+      reason: true,
+      authorId: true,
+      completedById: true,
+      completedAt: true,
+      reversedById: true,
+      reversedAt: true,
+      reversalReason: true,
+      createdAt: true,
+      updatedAt: true,
+      product: {
+        select: { id: true, name: true, unit: true },
+      },
+      supply: {
+        select: { id: true, name: true, unit: true },
+      },
+      author: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      completedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      reversedBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+    },
+  })
+
+  return c.json({ adjustment })
+})
+
+stockRoutes.delete('/adjustments/:id', async (c) => {
+  const id = c.req.param('id')
+
+  const existing = await prisma.stockAdjustment.findUnique({ where: { id } })
+  if (!existing) {
+    return c.json({ error: 'Acerto não encontrado.' }, 404)
+  }
+
+  if (existing.status !== 'pending') {
+    return c.json({ error: 'Apenas acertos pendentes podem ser removidos.' }, 400)
+  }
+
+  await prisma.stockAdjustment.delete({ where: { id } })
+
+  return c.json({ success: true })
 })
 
 stockRoutes.get('/balances', async (c) => {

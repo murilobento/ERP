@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
-import { type Purchase } from '../data/schema'
+import { purchaseStatusMap, type Purchase } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
 import {
   HoverCard,
@@ -16,14 +16,6 @@ function formatCurrency(value: number) {
     style: 'currency',
     currency: 'BRL',
   }).format(value)
-}
-
-const statusMap: Record<
-  string,
-  { label: string; variant: 'warning' | 'success' }
-> = {
-  pending: { label: 'Pendente', variant: 'warning' },
-  completed: { label: 'Concluída', variant: 'success' },
 }
 
 export const purchasesColumns: ColumnDef<Purchase>[] = [
@@ -119,7 +111,7 @@ export const purchasesColumns: ColumnDef<Purchase>[] = [
   {
     id: 'totalPackages',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Total Embalagens' />
+      <DataTableColumnHeader column={column} title='Total' />
     ),
     accessorFn: (row) =>
       row.items?.reduce((sum, i) => sum + i.packages, 0) || 0,
@@ -135,12 +127,24 @@ export const purchasesColumns: ColumnDef<Purchase>[] = [
       <DataTableColumnHeader column={column} title='Status' />
     ),
     cell: ({ row }) => {
-      const status = row.getValue('status') as string
-      const config = statusMap[status] || {
+      const status = row.getValue('status') as Purchase['status']
+      const config = purchaseStatusMap[status] || {
         label: status,
         variant: 'secondary' as const,
       }
       return <Badge variant={config.variant}>{config.label}</Badge>
+    },
+  },
+  {
+    accessorKey: 'completedAt',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Concluída em' />
+    ),
+    cell: ({ row }) => {
+      const value = row.getValue('completedAt') as string | null
+      if (!value) return <span className='text-muted-foreground'>—</span>
+      const date = new Date(value)
+      return <div className='text-nowrap'>{date.toLocaleDateString()}</div>
     },
   },
   {

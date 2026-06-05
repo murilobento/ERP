@@ -1,3 +1,5 @@
+export type PurchaseStatus = 'pending' | 'completed'
+
 export type PurchaseItem = {
   id: string
   purchaseId: string
@@ -18,11 +20,12 @@ export type Purchase = {
   id: string
   vendorId: string | null
   supplier: string
-  status: 'pending' | 'completed'
+  status: PurchaseStatus
   notes: string
   reversalReason: string
   reversedBy: string | null
   reversedAt: string | null
+  completedAt: string | null
   createdAt: string
   updatedAt: string
   vendor: {
@@ -32,4 +35,12 @@ export type Purchase = {
     status: string
   } | null
   items: PurchaseItem[]
+}
+
+export const purchaseStatusMap: Record<
+  PurchaseStatus,
+  { label: string; variant: 'warning' | 'success' }
+> = {
+  pending: { label: 'Pendente', variant: 'warning' },
+  completed: { label: 'Concluída', variant: 'success' },
 }

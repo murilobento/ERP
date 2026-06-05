@@ -16,7 +16,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  stockMovements StockMovement[]
+  stockMovements       StockMovement[]
+  stockAdjustments     StockAdjustment[]   @relation("StockAdjustmentAuthor")
+  completedAdjustments StockAdjustment[]   @relation("StockAdjustmentCompletedBy")
+  reversedAdjustments  StockAdjustment[]   @relation("StockAdjustmentReversedBy")
 }
 
 model Company {
@@ -107,6 +110,7 @@ model Product {
   productionItems ProductionItem[]
   stockMovements  StockMovement[]
   saleItems        SaleItem[]
+  stockAdjustments StockAdjustment[]
 }
 
 model Supply {
@@ -121,9 +125,10 @@ model Supply {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  compositions   ProductComposition[]
-  stockMovements StockMovement[]
-  purchaseItems  PurchaseItem[]
+  compositions     ProductComposition[]
+  stockMovements   StockMovement[]
+  purchaseItems    PurchaseItem[]
+  stockAdjustments StockAdjustment[]
 }
 
 model ProductComposition {
@@ -176,6 +181,7 @@ model Purchase {
   reversalReason String    @default("")
   reversedBy     String?
   reversedAt     DateTime?
+  completedAt    DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -246,4 +252,28 @@ model StockMovement {
   product Product? @relation(fields: [productId], references: [id])
   supply  Supply?  @relation(fields: [supplyId], references: [id])
   author  User?    @relation(fields: [authorId], references: [id])
+}
+
+model StockAdjustment {
+  id             String    @id @default(cuid())
+  status         String    @default("pending")
+  itemType       String
+  productId      String?
+  supplyId       String?
+  quantity       Float
+  reason         String    @default("")
+  authorId       String
+  completedById  String?
+  completedAt    DateTime?
+  reversedById   String?
+  reversedAt     DateTime?
+  reversalReason String    @default("")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  product     Product?  @relation(fields: [productId], references: [id])
+  supply      Supply?   @relation(fields: [supplyId], references: [id])
+  author      User      @relation("StockAdjustmentAuthor", fields: [authorId], references: [id])
+  completedBy User?     @relation("StockAdjustmentCompletedBy", fields: [completedById], references: [id])
+  reversedBy  User?     @relation("StockAdjustmentReversedBy", fields: [reversedById], references: [id])
 }

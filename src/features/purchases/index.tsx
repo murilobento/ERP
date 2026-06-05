@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { ConfigDrawer } from '@/components/config-drawer'
@@ -9,9 +10,11 @@ import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
 import api from '@/lib/api'
 import { PurchasesDialogs } from './components/purchases-dialogs'
+import { PurchasesFilters } from './components/purchases-filters'
 import { PurchasesPrimaryButtons } from './components/purchases-primary-buttons'
 import { PurchasesProvider } from './components/purchases-provider'
 import { PurchasesTable } from './components/purchases-table'
+import { filterPurchases } from './data/filters'
 import { type Purchase } from './data/schema'
 
 const route = getRouteApi('/_authenticated/purchases/')
@@ -27,6 +30,11 @@ export function Purchases() {
       return res.data.purchases as Purchase[]
     },
   })
+
+  const filteredPurchases = useMemo(
+    () => filterPurchases(purchases, search),
+    [purchases, search]
+  )
 
   return (
     <PurchasesProvider>
@@ -48,7 +56,14 @@ export function Purchases() {
           </div>
           <PurchasesPrimaryButtons />
         </div>
-        <PurchasesTable data={purchases} search={search} navigate={navigate} />
+
+        <PurchasesFilters search={search} navigate={navigate} />
+
+        <PurchasesTable
+          data={filteredPurchases}
+          search={search}
+          navigate={navigate}
+        />
       </Main>
 
       <PurchasesDialogs />

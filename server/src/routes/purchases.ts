@@ -42,6 +42,7 @@ const PURCHASE_SELECT = {
   reversalReason: true,
   reversedBy: true,
   reversedAt: true,
+  completedAt: true,
   createdAt: true,
   updatedAt: true,
   vendor: {
@@ -263,6 +264,7 @@ purchaseRoutes.post('/:id/complete', async (c) => {
         reversalReason: '',
         reversedBy: null,
         reversedAt: null,
+        completedAt: new Date(),
       },
     })
 
@@ -346,6 +348,7 @@ purchaseRoutes.post('/:id/reverse', async (c) => {
         reversalReason: reason.trim(),
         reversedBy: userId,
         reversedAt: new Date(),
+        completedAt: null,
       },
     })
 

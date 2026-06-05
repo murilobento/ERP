@@ -12,6 +12,7 @@ const typeMap: Record<string, string> = {
   sale_delivery: 'Entrega de Venda',
   sale_reversal: 'Estorno de Venda',
   adjustment: 'Ajuste Manual',
+  adjustment_reversal: 'Estorno de Ajuste',
 }
 
 function formatStock(value: number | null, unit?: string) {
@@ -30,6 +31,20 @@ function getMovementLabel(movement: StockMovement) {
 }
 
 export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
+  {
+    id: 'itemType',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Tipo Item' />
+    ),
+    cell: ({ row }) => {
+      const m = row.original
+      return (
+        <Badge variant={m.product ? 'default' : 'secondary'}>
+          {m.product ? 'Produto' : 'Insumo'}
+        </Badge>
+      )
+    },
+  },
   {
     id: 'item',
     header: ({ column }) => (
@@ -50,23 +65,18 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
     enableHiding: false,
   },
   {
-    id: 'itemType',
+    accessorKey: 'type',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Tipo Item' />
+      <DataTableColumnHeader column={column} title='Movimento' />
     ),
     cell: ({ row }) => {
-      const m = row.original
-      return (
-        <Badge variant={m.product ? 'default' : 'secondary'}>
-          {m.product ? 'Produto' : 'Insumo'}
-        </Badge>
-      )
+      return <span className='ps-2'>{getMovementLabel(row.original)}</span>
     },
   },
   {
     accessorKey: 'stockBefore',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estoque anterior' />
+      <DataTableColumnHeader column={column} title='Anterior' />
     ),
     cell: ({ row }) => {
       const m = row.original
@@ -104,15 +114,6 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
           {formatStock(m.stockAfter, m.product?.unit || m.supply?.unit)}
         </span>
       )
-    },
-  },
-  {
-    accessorKey: 'type',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Movimento' />
-    ),
-    cell: ({ row }) => {
-      return <span className='ps-2'>{getMovementLabel(row.original)}</span>
     },
   },
   {
