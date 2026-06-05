@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/card'
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,12 +36,12 @@ export function CompanyBasicDataForm({ form }: CompanyFormSectionProps) {
           Informações principais para identificar a empresa.
         </CardDescription>
       </CardHeader>
-      <CardContent className='grid gap-4 md:grid-cols-2'>
+      <CardContent className='grid gap-4 md:grid-cols-12'>
         <FormField
           control={form.control}
           name='name'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-4'>
               <FormLabel>Nome da empresa</FormLabel>
               <FormControl>
                 <Input
@@ -59,7 +58,7 @@ export function CompanyBasicDataForm({ form }: CompanyFormSectionProps) {
           control={form.control}
           name='tradeName'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-4'>
               <FormLabel>Nome fantasia</FormLabel>
               <FormControl>
                 <Input
@@ -76,7 +75,7 @@ export function CompanyBasicDataForm({ form }: CompanyFormSectionProps) {
           control={form.control}
           name='cnpj'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-4'>
               <FormLabel>CNPJ</FormLabel>
               <FormControl>
                 <Input
@@ -88,7 +87,6 @@ export function CompanyBasicDataForm({ form }: CompanyFormSectionProps) {
                   }
                 />
               </FormControl>
-              <FormDescription>Opcional.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -97,7 +95,7 @@ export function CompanyBasicDataForm({ form }: CompanyFormSectionProps) {
           control={form.control}
           name='email'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-4'>
               <FormLabel>E-mail</FormLabel>
               <FormControl>
                 <Input
@@ -114,7 +112,7 @@ export function CompanyBasicDataForm({ form }: CompanyFormSectionProps) {
           control={form.control}
           name='phone'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-4'>
               <FormLabel>Telefone</FormLabel>
               <FormControl>
                 <Input
@@ -134,7 +132,7 @@ export function CompanyBasicDataForm({ form }: CompanyFormSectionProps) {
           control={form.control}
           name='logoUrl'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-4'>
               <FormLabel>URL da logo</FormLabel>
               <FormControl>
                 <Input placeholder='https://...' autoComplete='off' {...field} />
@@ -164,12 +162,12 @@ export function CompanyAddressForm({
         <CardTitle>Endereço</CardTitle>
         <CardDescription>Dados de localização da empresa.</CardDescription>
       </CardHeader>
-      <CardContent className='grid gap-4 md:grid-cols-2'>
+      <CardContent className='grid gap-4 md:grid-cols-12'>
         <FormField
           control={form.control}
           name='zipCode'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-4'>
               <FormLabel>CEP</FormLabel>
               <div className='flex items-center gap-2'>
                 <FormControl>
@@ -210,7 +208,7 @@ export function CompanyAddressForm({
           control={form.control}
           name='street'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-6'>
               <FormLabel>Rua</FormLabel>
               <FormControl>
                 <Input placeholder='Rua Exemplo' autoComplete='off' {...field} />
@@ -223,7 +221,7 @@ export function CompanyAddressForm({
           control={form.control}
           name='number'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-2'>
               <FormLabel>Número</FormLabel>
               <FormControl>
                 <Input placeholder='123' autoComplete='off' {...field} />
@@ -236,7 +234,7 @@ export function CompanyAddressForm({
           control={form.control}
           name='complement'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-3'>
               <FormLabel>Complemento</FormLabel>
               <FormControl>
                 <Input placeholder='Sala 2' autoComplete='off' {...field} />
@@ -249,7 +247,7 @@ export function CompanyAddressForm({
           control={form.control}
           name='neighborhood'
           render={({ field }) => (
-            <FormItem>
+            <FormItem className='md:col-span-3'>
               <FormLabel>Bairro</FormLabel>
               <FormControl>
                 <Input placeholder='Centro' autoComplete='off' {...field} />
@@ -258,39 +256,37 @@ export function CompanyAddressForm({
             </FormItem>
           )}
         />
-        <div className='grid gap-4 sm:grid-cols-[1fr_6rem]'>
-          <FormField
-            control={form.control}
-            name='city'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cidade</FormLabel>
-                <FormControl>
-                  <Input placeholder='São Paulo' autoComplete='off' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='state'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>UF</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder='SP'
-                    maxLength={2}
-                    autoComplete='off'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name='city'
+          render={({ field }) => (
+            <FormItem className='md:col-span-4'>
+              <FormLabel>Cidade</FormLabel>
+              <FormControl>
+                <Input placeholder='São Paulo' autoComplete='off' {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='state'
+          render={({ field }) => (
+            <FormItem className='md:col-span-2'>
+              <FormLabel>UF</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder='SP'
+                  maxLength={2}
+                  autoComplete='off'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </CardContent>
     </Card>
   )
@@ -305,7 +301,7 @@ export function CompanySocialLinksForm({ form }: CompanyFormSectionProps) {
           Canais digitais que podem ser usados em documentos futuros.
         </CardDescription>
       </CardHeader>
-      <CardContent className='grid gap-4 md:grid-cols-2'>
+      <CardContent className='grid gap-4 md:grid-cols-4'>
         <FormField
           control={form.control}
           name='website'
@@ -345,23 +341,6 @@ export function CompanySocialLinksForm({ form }: CompanyFormSectionProps) {
               <FormControl>
                 <Input
                   placeholder='facebook.com/empresa'
-                  autoComplete='off'
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='linkedin'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>LinkedIn</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder='linkedin.com/company/empresa'
                   autoComplete='off'
                   {...field}
                 />

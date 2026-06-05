@@ -30,7 +30,6 @@ export const companyFormSchema = z.object({
   website: optionalUrl,
   instagram: z.string(),
   facebook: z.string(),
-  linkedin: z.string(),
   whatsapp: z.string(),
 })
 
@@ -53,7 +52,6 @@ export const emptyCompanyValues: CompanyForm = {
   website: '',
   instagram: '',
   facebook: '',
-  linkedin: '',
   whatsapp: '',
 }
 
@@ -103,7 +101,6 @@ export function toCompanyFormValues(company: Company | null): CompanyForm {
     website: company.website,
     instagram: company.instagram,
     facebook: company.facebook,
-    linkedin: company.linkedin,
     whatsapp: company.whatsapp,
   }
 }

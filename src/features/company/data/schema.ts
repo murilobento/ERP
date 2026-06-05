@@ -16,7 +16,6 @@ export type Company = {
   website: string
   instagram: string
   facebook: string
-  linkedin: string
   whatsapp: string
   createdAt: string
   updatedAt: string

@@ -24,7 +24,6 @@ const COMPANY_SELECT = {
   website: true,
   instagram: true,
   facebook: true,
-  linkedin: true,
   whatsapp: true,
   createdAt: true,
   updatedAt: true,
@@ -47,7 +46,6 @@ type CompanyBody = {
   website?: string
   instagram?: string
   facebook?: string
-  linkedin?: string
   whatsapp?: string
 }
 
@@ -89,7 +87,6 @@ companyRoutes.put('/', async (c) => {
     website: clean(body.website),
     instagram: clean(body.instagram),
     facebook: clean(body.facebook),
-    linkedin: clean(body.linkedin),
     whatsapp: clean(body.whatsapp),
   }
 
