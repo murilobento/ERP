@@ -5,6 +5,18 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { type Purchase } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value)
+}
 
 const statusMap: Record<
   string,
@@ -65,11 +77,42 @@ export const purchasesColumns: ColumnDef<Purchase>[] = [
     ),
     accessorFn: (row) => row.items?.length || 0,
     cell: ({ row }) => {
-      const count = row.original.items?.length || 0
+      const items = row.original.items || []
+      const count = items.length
+      const totalCost = items.reduce(
+        (sum, i) => sum + i.packages * i.packageCost,
+        0
+      )
       return (
-        <span className='ps-2 text-muted-foreground'>
-          {count} {count === 1 ? 'item' : 'itens'}
-        </span>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <span className='cursor-default ps-2 underline decoration-dashed underline-offset-4 text-primary'>
+              {count} {count === 1 ? 'item' : 'itens'}
+            </span>
+          </HoverCardTrigger>
+          <HoverCardContent className='w-auto min-w-72 p-3'>
+            <div className='space-y-1.5'>
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className='flex items-center justify-between text-sm'
+                >
+                  <span className='text-muted-foreground'>
+                    {item.supply.name}
+                  </span>
+                  <span className='font-medium'>
+                    {item.packages} {item.supply.packageUnit || item.supply.unit} ×{' '}
+                    {formatCurrency(item.packageCost)}
+                  </span>
+                </div>
+              ))}
+              <div className='mt-1.5 border-t pt-1.5 flex items-center justify-between text-sm font-semibold'>
+                <span>Total</span>
+                <span>{formatCurrency(totalCost)}</span>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       )
     },
   },

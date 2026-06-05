@@ -1,3 +1,4 @@
+import { ClientsDetailDialog } from './clients-detail-dialog'
 import { ClientsActionDialog } from './clients-action-dialog'
 import { ClientsDeleteDialog } from './clients-delete-dialog'
 import { useClients } from './clients-provider'
@@ -14,6 +15,16 @@ export function ClientsDialogs() {
 
       {currentRow && (
         <>
+          <ClientsDetailDialog
+            key={`client-view-${currentRow.id}`}
+            open={open === 'view'}
+            onOpenChange={() => {
+              setOpen('view')
+              setTimeout(() => setCurrentRow(null), 500)
+            }}
+            currentRow={currentRow}
+          />
+
           <ClientsActionDialog
             key={`client-edit-${currentRow.id}`}
             open={open === 'edit'}

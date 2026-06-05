@@ -1,6 +1,7 @@
 import { ProductsActionDialog } from './products-action-dialog'
 import { ProductsDeleteDialog } from './products-delete-dialog'
 import { ProductsCompositionDialog } from './products-composition-dialog'
+import { ProductsDetailDialog } from './products-detail-dialog'
 import { useProducts } from './products-provider'
 
 export function ProductsDialogs() {
@@ -15,6 +16,16 @@ export function ProductsDialogs() {
 
       {currentRow && (
         <>
+          <ProductsDetailDialog
+            key={`product-view-${currentRow.id}`}
+            open={open === 'view'}
+            onOpenChange={() => {
+              setOpen('view')
+              setTimeout(() => setCurrentRow(null), 500)
+            }}
+            currentRow={currentRow}
+          />
+
           <ProductsActionDialog
             key={`product-edit-${currentRow.id}`}
             open={open === 'edit'}

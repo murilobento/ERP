@@ -42,7 +42,7 @@ export function ClientsTable({ data, search, navigate }: DataTableProps) {
       searchPlaceholder='Filtrar por nome, telefone ou endereço...'
       onRowClick={(row) => {
         setCurrentRow(row)
-        setOpen('edit')
+        setOpen('view')
       }}
       labels={{
         name: 'Nome',

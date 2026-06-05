@@ -154,8 +154,8 @@ export function ProductionsActionDialog({
                 <Label className='text-xs text-muted-foreground'>Quantidade</Label>
                 <Input
                   type='number'
-                  step='0.01'
-                  min='0'
+                  step='1'
+                  min='1'
                   autoComplete='off'
                   value={draftItem.quantity || ''}
                   onChange={(e) =>

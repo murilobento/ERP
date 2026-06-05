@@ -10,6 +10,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
+import {
   formatCurrency,
   getSaleTotal,
   saleStatusMap,
@@ -182,11 +187,38 @@ export function SalesKanban({ data, preparationSales }: SalesKanbanProps) {
                         </span>
                       </div>
                       <div className='mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-4 text-muted-foreground'>
-                        <span>{getItemCountLabel(sale.items.length)}</span>
-                        <span className='text-muted-foreground/50'>•</span>
-                        <span>
+                        <HoverCard>
+                          <HoverCardTrigger asChild>
+                            <span className='cursor-default text-primary'>
+                              {getItemCountLabel(sale.items.length)}
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className='w-auto min-w-72 p-3'>
+                            <div className='space-y-1.5'>
+                              {sale.items.map((item, i) => (
+                                <div
+                                  key={i}
+                                  className='flex items-center justify-between text-sm'
+                                >
+                                  <span className='text-muted-foreground'>
+                                    {item.product.name}
+                                  </span>
+                                  <span className='font-medium'>
+                                    {item.quantity} {item.product.unit} ×{' '}
+                                    {formatCurrency(item.unitPrice)}
+                                  </span>
+                                </div>
+                              ))}
+                              <div className='mt-1.5 border-t pt-1.5 flex items-center justify-between text-sm font-semibold'>
+                                <span>Total</span>
+                                <span>{formatCurrency(getSaleTotal(sale))}</span>
+                              </div>
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
+                        <Badge variant='outline' className='text-[11px] px-1.5 py-0'>
                           Entrega {formatDeliveryDate(sale.deliveryDate)}
-                        </span>
+                        </Badge>
                       </div>
                     </button>
                   ))

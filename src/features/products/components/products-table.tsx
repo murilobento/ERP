@@ -33,7 +33,7 @@ export function ProductsTable({ data, search, navigate }: DataTableProps) {
       searchPlaceholder='Filtrar por nome...'
       onRowClick={(row) => {
         setCurrentRow(row)
-        setOpen('edit')
+        setOpen('view')
       }}
       labels={{
         name: 'Nome',

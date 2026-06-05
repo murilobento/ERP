@@ -13,3 +13,52 @@ export type Client = {
   createdAt: string
   updatedAt: string
 }
+
+export type ClientSaleItem = {
+  quantity: number
+  unitPrice: number
+  product: {
+    id: string
+    name: string
+    unit: string
+  }
+}
+
+export type ClientSale = {
+  id: string
+  status: string
+  createdAt: string
+  deliveredAt: string | null
+  deliveryDate: string | null
+  paymentMethod: string
+  notes: string
+  items: ClientSaleItem[]
+}
+
+export type ClientDetail = Client & {
+  sales: ClientSale[]
+}
+
+export const saleStatusMap: Record<
+  string,
+  { label: string; variant: 'default' | 'secondary' | 'warning' | 'success' }
+> = {
+  in_preparation: { label: 'Em preparo', variant: 'warning' },
+  ready_for_delivery: { label: 'Pronto para entrega', variant: 'default' },
+  delivered: { label: 'Entregue', variant: 'secondary' },
+  completed: { label: 'Concluído', variant: 'success' },
+}
+
+export function getSaleTotal(sale: Pick<ClientSale, 'items'>) {
+  return sale.items.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  )
+}
+
+export function formatCurrency(value: number) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value)
+}

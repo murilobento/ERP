@@ -129,6 +129,44 @@ clientRoutes.patch('/:id', async (c) => {
   return c.json({ client })
 })
 
+clientRoutes.get('/:id', async (c) => {
+  const clientId = c.req.param('id')
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    select: {
+      ...CLIENT_SELECT,
+      sales: {
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+          deliveredAt: true,
+          deliveryDate: true,
+          paymentMethod: true,
+          notes: true,
+          items: {
+            select: {
+              quantity: true,
+              unitPrice: true,
+              product: {
+                select: { id: true, name: true, unit: true },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      },
+    },
+  })
+
+  if (!client) {
+    return c.json({ error: 'Cliente não encontrado.' }, 404)
+  }
+
+  return c.json({ client })
+})
+
 clientRoutes.delete('/:id', async (c) => {
   const clientId = c.req.param('id')
 
