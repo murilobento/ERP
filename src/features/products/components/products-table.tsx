@@ -20,6 +20,7 @@ export function ProductsTable({ data, search, navigate }: DataTableProps) {
     columns,
     search,
     navigate,
+    defaultColumnVisibility: { categoryId: false },
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
       const { name } = row.original
@@ -70,6 +71,7 @@ export function ProductsTable({ data, search, navigate }: DataTableProps) {
         stock: 'Estoque',
         compositionCount: 'Composição',
         status: 'Status',
+        categoryId: 'Categoria',
       }}
       bulkActions={
         <DataTableDeleteBulkActions

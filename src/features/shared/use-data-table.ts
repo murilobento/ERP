@@ -5,6 +5,8 @@ import {
   type SortingState,
   type VisibilityState,
   getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -22,6 +24,7 @@ type UseDataTableOptions<TData> = {
   navigate: NavigateFn
   globalFilterFn?: FilterFn<TData>
   globalFilterEnabled?: boolean
+  defaultColumnVisibility?: VisibilityState
 }
 
 export function useDataTable<TData>({
@@ -31,9 +34,12 @@ export function useDataTable<TData>({
   navigate,
   globalFilterFn,
   globalFilterEnabled = true,
+  defaultColumnVisibility,
 }: UseDataTableOptions<TData>) {
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    defaultColumnVisibility ?? {}
+  )
   const [sorting, setSorting] = useState<SortingState>([])
 
   const {
@@ -72,6 +78,8 @@ export function useDataTable<TData>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
   useEffect(() => {

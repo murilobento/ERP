@@ -100,10 +100,6 @@ function getDateRangeLabel(from: string, to: string) {
   return ''
 }
 
-function getMovementTypeLabel(type: string) {
-  return movementTypeOptions.find((o) => o.value === type)?.label || type
-}
-
 export function StockMovementsFilters({ search, navigate }: MovementsFiltersProps) {
   const filters = getMovementsFilters(search)
   const hasRemovableFilters =

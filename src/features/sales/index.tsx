@@ -108,37 +108,37 @@ export function Sales() {
 							<ShoppingCart className="h-4 w-4 text-muted-foreground" />
 						</div>
 					</Card>
-					<Card className="p-2.5 sm:p-3">
+					<Card className="border-blue-200 bg-blue-50 p-2.5 sm:p-3">
 						<div className="flex min-w-0 items-center justify-between gap-2">
 							<div className="min-w-0">
-								<p className="text-sm font-medium text-muted-foreground">Valor Total</p>
-								<div className="text-xl font-bold sm:text-2xl">
+								<p className="text-sm font-medium text-blue-600">Valor Total</p>
+								<div className="text-xl font-bold text-blue-700 sm:text-2xl">
 									{formatCurrency(kpis.totalValue)}
 								</div>
 							</div>
-							<DollarSign className="h-4 w-4 text-muted-foreground" />
+							<DollarSign className="h-4 w-4 text-blue-400" />
 						</div>
 					</Card>
-					<Card className="p-2.5 sm:p-3">
+					<Card className="border-green-200 bg-green-50 p-2.5 sm:p-3">
 						<div className="flex min-w-0 items-center justify-between gap-2">
 							<div className="min-w-0">
-								<p className="text-sm font-medium text-muted-foreground">Pagos</p>
-								<div className="text-xl font-bold sm:text-2xl">
+								<p className="text-sm font-medium text-green-600">Pagos</p>
+								<div className="text-xl font-bold text-green-700 sm:text-2xl">
 									{formatCurrency(kpis.paidValue)}
 								</div>
 							</div>
-							<CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+							<CheckCircle2 className="h-4 w-4 text-green-400" />
 						</div>
 					</Card>
-					<Card className="p-2.5 sm:p-3">
+					<Card className="border-red-200 bg-red-50 p-2.5 sm:p-3">
 						<div className="flex min-w-0 items-center justify-between gap-2">
 							<div className="min-w-0">
-								<p className="text-sm font-medium text-muted-foreground">A Receber</p>
-								<div className="text-xl font-bold sm:text-2xl">
+								<p className="text-sm font-medium text-red-600">A Receber</p>
+								<div className="text-xl font-bold text-red-700 sm:text-2xl">
 									{formatCurrency(kpis.toReceiveValue)}
 								</div>
 							</div>
-							<Clock className="h-4 w-4 text-muted-foreground" />
+							<Clock className="h-4 w-4 text-red-400" />
 						</div>
 					</Card>
 				</div>

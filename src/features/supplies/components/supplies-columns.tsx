@@ -109,6 +109,12 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Status' />
     ),
+    filterFn: (row, columnId, filterValue) => {
+      if (Array.isArray(filterValue)) {
+        return filterValue.includes(row.getValue(columnId))
+      }
+      return row.getValue(columnId) === filterValue
+    },
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
