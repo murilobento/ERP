@@ -41,11 +41,11 @@ export type ClientDetail = Client & {
 
 export const saleStatusMap: Record<
   string,
-  { label: string; variant: 'default' | 'secondary' | 'warning' | 'success' }
+  { label: string; variant: 'danger' | 'secondary' | 'blue' | 'success' }
 > = {
-  in_preparation: { label: 'Em preparo', variant: 'warning' },
-  ready_for_delivery: { label: 'Pronto para entrega', variant: 'default' },
-  delivered: { label: 'Entregue', variant: 'secondary' },
+  in_preparation: { label: 'Em preparo', variant: 'danger' },
+  ready_for_delivery: { label: 'Pronto para entrega', variant: 'secondary' },
+  delivered: { label: 'Entregue', variant: 'blue' },
   completed: { label: 'Concluído', variant: 'success' },
 }
 

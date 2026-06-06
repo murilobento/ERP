@@ -16,6 +16,11 @@ const SalesKanbanActionDialog = lazy(() =>
     default: module.SalesKanbanActionDialog,
   }))
 )
+const BestSellingDialog = lazy(() =>
+  import('./best-selling-dialog').then((module) => ({
+    default: module.BestSellingDialog,
+  }))
+)
 
 export function SalesDialogs() {
   const { open, setOpen, currentRow, kanbanAction } = useSales()
@@ -36,6 +41,12 @@ export function SalesDialogs() {
         />
       ) : null}
       {open === 'view' ? <SalesDetailDialog /> : null}
+      {open === 'best-selling' ? (
+        <BestSellingDialog
+          open
+          onOpenChange={(state) => setOpen(state ? 'best-selling' : null)}
+        />
+      ) : null}
       {kanbanAction ? <SalesKanbanActionDialog /> : null}
     </Suspense>
   )

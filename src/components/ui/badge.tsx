@@ -20,6 +20,10 @@ const badgeVariants = cva(
           'border-transparent bg-green-600 text-white [a&]:hover:bg-green-600/90',
         warning:
           'border-transparent bg-orange-500 text-white [a&]:hover:bg-orange-500/90',
+        danger:
+          'border-transparent bg-red-600 text-white [a&]:hover:bg-red-600/90',
+        blue:
+          'border-transparent bg-blue-600 text-white [a&]:hover:bg-blue-600/90',
       },
     },
     defaultVariants: {
