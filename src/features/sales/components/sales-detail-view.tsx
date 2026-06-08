@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import {
   CheckCircle2,
+  FileText,
+  Loader2,
   PackageCheck,
   Pen,
   RotateCcw,
@@ -14,6 +17,7 @@ import {
   type Sale,
   saleStatusMap,
 } from '../data/schema'
+import { downloadInvoice } from '../lib/download-invoice'
 
 export type SalesDetailConfirmAction =
   | 'ready-for-delivery'
@@ -39,6 +43,17 @@ export function SalesDetailView({
   onConfirmAction,
   onClose,
 }: SalesDetailViewProps) {
+  const [isInvoiceLoading, setIsInvoiceLoading] = useState(false)
+
+  async function handleInvoice() {
+    setIsInvoiceLoading(true)
+    try {
+      await downloadInvoice(sale.id, sale.customer)
+    } finally {
+      setIsInvoiceLoading(false)
+    }
+  }
+
   return (
     <>
       <div>
@@ -114,6 +129,18 @@ export function SalesDetailView({
       </div>
 
       <DialogFooter className='gap-2'>
+        <Button
+          variant='outline'
+          onClick={handleInvoice}
+          disabled={isInvoiceLoading || isLoading}
+        >
+          {isInvoiceLoading ? (
+            <Loader2 size={16} className='me-1 animate-spin' />
+          ) : (
+            <FileText size={16} className='me-1' />
+          )}
+          Fatura
+        </Button>
         {canEdit && (
           <Button onClick={onEdit} disabled={isLoading}>
             <Pen size={16} className='me-1' />

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import prisma from "../lib/prisma";
+import { generateInvoicePdf } from "../lib/pdf";
 import { getProductStockMap } from "../lib/stock";
 import { authMiddleware } from "../middleware/auth";
 
@@ -465,6 +466,100 @@ saleRoutes.post("/:id/reverse", async (c) => {
 	});
 
 	return c.json({ sale });
+});
+
+saleRoutes.get("/:id/invoice", async (c) => {
+	const saleId = c.req.param("id");
+
+	const sale = await prisma.sale.findUnique({
+		where: { id: saleId },
+		select: {
+			...SALE_SELECT,
+			paymentMethod: true,
+			paidAt: true,
+			paymentNotes: true,
+			deliveryDate: true,
+			notes: true,
+		},
+	});
+
+	if (!sale) {
+		return c.json({ error: "Venda não encontrada." }, 404);
+	}
+
+	const company = await prisma.company.findUnique({
+		where: { singletonKey: "default" },
+	});
+
+	if (!company) {
+		return c.json({ error: "Dados da empresa não configurados." }, 400);
+	}
+
+	const client = await prisma.client.findUnique({
+		where: { id: sale.clientId },
+		select: {
+			name: true,
+			phone: true,
+			street: true,
+			number: true,
+			complement: true,
+			neighborhood: true,
+			city: true,
+			state: true,
+		},
+	});
+
+	const pdfBuffer = await generateInvoicePdf({
+		saleId: sale.id,
+		status: sale.status,
+		createdAt: sale.createdAt.toISOString(),
+		deliveryDate: sale.deliveryDate?.toISOString() ?? null,
+		paymentMethod: sale.paymentMethod,
+		paidAt: sale.paidAt?.toISOString() ?? null,
+		paymentNotes: sale.paymentNotes,
+		notes: sale.notes,
+		items: sale.items.map((item) => ({
+			name: item.product.name,
+			unit: item.product.unit,
+			quantity: item.quantity,
+			unitPrice: item.unitPrice,
+		})),
+		company: {
+			name: company.name,
+			tradeName: company.tradeName,
+			cnpj: company.cnpj,
+			email: company.email,
+			phone: company.phone,
+			logoUrl: company.logoUrl,
+			street: company.street,
+			number: company.number,
+			complement: company.complement,
+			neighborhood: company.neighborhood,
+			city: company.city,
+			state: company.state,
+			website: company.website,
+			whatsapp: company.whatsapp,
+		},
+		client: client || {
+			name: sale.customer,
+			phone: "",
+			street: "",
+			number: "",
+			complement: "",
+			neighborhood: "",
+			city: "",
+			state: "",
+		},
+	});
+
+	const shortId = sale.id.slice(-8).toUpperCase();
+	c.header("Content-Type", "application/pdf");
+	c.header(
+		"Content-Disposition",
+		`attachment; filename="fatura-${shortId}.pdf"`,
+	);
+
+	return c.body(pdfBuffer);
 });
 
 export { saleRoutes };
