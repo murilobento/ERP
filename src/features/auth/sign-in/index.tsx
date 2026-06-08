@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useSearch } from '@tanstack/react-router'
 import {
   Card,
@@ -9,8 +10,14 @@ import {
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
 
+const COMPANY_FALLBACK = 'Bendito Doce'
+
 export function SignIn() {
   const { redirect } = useSearch({ from: '/(auth)/sign-in' })
+
+  useEffect(() => {
+    document.title = `${COMPANY_FALLBACK} - Entrar`
+  }, [])
 
   return (
     <AuthLayout>

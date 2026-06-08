@@ -14,7 +14,7 @@ type TeamSwitcherProps = {
 
 export function TeamSwitcher({ company }: TeamSwitcherProps) {
   const [failedLogoUrl, setFailedLogoUrl] = useState<string | undefined>()
-  const companyName = company?.name.trim() || 'Shadcn Admin'
+  const companyName = company?.name.trim() || 'Bendito Doce'
   const logoUrl = company?.logoUrl.trim()
   const showLogo = Boolean(logoUrl) && failedLogoUrl !== logoUrl
 

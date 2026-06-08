@@ -7,6 +7,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { UsersDialogs } from './components/users-dialogs'
 import { UsersPrimaryButtons } from './components/users-primary-buttons'
@@ -17,6 +18,7 @@ import { type User } from './data/schema'
 const route = getRouteApi('/_authenticated/users/')
 
 export function Users() {
+  useDocumentTitle('Usuários')
   const search = route.useSearch()
   const navigate = route.useNavigate()
 

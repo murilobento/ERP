@@ -7,6 +7,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { VendorsDialogs } from './components/vendors-dialogs'
 import { VendorsPrimaryButtons } from './components/vendors-primary-buttons'
@@ -17,6 +18,7 @@ import { type Vendor } from './data/schema'
 const route = getRouteApi('/_authenticated/vendors/')
 
 export function Vendors() {
+  useDocumentTitle('Fornecedores')
   const search = route.useSearch()
   const navigate = route.useNavigate()
 

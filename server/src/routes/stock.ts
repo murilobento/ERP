@@ -41,7 +41,103 @@ stockRoutes.get('/movements', async (c) => {
     orderBy: { createdAt: 'desc' },
   })
 
-  return c.json({ movements })
+  const saleIds = new Set<string>()
+  const purchaseIds = new Set<string>()
+  const productionIds = new Set<string>()
+  const adjustmentIds = new Set<string>()
+
+  for (const m of movements) {
+    if (!m.referenceId) continue
+    if (m.type.startsWith('sale')) saleIds.add(m.referenceId)
+    else if (m.type.startsWith('purchase')) purchaseIds.add(m.referenceId)
+    else if (m.type.startsWith('production')) productionIds.add(m.referenceId)
+    else if (m.type.startsWith('adjustment')) adjustmentIds.add(m.referenceId)
+  }
+
+  const [sales, purchases, productions, adjustments] = await Promise.all([
+    saleIds.size > 0
+      ? prisma.sale.findMany({
+          where: { id: { in: [...saleIds] } },
+          select: {
+            id: true,
+            customer: true,
+            status: true,
+            createdAt: true,
+            deliveredAt: true,
+            deliveryDate: true,
+            completedAt: true,
+          },
+        })
+      : [],
+    purchaseIds.size > 0
+      ? prisma.purchase.findMany({
+          where: { id: { in: [...purchaseIds] } },
+          select: {
+            id: true,
+            supplier: true,
+            status: true,
+            createdAt: true,
+            completedAt: true,
+          },
+        })
+      : [],
+    productionIds.size > 0
+      ? prisma.production.findMany({
+          where: { id: { in: [...productionIds] } },
+          select: {
+            id: true,
+            quantity: true,
+            status: true,
+            createdAt: true,
+            completedAt: true,
+            product: { select: { id: true, name: true, unit: true } },
+          },
+        })
+      : [],
+    adjustmentIds.size > 0
+      ? prisma.stockAdjustment.findMany({
+          where: { id: { in: [...adjustmentIds] } },
+          select: {
+            id: true,
+            reason: true,
+            status: true,
+            createdAt: true,
+            completedAt: true,
+            reversedAt: true,
+            reversalReason: true,
+          },
+        })
+      : [],
+  ])
+
+  const salesMap = new Map(sales.map((s) => [s.id, s]))
+  const purchasesMap = new Map(purchases.map((p) => [p.id, p]))
+  const productionsMap = new Map(productions.map((p) => [p.id, p]))
+  const adjustmentsMap = new Map(adjustments.map((a) => [a.id, a]))
+
+  const enriched = movements.map((m) => {
+    let reference: Record<string, unknown> | null = null
+
+    if (m.referenceId) {
+      if (m.type.startsWith('sale')) {
+        const sale = salesMap.get(m.referenceId)
+        if (sale) reference = { type: 'sale' as const, data: sale }
+      } else if (m.type.startsWith('purchase')) {
+        const purchase = purchasesMap.get(m.referenceId)
+        if (purchase) reference = { type: 'purchase' as const, data: purchase }
+      } else if (m.type.startsWith('production')) {
+        const production = productionsMap.get(m.referenceId)
+        if (production) reference = { type: 'production' as const, data: production }
+      } else if (m.type.startsWith('adjustment')) {
+        const adjustment = adjustmentsMap.get(m.referenceId)
+        if (adjustment) reference = { type: 'adjustment' as const, data: adjustment }
+      }
+    }
+
+    return { ...m, reference }
+  })
+
+  return c.json({ movements: enriched })
 })
 
 stockRoutes.get('/adjustments', async (c) => {
@@ -215,7 +311,7 @@ stockRoutes.post('/adjustments', async (c) => {
 })
 
 stockRoutes.patch('/adjustments/:id', async (c) => {
-  const userId = c.get('userId') as string
+  const _userId = c.get('userId') as string
   const id = c.req.param('id')
   const body = await c.req.json()
   const { itemType, itemId, quantity, reason } = body as {
@@ -342,14 +438,9 @@ stockRoutes.post('/adjustments/:id/complete', async (c) => {
     const itemId = existing.productId || existing.supplyId || ''
     const isProduct = existing.itemType === 'product'
 
-    let stockBefore = 0
-    if (isProduct) {
-      const map = await getProductStockMap([itemId], tx)
-      stockBefore = map.get(itemId) ?? 0
-    } else {
-      const map = await getSupplyStockMap([itemId], tx)
-      stockBefore = map.get(itemId) ?? 0
-    }
+    const stockBefore = isProduct
+      ? (await getProductStockMap([itemId], tx)).get(itemId) ?? 0
+      : (await getSupplyStockMap([itemId], tx)).get(itemId) ?? 0
 
     const itemName = isProduct
       ? (existing.product?.name || 'Produto')
@@ -459,14 +550,9 @@ stockRoutes.post('/adjustments/:id/reverse', async (c) => {
     const isProduct = existing.itemType === 'product'
     const quantity = -existing.quantity
 
-    let stockBefore = 0
-    if (isProduct) {
-      const map = await getProductStockMap([itemId], tx)
-      stockBefore = map.get(itemId) ?? 0
-    } else {
-      const map = await getSupplyStockMap([itemId], tx)
-      stockBefore = map.get(itemId) ?? 0
-    }
+    const stockBefore = isProduct
+      ? (await getProductStockMap([itemId], tx)).get(itemId) ?? 0
+      : (await getSupplyStockMap([itemId], tx)).get(itemId) ?? 0
 
     const itemName = isProduct
       ? (existing.product?.name || 'Produto')

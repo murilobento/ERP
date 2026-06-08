@@ -8,6 +8,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { ProductionsDialogs } from './components/productions-dialogs'
 import { ProductionsFilters } from './components/productions-filters'
@@ -20,6 +21,7 @@ import { type Production } from './data/schema'
 const route = getRouteApi('/_authenticated/productions/')
 
 export function Productions() {
+  useDocumentTitle('Produções')
   const search = route.useSearch()
   const navigate = route.useNavigate()
 

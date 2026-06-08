@@ -15,6 +15,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import { RecentSales } from './components/recent-sales'
 
 const Analytics = lazy(() =>
@@ -33,6 +34,7 @@ function ChartFallback({ height }: { height: string }) {
 }
 
 export function Dashboard() {
+  useDocumentTitle('Painel')
   return (
     <>
       {/* ===== Top Heading ===== */}

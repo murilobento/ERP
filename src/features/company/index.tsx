@@ -13,6 +13,7 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import {
   CompanyAddressForm,
@@ -33,6 +34,7 @@ type CompanyResponse = {
 }
 
 export function Company() {
+  useDocumentTitle('Empresa')
   const [isSaving, setIsSaving] = useState(false)
   const [isLoadingCep, setIsLoadingCep] = useState(false)
   const queryClient = useQueryClient()

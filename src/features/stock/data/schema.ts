@@ -8,6 +8,49 @@ export type StockBalance = {
   stock: number
 }
 
+export type SaleReference = {
+  id: string
+  customer: string
+  status: string
+  createdAt: string
+  deliveredAt: string | null
+  deliveryDate: string | null
+  completedAt: string | null
+}
+
+export type PurchaseReference = {
+  id: string
+  supplier: string
+  status: string
+  createdAt: string
+  completedAt: string | null
+}
+
+export type ProductionReference = {
+  id: string
+  quantity: number
+  status: string
+  createdAt: string
+  completedAt: string | null
+  product: { id: string; name: string; unit: string }
+}
+
+export type AdjustmentReference = {
+  id: string
+  reason: string
+  status: string
+  createdAt: string
+  completedAt: string | null
+  reversedAt: string | null
+  reversalReason: string
+}
+
+export type StockMovementReference =
+  | { type: 'sale'; data: SaleReference }
+  | { type: 'purchase'; data: PurchaseReference }
+  | { type: 'production'; data: ProductionReference }
+  | { type: 'adjustment'; data: AdjustmentReference }
+
 export type StockMovement = {
   id: string
   productId: string | null
@@ -23,6 +66,7 @@ export type StockMovement = {
   product: { id: string; name: string; unit: string } | null
   supply: { id: string; name: string; unit: string } | null
   author: { id: string; firstName: string; lastName: string } | null
+  reference: StockMovementReference | null
 }
 
 export type StockAdjustmentStatus = 'pending' | 'completed' | 'reversed'

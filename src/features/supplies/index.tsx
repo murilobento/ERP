@@ -7,6 +7,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { SuppliesDialogs } from './components/supplies-dialogs'
 import { SuppliesPrimaryButtons } from './components/supplies-primary-buttons'
@@ -17,6 +18,7 @@ import { type SupplyWithStock } from './data/schema'
 const route = getRouteApi('/_authenticated/supplies/')
 
 export function Supplies() {
+  useDocumentTitle('Insumos')
   const search = route.useSearch()
   const navigate = route.useNavigate()
 

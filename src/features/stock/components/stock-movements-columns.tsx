@@ -1,8 +1,14 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { type StockMovement } from '../data/schema'
+import { ReferenceHoverContent } from './stock-movements-reference-hover'
 
 const typeMap: Record<string, string> = {
   production_output: 'Produção de Produto',
@@ -70,7 +76,25 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
       <DataTableColumnHeader column={column} title='Movimento' />
     ),
     cell: ({ row }) => {
-      return <span className='ps-2'>{getMovementLabel(row.original)}</span>
+      const m = row.original
+      const label = getMovementLabel(m)
+
+      if (!m.reference) {
+        return <span className='ps-2'>{label}</span>
+      }
+
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <span className='cursor-default ps-2 underline decoration-dashed underline-offset-4 text-primary'>
+              {label}
+            </span>
+          </HoverCardTrigger>
+          <HoverCardContent className='w-auto min-w-72 p-3'>
+            <ReferenceHoverContent reference={m.reference} />
+          </HoverCardContent>
+        </HoverCard>
+      )
     },
   },
   {

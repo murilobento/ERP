@@ -16,6 +16,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { FullscreenToggle } from "@/components/fullscreen-toggle";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import api from "@/lib/api";
@@ -40,6 +41,7 @@ function SalesKanbanFallback() {
 }
 
 export function Sales() {
+	useDocumentTitle('Vendas');
 	const [view, setView] = useState<"table" | "kanban">("kanban");
 	const search = route.useSearch();
 	const navigate = route.useNavigate();

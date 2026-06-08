@@ -14,8 +14,11 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/date-picker'
-import { getProductionsFilters, productionStatusOptions } from '../data/filters'
-import { type ProductionStatus } from '../data/filters'
+import {
+  type ProductionStatus,
+  getProductionsFilters,
+  productionStatusOptions,
+} from '../data/filters'
 
 type ProductionsFiltersProps = {
   search: Record<string, unknown>

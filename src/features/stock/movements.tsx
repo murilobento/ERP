@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate, useSearch } from '@tanstack/react-router'
+import { getRouteApi } from '@tanstack/react-router'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -8,17 +8,19 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
-import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { StockMovementsFilters } from './components/stock-movements-filters'
 import { StockMovementsTable } from './components/stock-movements-table'
 import { filterMovements } from './data/filters'
 import { type StockMovement } from './data/schema'
 
+const route = getRouteApi('/_authenticated/stock/movements')
+
 export function StockMovements() {
-  const search = useSearch({ strict: false })
-  const routerNavigate = useNavigate()
-  const navigate = routerNavigate as unknown as NavigateFn
+  useDocumentTitle('Movimentações')
+  const search = route.useSearch()
+  const navigate = route.useNavigate()
 
   const { data: movements = [] } = useQuery({
     queryKey: ['stock-movements'],

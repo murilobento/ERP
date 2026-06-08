@@ -7,6 +7,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { CategoriesDialogs } from './components/categories-dialogs'
 import { CategoriesPrimaryButtons } from './components/categories-primary-buttons'
@@ -17,6 +18,7 @@ import { type Category } from './data/schema'
 const route = getRouteApi('/_authenticated/categories/')
 
 export function Categories() {
+  useDocumentTitle('Categorias')
   const search = route.useSearch()
   const navigate = route.useNavigate()
 

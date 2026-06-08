@@ -8,6 +8,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { PurchasesDialogs } from './components/purchases-dialogs'
 import { PurchasesFilters } from './components/purchases-filters'
@@ -20,6 +21,7 @@ import { type Purchase } from './data/schema'
 const route = getRouteApi('/_authenticated/purchases/')
 
 export function Purchases() {
+  useDocumentTitle('Compras')
   const search = route.useSearch()
   const navigate = route.useNavigate()
 

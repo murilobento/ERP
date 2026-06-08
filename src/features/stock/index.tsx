@@ -8,6 +8,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { AdjustmentsDialogs } from './components/adjustments-dialogs'
 import { AdjustmentsFilters } from './components/adjustments-filters'
@@ -20,6 +21,7 @@ import { type StockAdjustment } from './data/schema'
 const route = getRouteApi('/_authenticated/stock/')
 
 export function Stock() {
+  useDocumentTitle('Acerto de Estoque')
   const search = route.useSearch()
   const navigate = route.useNavigate()
 
