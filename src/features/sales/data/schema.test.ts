@@ -16,6 +16,7 @@ describe('sale data helpers', () => {
             productId: 'product-1',
             quantity: 2,
             unitPrice: 15,
+            kitId: null,
             product: {
               id: 'product-1',
               name: 'Bolo',
@@ -28,6 +29,7 @@ describe('sale data helpers', () => {
             productId: 'product-2',
             quantity: 3,
             unitPrice: 10,
+            kitId: null,
             product: {
               id: 'product-2',
               name: 'Doce',

@@ -34,8 +34,12 @@ const SALE_SELECT = {
 			productId: true,
 			quantity: true,
 			unitPrice: true,
+			kitId: true,
 			product: {
 				select: { id: true, name: true, unit: true, status: true },
+			},
+			kit: {
+				select: { id: true, name: true },
 			},
 		},
 	},
@@ -45,6 +49,12 @@ type SaleItemInput = {
 	productId: string;
 	quantity: number;
 	unitPrice: number;
+	kitId?: string | null;
+};
+
+type KitSaleInput = {
+	kitId: string;
+	quantity: number;
 };
 
 function validateSaleItems(items: SaleItemInput[]) {
@@ -52,7 +62,7 @@ function validateSaleItems(items: SaleItemInput[]) {
 		return "Pelo menos um item é obrigatório.";
 	}
 
-	const productIds = new Set<string>();
+	const keys = new Set<string>();
 	for (const item of items) {
 		if (!item.productId || !item.quantity || item.quantity <= 0) {
 			return "Cada item deve ter produto e quantidade (> 0).";
@@ -60,13 +70,86 @@ function validateSaleItems(items: SaleItemInput[]) {
 		if (item.unitPrice < 0) {
 			return "O preço unitário não pode ser negativo.";
 		}
-		if (productIds.has(item.productId)) {
-			return "Não é permitido repetir o mesmo produto na venda.";
+		const key = `${item.productId}::${item.kitId ?? ""}`;
+		if (keys.has(key)) {
+			return "Não é permitido repetir o mesmo produto na venda (mesmo kit).";
 		}
-		productIds.add(item.productId);
+		keys.add(key);
 	}
 
 	return null;
+}
+
+async function expandKitItems(kits: KitSaleInput[]) {
+	const expandedItems: SaleItemInput[] = [];
+
+	for (const kitInput of kits) {
+		const kit = await prisma.kit.findUnique({
+			where: { id: kitInput.kitId },
+			include: {
+				items: {
+					include: {
+						product: {
+							include: {
+								composition: {
+									select: {
+										quantity: true,
+										supply: { select: { costPrice: true } },
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		});
+
+		if (!kit) {
+			return { error: `Kit não encontrado: ${kitInput.kitId}` };
+		}
+		if (kit.status !== "active") {
+			return { error: `Kit inativo: ${kit.name}` };
+		}
+
+		const kitTotalPrice = kit.items.reduce(
+			(sum, ki) => {
+				const costPrice = ki.product.composition.reduce(
+					(s, c) => s + c.quantity * c.supply.costPrice,
+					0
+				);
+				const salePrice = costPrice * (1 + ki.product.margin / 100);
+				return sum + salePrice * ki.quantity;
+			},
+			0,
+		);
+
+		const discount =
+			kit.discountType === "percentage"
+				? kitTotalPrice * (kit.discountValue / 100)
+				: kit.discountValue;
+		const kitFinalPrice = Math.max(0, kitTotalPrice - discount);
+
+		for (const ki of kit.items) {
+			const costPrice = ki.product.composition.reduce(
+				(s, c) => s + c.quantity * c.supply.costPrice,
+				0,
+			);
+			const salePrice = costPrice * (1 + ki.product.margin / 100);
+			const productContribution = salePrice * ki.quantity;
+			const proportion = kitTotalPrice > 0 ? productContribution / kitTotalPrice : 0;
+			const proportionalPrice = kitFinalPrice * proportion;
+			const unitPrice = ki.quantity > 0 ? proportionalPrice / ki.quantity : 0;
+
+			expandedItems.push({
+				productId: ki.productId,
+				quantity: ki.quantity * kitInput.quantity,
+				unitPrice: Math.round(unitPrice * 100) / 100,
+				kitId: kit.id,
+			});
+		}
+	}
+
+	return { items: expandedItems };
 }
 
 async function ensureProductsAvailable(
@@ -101,11 +184,12 @@ saleRoutes.get("/", async (c) => {
 
 saleRoutes.post("/", async (c) => {
 	const body = await c.req.json();
-	const { clientId, notes, deliveryDate, items } = body as {
+	const { clientId, notes, deliveryDate, items: rawItems, kits: rawKits } = body as {
 		clientId: string;
 		notes?: string;
 		deliveryDate: string;
-		items: SaleItemInput[];
+		items?: SaleItemInput[];
+		kits?: KitSaleInput[];
 	};
 
 	if (!clientId) {
@@ -124,12 +208,22 @@ saleRoutes.post("/", async (c) => {
 		return c.json({ error: "Cliente não encontrado ou inativo." }, 404);
 	}
 
-	const validationError = validateSaleItems(items);
+	const allItems: SaleItemInput[] = [...(rawItems || [])];
+
+	if (rawKits && rawKits.length > 0) {
+		const expanded = await expandKitItems(rawKits);
+		if ("error" in expanded) {
+			return c.json({ error: expanded.error }, 400);
+		}
+		allItems.push(...expanded.items);
+	}
+
+	const validationError = validateSaleItems(allItems);
 	if (validationError) {
 		return c.json({ error: validationError }, 400);
 	}
 
-	const productIds = items.map((item) => item.productId);
+	const productIds = [...new Set(allItems.map((item) => item.productId))];
 	const products = await prisma.product.findMany({
 		where: { id: { in: productIds }, status: "active" },
 	});
@@ -149,10 +243,11 @@ saleRoutes.post("/", async (c) => {
 			status: "in_preparation",
 			items: {
 				createMany: {
-					data: items.map((item) => ({
+					data: allItems.map((item) => ({
 						productId: item.productId,
 						quantity: item.quantity,
 						unitPrice: item.unitPrice || 0,
+						kitId: item.kitId || null,
 					})),
 				},
 			},
@@ -180,11 +275,12 @@ saleRoutes.get("/:id", async (c) => {
 saleRoutes.patch("/:id", async (c) => {
 	const saleId = c.req.param("id");
 	const body = await c.req.json();
-	const { clientId, notes, deliveryDate, items } = body as {
+	const { clientId, notes, deliveryDate, items: rawItems, kits: rawKits } = body as {
 		clientId?: string;
 		notes?: string;
 		deliveryDate?: string;
 		items?: SaleItemInput[];
+		kits?: KitSaleInput[];
 	};
 
 	const existing = await prisma.sale.findUnique({ where: { id: saleId } });
@@ -203,13 +299,26 @@ saleRoutes.patch("/:id", async (c) => {
 		return c.json({ error: "Cliente não encontrado ou inativo." }, 404);
 	}
 
-	if (items) {
-		const validationError = validateSaleItems(items);
+	const hasItemsUpdate = rawItems !== undefined || rawKits !== undefined;
+	let allItems: SaleItemInput[] | undefined;
+
+	if (hasItemsUpdate) {
+		allItems = [...(rawItems || [])];
+
+		if (rawKits && rawKits.length > 0) {
+			const expanded = await expandKitItems(rawKits);
+			if ("error" in expanded) {
+				return c.json({ error: expanded.error }, 400);
+			}
+			allItems.push(...expanded.items);
+		}
+
+		const validationError = validateSaleItems(allItems);
 		if (validationError) {
 			return c.json({ error: validationError }, 400);
 		}
 
-		const productIds = items.map((item) => item.productId);
+		const productIds = [...new Set(allItems.map((item) => item.productId))];
 		const products = await prisma.product.findMany({
 			where: { id: { in: productIds }, status: "active" },
 		});
@@ -245,14 +354,15 @@ saleRoutes.patch("/:id", async (c) => {
 
 		await tx.sale.update({ where: { id: saleId }, data });
 
-		if (items && items.length > 0) {
+		if (allItems && allItems.length > 0) {
 			await tx.saleItem.deleteMany({ where: { saleId } });
 			await tx.saleItem.createMany({
-				data: items.map((item) => ({
+				data: allItems.map((item) => ({
 					saleId,
 					productId: item.productId,
 					quantity: item.quantity,
 					unitPrice: item.unitPrice || 0,
+					kitId: item.kitId || null,
 				})),
 			});
 		}

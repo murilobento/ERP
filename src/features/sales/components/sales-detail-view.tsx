@@ -59,24 +59,74 @@ export function SalesDetailView({
       <div>
         <h4 className='mb-2 text-sm font-medium'>Itens</h4>
         <div className='space-y-1'>
-          {sale.items.map((item) => (
-            <div
-              key={item.id}
-              className='flex items-center justify-between rounded-md border px-3 py-2 text-sm'
-            >
-              <span>{item.product.name}</span>
-              <div className='flex items-center gap-2'>
-                <span className='text-muted-foreground'>
-                  {item.quantity} {item.product.unit}
-                </span>
-                <span className='text-muted-foreground'>x</span>
-                <span>{formatCurrency(item.unitPrice)}</span>
-                <strong>
-                  {formatCurrency(item.quantity * item.unitPrice)}
-                </strong>
-              </div>
-            </div>
-          ))}
+          {(() => {
+            const standalone = sale.items.filter((i) => !i.kitId)
+            const byKit = new Map<string, { kit: { id: string; name: string } | null | undefined; items: typeof sale.items }>()
+            for (const item of sale.items) {
+              if (!item.kitId) continue
+              if (!byKit.has(item.kitId)) {
+                byKit.set(item.kitId, { kit: item.kit, items: [] })
+              }
+              byKit.get(item.kitId)!.items.push(item)
+            }
+
+            return (
+              <>
+                {standalone.map((item) => (
+                  <div
+                    key={item.id}
+                    className='flex items-center justify-between rounded-md border px-3 py-2 text-sm'
+                  >
+                    <span>{item.product.name}</span>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-muted-foreground'>
+                        {item.quantity} {item.product.unit}
+                      </span>
+                      <span className='text-muted-foreground'>x</span>
+                      <span>{formatCurrency(item.unitPrice)}</span>
+                      <strong>
+                        {formatCurrency(item.quantity * item.unitPrice)}
+                      </strong>
+                    </div>
+                  </div>
+                ))}
+                {Array.from(byKit.entries()).map(([kitId, group]) => (
+                  <div key={kitId} className='rounded-md border border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20'>
+                    <div className='flex items-center justify-between border-b border-blue-200 px-3 py-1.5 dark:border-blue-800'>
+                      <div className='flex items-center gap-2'>
+                        <Badge variant='blue' className='text-xs'>
+                          <PackageCheck size={12} />
+                          Kit
+                        </Badge>
+                        <span className='text-sm font-medium'>{group.kit?.name || 'Kit'}</span>
+                      </div>
+                      <strong className='text-sm'>
+                        {formatCurrency(group.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))}
+                      </strong>
+                    </div>
+                    {group.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className='flex items-center justify-between px-3 py-1.5 text-sm last:rounded-b-md'
+                      >
+                        <span className='pl-4'>{item.product.name}</span>
+                        <div className='flex items-center gap-2'>
+                          <span className='text-muted-foreground'>
+                            {item.quantity} {item.product.unit}
+                          </span>
+                          <span className='text-muted-foreground'>x</span>
+                          <span>{formatCurrency(item.unitPrice)}</span>
+                          <strong>
+                            {formatCurrency(item.quantity * item.unitPrice)}
+                          </strong>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </>
+            )
+          })()}
         </div>
       </div>
 

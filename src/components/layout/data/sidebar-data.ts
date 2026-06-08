@@ -14,6 +14,7 @@ import {
   Building2,
   BadgeDollarSign,
   Tag,
+  PackageCheck,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -58,6 +59,7 @@ export const sidebarData: SidebarData = {
           { title: 'Categorias', url: '/categories', icon: Tag },
           { title: 'Compras', url: '/purchases', icon: Truck },
           { title: 'Insumos', url: '/supplies', icon: PackagePlus },
+          { title: 'Kits', url: '/kits', icon: PackageCheck },
           { title: 'Movimentações', url: '/stock/movements', icon: ClipboardList },
           { title: 'Produções', url: '/productions', icon: Factory },
           { title: 'Produtos', url: '/products', icon: BoxesIcon },

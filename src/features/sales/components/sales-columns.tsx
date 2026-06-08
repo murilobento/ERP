@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { PackageCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -79,20 +80,57 @@ export const salesColumns: ColumnDef<Sale>[] = [
           </HoverCardTrigger>
           <HoverCardContent className='w-auto min-w-72 p-3'>
             <div className='space-y-1.5'>
-              {items.map((item, i) => (
-                <div
-                  key={i}
-                  className='flex items-center justify-between text-sm'
-                >
-                  <span className='text-muted-foreground'>
-                    {item.product.name}
-                  </span>
-                  <span className='font-medium'>
-                    {item.quantity} {item.product.unit} ×{' '}
-                    {formatCurrency(item.unitPrice)}
-                  </span>
-                </div>
-              ))}
+              {(() => {
+                const standalone = items.filter((i) => !i.kitId)
+                const byKit = new Map<string, { kit: { name: string } | null | undefined; items: typeof items }>()
+                for (const item of items) {
+                  if (!item.kitId) continue
+                  if (!byKit.has(item.kitId)) {
+                    byKit.set(item.kitId, { kit: item.kit, items: [] })
+                  }
+                  byKit.get(item.kitId)!.items.push(item)
+                }
+                return (
+                  <>
+                    {standalone.map((item, i) => (
+                      <div
+                        key={i}
+                        className='flex items-center justify-between text-sm'
+                      >
+                        <span className='text-muted-foreground'>
+                          {item.product.name}
+                        </span>
+                        <span className='font-medium'>
+                          {item.quantity} {item.product.unit} ×{' '}
+                          {formatCurrency(item.unitPrice)}
+                        </span>
+                      </div>
+                    ))}
+                    {Array.from(byKit.entries()).map(([kitId, group]) => (
+                      <div key={kitId} className='space-y-1'>
+                        <div className='flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400'>
+                          <PackageCheck size={12} />
+                          Kit: {group.kit?.name || 'Kit'}
+                        </div>
+                        {group.items.map((item, i) => (
+                          <div
+                            key={i}
+                            className='flex items-center justify-between pl-3 text-sm'
+                          >
+                            <span className='text-muted-foreground'>
+                              {item.product.name}
+                            </span>
+                            <span className='font-medium'>
+                              {item.quantity} {item.product.unit} ×{' '}
+                              {formatCurrency(item.unitPrice)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </>
+                )
+              })()}
               <div className='mt-1.5 border-t pt-1.5 flex items-center justify-between text-sm font-semibold'>
                 <span>Total</span>
                 <span>{formatCurrency(total)}</span>

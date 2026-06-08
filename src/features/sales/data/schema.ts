@@ -9,12 +9,17 @@ export type SaleItem = {
   productId: string
   quantity: number
   unitPrice: number
+  kitId: string | null
   product: {
     id: string
     name: string
     unit: string
     status: string
   }
+  kit?: {
+    id: string
+    name: string
+  } | null
 }
 
 export type Sale = {

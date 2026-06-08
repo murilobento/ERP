@@ -149,6 +149,7 @@ const sale: Sale = {
       productId: 'product-1',
       quantity: 2,
       unitPrice: 25,
+      kitId: null,
       product,
     },
   ],

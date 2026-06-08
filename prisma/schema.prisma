@@ -111,6 +111,7 @@ model Product {
   stockMovements  StockMovement[]
   saleItems        SaleItem[]
   stockAdjustments StockAdjustment[]
+  kitItems        KitItem[]
 }
 
 model Supply {
@@ -223,17 +224,43 @@ model Sale {
   items  SaleItem[]
 }
 
-model SaleItem {
+model Kit {
+  id            String   @id @default(cuid())
+  name          String
+  description   String   @default("")
+  status        String   @default("active")
+  discountType  String   @default("fixed")
+  discountValue Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items     KitItem[]
+  saleItems SaleItem[]
+}
+
+model KitItem {
   id        String @id @default(cuid())
+  kitId     String
+  productId String
+  quantity  Float
+
+  kit     Kit     @relation(fields: [kitId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([kitId, productId])
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
   saleId    String
   productId String
   quantity  Float
-  unitPrice Float  @default(0)
+  unitPrice Float   @default(0)
+  kitId     String?
 
   sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
-
-  @@unique([saleId, productId])
+  kit     Kit?    @relation(fields: [kitId], references: [id])
 }
 
 model StockMovement {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Trash2, PackageCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -31,6 +32,10 @@ import {
   ProductSupplyCombobox,
   type ProductSupplySearchItem,
 } from '@/components/product-supply-combobox'
+import {
+  KitCombobox,
+  type KitSearchItem,
+} from '@/components/kit-combobox'
 import { formatCurrency } from '../data/schema'
 import { useSales } from './sales-provider'
 
@@ -38,6 +43,14 @@ type ItemForm = {
   productId: string
   quantity: number
   unitPrice: number
+}
+
+type KitForm = {
+  kitId: string
+  quantity: number
+  kitName: string
+  finalPrice: number
+  kitItems: { productId: string; productName: string; quantity: number; unit: string }[]
 }
 
 type SalesActionDialogProps = {
@@ -62,6 +75,8 @@ export function SalesActionDialog({
       ? new Date(currentRow.deliveryDate)
       : undefined
   )
+  const [addMode, setAddMode] = useState<'product' | 'kit'>('product')
+
   const [draftItem, setDraftItem] = useState<ItemForm>({
     productId: '',
     quantity: 1,
@@ -69,11 +84,13 @@ export function SalesActionDialog({
   })
   const [items, setItems] = useState<ItemForm[]>(
     isEdit
-      ? currentRow.items.map((i) => ({
-          productId: i.productId,
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
-        }))
+      ? currentRow.items
+          .filter((i) => !i.kitId)
+          .map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            unitPrice: i.unitPrice,
+          }))
       : []
   )
   const [selectedProducts, setSelectedProducts] = useState<
@@ -81,10 +98,46 @@ export function SalesActionDialog({
   >(
     isEdit
       ? Object.fromEntries(
-          currentRow.items.map((i) => [i.productId, i.product])
+          currentRow.items
+            .filter((i) => !i.kitId)
+            .map((i) => [i.productId, i.product])
         )
       : {}
   )
+
+  const [draftKitId, setDraftKitId] = useState('')
+  const [draftKitQuantity, setDraftKitQuantity] = useState(1)
+  const [selectedKit, setSelectedKit] = useState<KitSearchItem | null>(null)
+  const [kitRefs, setKitRefs] = useState<KitForm[]>(
+    isEdit
+      ? Object.values(
+          currentRow.items
+            .filter((i) => i.kitId)
+            .reduce(
+              (acc, i) => {
+                if (!acc[i.kitId!]) {
+                  acc[i.kitId!] = {
+                    kitId: i.kitId!,
+                    quantity: i.quantity,
+                    kitName: i.kit?.name || '',
+                    finalPrice: 0,
+                    kitItems: [],
+                  }
+                }
+                acc[i.kitId!].kitItems.push({
+                  productId: i.productId,
+                  productName: i.product.name,
+                  quantity: i.quantity,
+                  unit: i.product.unit,
+                })
+                return acc
+              },
+              {} as Record<string, KitForm>
+            )
+        )
+      : []
+  )
+
   const queryClient = useQueryClient()
 
   function handleOpenChange(state: boolean) {
@@ -109,8 +162,46 @@ export function SalesActionDialog({
     setDraftItem({ productId: '', quantity: 1, unitPrice: 0 })
   }
 
+  function addKit() {
+    if (!draftKitId) {
+      toast.error('Selecione um kit.')
+      return
+    }
+    if (draftKitQuantity <= 0) {
+      toast.error('A quantidade deve ser maior que zero.')
+      return
+    }
+    if (kitRefs.some((k) => k.kitId === draftKitId)) {
+      toast.error('Este kit já foi adicionado.')
+      return
+    }
+    if (!selectedKit) return
+
+    const kitForm: KitForm = {
+      kitId: draftKitId,
+      quantity: draftKitQuantity,
+      kitName: selectedKit.name,
+      finalPrice: selectedKit.finalPrice * draftKitQuantity,
+      kitItems: selectedKit.items.map((ki) => ({
+        productId: ki.productId,
+        productName: ki.product.name,
+        quantity: ki.quantity * draftKitQuantity,
+        unit: ki.product.unit,
+      })),
+    }
+
+    setKitRefs([...kitRefs, kitForm])
+    setDraftKitId('')
+    setDraftKitQuantity(1)
+    setSelectedKit(null)
+  }
+
   function removeItem(index: number) {
     setItems(items.filter((_, i) => i !== index))
+  }
+
+  function removeKit(index: number) {
+    setKitRefs(kitRefs.filter((_, i) => i !== index))
   }
 
   function updateItemQuantity(index: number, quantity: number) {
@@ -142,8 +233,8 @@ export function SalesActionDialog({
       return
     }
     const validItems = items.filter((i) => i.productId && i.quantity > 0)
-    if (validItems.length === 0) {
-      toast.error('Adicione pelo menos um item.')
+    if (validItems.length === 0 && kitRefs.length === 0) {
+      toast.error('Adicione pelo menos um item ou kit.')
       return
     }
 
@@ -152,23 +243,27 @@ export function SalesActionDialog({
     const day = String(deliveryDate.getDate()).padStart(2, '0')
     const deliveryDateStr = `${year}-${month}-${day}`
 
+    const payload: Record<string, unknown> = {
+      clientId,
+      notes,
+      deliveryDate: deliveryDateStr,
+      items: validItems,
+    }
+
+    if (kitRefs.length > 0) {
+      payload.kits = kitRefs.map((k) => ({
+        kitId: k.kitId,
+        quantity: k.quantity,
+      }))
+    }
+
     setIsLoading(true)
     try {
       if (isEdit && currentRow) {
-        await api.patch(`/sales/${currentRow.id}`, {
-          clientId,
-          notes,
-          deliveryDate: deliveryDateStr,
-          items: validItems,
-        })
+        await api.patch(`/sales/${currentRow.id}`, payload)
         toast.success('Venda atualizada com sucesso.')
       } else {
-        await api.post('/sales', {
-          clientId,
-          notes,
-          deliveryDate: deliveryDateStr,
-          items: validItems,
-        })
+        await api.post('/sales', payload)
         toast.success('Venda criada com sucesso.')
       }
       queryClient.invalidateQueries({ queryKey: ['sales'] })
@@ -182,6 +277,15 @@ export function SalesActionDialog({
       setIsLoading(false)
     }
   }
+
+  const standaloneTotal = items.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  )
+  const kitsTotal = kitRefs.reduce((sum, k) => sum + k.finalPrice, 0)
+  const saleTotal = standaloneTotal + kitsTotal
+
+  const hasItems = items.length > 0 || kitRefs.length > 0
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -231,67 +335,126 @@ export function SalesActionDialog({
           </div>
 
           <div className='space-y-2'>
-            <Label className='mb-2 block text-sm font-medium'>Itens</Label>
-            <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]'>
-              <div className='min-w-0 sm:col-span-2 md:col-span-1'>
-                <Label className='text-xs text-muted-foreground'>Produto</Label>
-                <ProductSupplyCombobox
-                  type='product'
-                  value={draftItem.productId}
-                  onValueChange={(val) =>
-                    setDraftItem((current) => ({ ...current, productId: val }))
-                  }
-                  onItemChange={updateSelectedProduct}
-                  selectedItem={selectedProducts[draftItem.productId]}
-                  includeStock
-                  placeholder='Selecione...'
-                />
+            <div className='flex items-center gap-2'>
+              <Label className='text-sm font-medium'>Itens</Label>
+              <div className='flex gap-1'>
+                <Button
+                  type='button'
+                  variant={addMode === 'product' ? 'default' : 'outline'}
+                  size='sm'
+                  onClick={() => setAddMode('product')}
+                >
+                  Produto
+                </Button>
+                <Button
+                  type='button'
+                  variant={addMode === 'kit' ? 'default' : 'outline'}
+                  size='sm'
+                  onClick={() => setAddMode('kit')}
+                >
+                  <PackageCheck size={14} />
+                  Kit
+                </Button>
               </div>
-              <div className='min-w-0'>
-                <Label className='text-xs text-muted-foreground'>
-                  Quantidade
-                </Label>
-                <Input
-                  type='number'
-                  min='1'
-                  step='1'
-                  value={draftItem.quantity || ''}
-                  onChange={(e) =>
-                    setDraftItem((current) => ({
-                      ...current,
-                      quantity: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-              <div className='min-w-0'>
-                <Label className='text-xs text-muted-foreground'>
-                  Preço un. (R$)
-                </Label>
-                <Input
-                  type='number'
-                  min='0'
-                  step='0.01'
-                  value={draftItem.unitPrice || ''}
-                  onChange={(e) =>
-                    setDraftItem((current) => ({
-                      ...current,
-                      unitPrice: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-              <Button
-                type='button'
-                onClick={addItem}
-                className='w-full sm:col-span-2 md:col-span-1 md:w-auto'
-              >
-                <Plus size={16} />
-                Adicionar
-              </Button>
             </div>
 
-            <div className='max-h-[260px] overflow-y-auto rounded-md border'>
+            {addMode === 'product' ? (
+              <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]'>
+                <div className='min-w-0 sm:col-span-2 md:col-span-1'>
+                  <Label className='text-xs text-muted-foreground'>Produto</Label>
+                  <ProductSupplyCombobox
+                    type='product'
+                    value={draftItem.productId}
+                    onValueChange={(val) =>
+                      setDraftItem((current) => ({ ...current, productId: val }))
+                    }
+                    onItemChange={updateSelectedProduct}
+                    selectedItem={selectedProducts[draftItem.productId]}
+                    includeStock
+                    placeholder='Selecione...'
+                  />
+                </div>
+                <div className='min-w-0'>
+                  <Label className='text-xs text-muted-foreground'>
+                    Quantidade
+                  </Label>
+                  <Input
+                    type='number'
+                    min='1'
+                    step='1'
+                    value={draftItem.quantity || ''}
+                    onChange={(e) =>
+                      setDraftItem((current) => ({
+                        ...current,
+                        quantity: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                  />
+                </div>
+                <div className='min-w-0'>
+                  <Label className='text-xs text-muted-foreground'>
+                    Preço un. (R$)
+                  </Label>
+                  <Input
+                    type='number'
+                    min='0'
+                    step='0.01'
+                    value={draftItem.unitPrice || ''}
+                    onChange={(e) =>
+                      setDraftItem((current) => ({
+                        ...current,
+                        unitPrice: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                  />
+                </div>
+                <Button
+                  type='button'
+                  onClick={addItem}
+                  className='w-full sm:col-span-2 md:col-span-1 md:w-auto'
+                >
+                  <Plus size={16} />
+                  Adicionar
+                </Button>
+              </div>
+            ) : (
+              <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_auto]'>
+                <div className='min-w-0 sm:col-span-2 md:col-span-1'>
+                  <Label className='text-xs text-muted-foreground'>Kit</Label>
+                  <KitCombobox
+                    value={draftKitId}
+                    onValueChange={setDraftKitId}
+                    onItemChange={setSelectedKit}
+                    selectedItem={selectedKit}
+                    placeholder='Selecione o kit...'
+                  />
+                </div>
+                <div className='min-w-0'>
+                  <Label className='text-xs text-muted-foreground'>
+                    Quantidade
+                  </Label>
+                  <Input
+                    type='number'
+                    min='1'
+                    step='1'
+                    value={draftKitQuantity || ''}
+                    onChange={(e) =>
+                      setDraftKitQuantity(parseFloat(e.target.value) || 0)
+                    }
+                  />
+                </div>
+                <Button
+                  type='button'
+                  onClick={addKit}
+                  className='w-full sm:col-span-2 md:col-span-1 md:w-auto'
+                >
+                  <Plus size={16} />
+                  Adicionar Kit
+                </Button>
+              </div>
+            )}
+
+            <div className='max-h-[300px] overflow-y-auto rounded-md border'>
               <div className='hidden sm:block'>
                 <Table>
                   <TableHeader>
@@ -304,7 +467,7 @@ export function SalesActionDialog({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.length === 0 ? (
+                    {!hasItems ? (
                       <TableRow>
                         <TableCell
                           colSpan={5}
@@ -314,23 +477,134 @@ export function SalesActionDialog({
                         </TableCell>
                       </TableRow>
                     ) : (
-                      items.map((item, index) => {
-                        const product = selectedProducts[item.productId]
-                        const total = item.quantity * item.unitPrice
-                        const quantityInvalid = item.quantity <= 0
+                      <>
+                        {items.map((item, index) => {
+                          const product = selectedProducts[item.productId]
+                          const total = item.quantity * item.unitPrice
+                          const quantityInvalid = item.quantity <= 0
 
-                        return (
-                          <TableRow key={item.productId}>
-                            <TableCell className='font-medium'>
-                              {product?.name || item.productId}
+                          return (
+                            <TableRow key={`item-${item.productId}`}>
+                              <TableCell className='font-medium'>
+                                {product?.name || item.productId}
+                              </TableCell>
+                              <TableCell>
+                                <div className='flex items-center gap-2'>
+                                  <Input
+                                    type='number'
+                                    min='1'
+                                    step='1'
+                                    aria-invalid={quantityInvalid}
+                                    className='h-8 w-20'
+                                    value={item.quantity || ''}
+                                    onChange={(e) =>
+                                      updateItemQuantity(
+                                        index,
+                                        parseFloat(e.target.value) || 0
+                                      )
+                                    }
+                                  />
+                                  {product?.unit && (
+                                    <span className='text-xs text-muted-foreground'>
+                                      {product.unit}
+                                    </span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {formatCurrency(item.unitPrice)}
+                              </TableCell>
+                              <TableCell>{formatCurrency(total)}</TableCell>
+                              <TableCell>
+                                <Button
+                                  type='button'
+                                  variant='ghost'
+                                  size='icon'
+                                  className='text-red-500'
+                                  onClick={() => removeItem(index)}
+                                >
+                                  <Trash2 size={16} />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                        {kitRefs.map((kit, kitIndex) => (
+                          <TableRow key={`kit-${kit.kitId}`} className='bg-blue-50/50 dark:bg-blue-950/20'>
+                            <TableCell colSpan={3} className='font-medium'>
+                              <div className='flex items-center gap-2'>
+                                <Badge variant='blue' className='text-xs'>
+                                  <PackageCheck size={12} />
+                                  Kit
+                                </Badge>
+                                {kit.kitName}
+                                <span className='text-xs text-muted-foreground'>
+                                  ({kit.kitItems.map((ki) => `${ki.quantity} ${ki.unit} de ${ki.productName}`).join(', ')})
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className='font-semibold'>
+                              {formatCurrency(kit.finalPrice)}
                             </TableCell>
                             <TableCell>
-                              <div className='flex items-center gap-2'>
+                              <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                className='text-red-500'
+                                onClick={() => removeKit(kitIndex)}
+                              >
+                                <Trash2 size={16} />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className='space-y-2 p-2 sm:hidden'>
+                {!hasItems ? (
+                  <div className='py-6 text-center text-sm text-muted-foreground'>
+                    Nenhum item adicionado.
+                  </div>
+                ) : (
+                  <>
+                    {items.map((item, index) => {
+                      const product = selectedProducts[item.productId]
+                      const total = item.quantity * item.unitPrice
+
+                      return (
+                        <div
+                          key={`item-${item.productId}`}
+                          className='space-y-2 rounded-md border p-3'
+                        >
+                          <div className='flex items-start justify-between gap-2'>
+                            <div className='font-medium'>
+                              {product?.name || item.productId}
+                            </div>
+                            <Button
+                              type='button'
+                              variant='ghost'
+                              size='icon'
+                              className='text-red-500'
+                              onClick={() => removeItem(index)}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                          <div className='grid grid-cols-2 gap-x-3 gap-y-2 text-sm'>
+                            <div>
+                              <Label className='text-xs text-muted-foreground'>
+                                Quantidade
+                              </Label>
+                              <div className='mt-1 flex items-center gap-2'>
                                 <Input
                                   type='number'
                                   min='1'
                                   step='1'
-                                  aria-invalid={quantityInvalid}
                                   className='h-8 w-20'
                                   value={item.quantity || ''}
                                   onChange={(e) =>
@@ -346,111 +620,76 @@ export function SalesActionDialog({
                                   </span>
                                 )}
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              {formatCurrency(item.unitPrice)}
-                            </TableCell>
-                            <TableCell>{formatCurrency(total)}</TableCell>
-                            <TableCell>
-                              <Button
-                                type='button'
-                                variant='ghost'
-                                size='icon'
-                                className='text-red-500'
-                                onClick={() => removeItem(index)}
-                              >
-                                <Trash2 size={16} />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-
-              <div className='space-y-2 p-2 sm:hidden'>
-                {items.length === 0 ? (
-                  <div className='py-6 text-center text-sm text-muted-foreground'>
-                    Nenhum item adicionado.
-                  </div>
-                ) : (
-                  items.map((item, index) => {
-                    const product = selectedProducts[item.productId]
-                    const total = item.quantity * item.unitPrice
-                    const quantityInvalid = item.quantity <= 0
-
-                    return (
+                            </div>
+                            <div>
+                              <Label className='text-xs text-muted-foreground'>
+                                Preço un.
+                              </Label>
+                              <div className='mt-1'>
+                                {formatCurrency(item.unitPrice)}
+                              </div>
+                            </div>
+                            <div className='col-span-2'>
+                              <Label className='text-xs text-muted-foreground'>
+                                Total
+                              </Label>
+                              <div className='mt-1 font-medium'>
+                                {formatCurrency(total)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {kitRefs.map((kit, kitIndex) => (
                       <div
-                        key={item.productId}
-                        className='space-y-2 rounded-md border p-3'
+                        key={`kit-${kit.kitId}`}
+                        className='space-y-2 rounded-md border border-blue-200 bg-blue-50/50 p-3 dark:border-blue-800 dark:bg-blue-950/20'
                       >
                         <div className='flex items-start justify-between gap-2'>
-                          <div className='font-medium'>
-                            {product?.name || item.productId}
+                          <div className='flex items-center gap-2 font-medium'>
+                            <Badge variant='blue' className='text-xs'>
+                              Kit
+                            </Badge>
+                            {kit.kitName}
                           </div>
                           <Button
                             type='button'
                             variant='ghost'
                             size='icon'
                             className='text-red-500'
-                            onClick={() => removeItem(index)}
+                            onClick={() => removeKit(kitIndex)}
                           >
                             <Trash2 size={16} />
                           </Button>
                         </div>
-                        <div className='grid grid-cols-2 gap-x-3 gap-y-2 text-sm'>
-                          <div>
-                            <Label className='text-xs text-muted-foreground'>
-                              Quantidade
-                            </Label>
-                            <div className='mt-1 flex items-center gap-2'>
-                              <Input
-                                type='number'
-                                min='1'
-                                step='1'
-                                aria-invalid={quantityInvalid}
-                                className='h-8 w-20'
-                                value={item.quantity || ''}
-                                onChange={(e) =>
-                                  updateItemQuantity(
-                                    index,
-                                    parseFloat(e.target.value) || 0
-                                  )
-                                }
-                              />
-                              {product?.unit && (
-                                <span className='text-xs text-muted-foreground'>
-                                  {product.unit}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div>
-                            <Label className='text-xs text-muted-foreground'>
-                              Preço un.
-                            </Label>
-                            <div className='mt-1'>
-                              {formatCurrency(item.unitPrice)}
-                            </div>
-                          </div>
-                          <div className='col-span-2'>
-                            <Label className='text-xs text-muted-foreground'>
-                              Total
-                            </Label>
-                            <div className='mt-1 font-medium'>
-                              {formatCurrency(total)}
-                            </div>
+                        <div className='text-xs text-muted-foreground'>
+                          {kit.kitItems.map((ki) => `${ki.quantity} ${ki.unit} de ${ki.productName}`).join(', ')}
+                        </div>
+                        <div>
+                          <Label className='text-xs text-muted-foreground'>
+                            Total
+                          </Label>
+                          <div className='font-semibold'>
+                            {formatCurrency(kit.finalPrice)}
                           </div>
                         </div>
                       </div>
-                    )
-                  })
+                    ))}
+                  </>
                 )}
               </div>
             </div>
           </div>
+
+          {hasItems && (
+            <div className='flex items-center justify-between rounded-md border px-3 py-2 text-sm'>
+              <span className='font-medium'>Total da venda</span>
+              <span className='text-lg font-bold'>
+                {formatCurrency(saleTotal)}
+              </span>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
