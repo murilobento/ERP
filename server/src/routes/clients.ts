@@ -167,23 +167,27 @@ clientRoutes.get('/:id', async (c) => {
   return c.json({ client })
 })
 
-clientRoutes.delete('/:id', async (c) => {
+clientRoutes.patch('/:id/status', async (c) => {
   const clientId = c.req.param('id')
+  const body = await c.req.json()
+  const { status } = body as { status: string }
 
-  const existing = await prisma.client.findUnique({
-    where: { id: clientId },
-    include: { _count: { select: { sales: true } } },
-  })
+  if (status !== 'active' && status !== 'inactive') {
+    return c.json({ error: 'Status inválido.' }, 400)
+  }
+
+  const existing = await prisma.client.findUnique({ where: { id: clientId } })
   if (!existing) {
     return c.json({ error: 'Cliente não encontrado.' }, 404)
   }
 
-  if (existing._count.sales > 0) {
-    return c.json({ error: 'Não é possível excluir este cliente pois existem vendas vinculadas.' }, 400)
-  }
+  const client = await prisma.client.update({
+    where: { id: clientId },
+    data: { status },
+    select: CLIENT_SELECT,
+  })
 
-  await prisma.client.delete({ where: { id: clientId } })
-  return c.json({ ok: true })
+  return c.json({ client })
 })
 
 export { clientRoutes }

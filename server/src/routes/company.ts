@@ -4,6 +4,15 @@ import { authMiddleware } from '../middleware/auth'
 
 const companyRoutes = new Hono()
 
+companyRoutes.get('/public', async (c) => {
+  const company = await prisma.company.findUnique({
+    where: { singletonKey: 'default' },
+    select: { name: true, logoUrl: true },
+  })
+
+  return c.json({ company })
+})
+
 companyRoutes.use('*', authMiddleware)
 
 const COMPANY_SELECT = {

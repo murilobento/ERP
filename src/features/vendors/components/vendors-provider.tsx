@@ -1,7 +1,7 @@
 import { createEntityProvider } from '@/features/shared/create-entity-provider'
 import { type Vendor } from '../data/schema'
 
-type VendorsDialogType = 'add' | 'edit' | 'delete'
+type VendorsDialogType = 'add' | 'edit'
 
 const { Provider: VendorsProvider, useEntity: useVendors } =
   createEntityProvider<Vendor, VendorsDialogType>('Vendors')

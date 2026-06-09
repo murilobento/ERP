@@ -97,6 +97,15 @@ function getStatusColor(status: string): string {
 	}
 }
 
+function escapeHtml(str: string): string {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;')
+}
+
 function buildAddress(c: { street: string; number: string; complement: string; neighborhood: string; city: string; state: string }): string {
 	const parts = [c.street, c.number, c.complement, c.neighborhood, c.city, c.state].filter(Boolean)
 	return parts.join(', ')
@@ -107,9 +116,11 @@ export function generateInvoiceHtml(data: InvoiceData): string {
 	const statusColor = getStatusColor(data.status)
 	const statusLabel = statusLabels[data.status] || data.status
 	const paymentLabel = paymentLabels[data.paymentMethod] || data.paymentMethod
-	const companyAddress = buildAddress(data.company)
-	const clientAddress = buildAddress(data.client)
+	const companyAddress = escapeHtml(buildAddress(data.company))
+	const clientAddress = escapeHtml(buildAddress(data.client))
 	const shortId = data.saleId.slice(-8).toUpperCase()
+
+	const e = escapeHtml
 
 	return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -248,18 +259,18 @@ export function generateInvoiceHtml(data: InvoiceData): string {
     <div class="header-left">
       <div class="logo">
         ${data.company.logoUrl
-					? `<img src="${data.company.logoUrl}" alt="Logo"/>`
-					: `<span>${data.company.name.charAt(0).toUpperCase()}</span>`}
+					? `<img src="${escapeHtml(data.company.logoUrl)}" alt="Logo"/>`
+					: `<span>${e(data.company.name).charAt(0).toUpperCase()}</span>`}
       </div>
       <div class="company-info">
-        <h1>${data.company.name}</h1>
-        ${data.company.tradeName ? `<div class="trade-name">${data.company.tradeName}</div>` : ''}
+        <h1>${e(data.company.name)}</h1>
+        ${data.company.tradeName ? `<div class="trade-name">${e(data.company.tradeName)}</div>` : ''}
         <div class="details">
-          ${data.company.cnpj ? `CNPJ: ${data.company.cnpj}<br/>` : ''}
+          ${data.company.cnpj ? `CNPJ: ${e(data.company.cnpj)}<br/>` : ''}
           ${companyAddress ? `${companyAddress}<br/>` : ''}
-          ${data.company.email ? `${data.company.email}` : ''}
+          ${data.company.email ? `${e(data.company.email)}` : ''}
           ${data.company.email && data.company.phone ? ' · ' : ''}
-          ${data.company.phone ? `${data.company.phone}` : ''}
+          ${data.company.phone ? `${e(data.company.phone)}` : ''}
         </div>
       </div>
     </div>
@@ -273,8 +284,8 @@ export function generateInvoiceHtml(data: InvoiceData): string {
   <div class="meta-grid">
     <div class="meta-card">
       <h3>Cliente</h3>
-      <div class="name">${data.client.name}</div>
-      <div class="info">${data.client.phone || ''}</div>
+      <div class="name">${e(data.client.name)}</div>
+      <div class="info">${e(data.client.phone || '')}</div>
       ${clientAddress ? `<div class="info">${clientAddress}</div>` : ''}
     </div>
     <div class="meta-card">
@@ -302,9 +313,9 @@ export function generateInvoiceHtml(data: InvoiceData): string {
 					.map(
 						(item) => `
         <tr>
-          <td class="item-name">${item.name}</td>
+          <td class="item-name">${e(item.name)}</td>
           <td class="right item-qty">${item.quantity.toLocaleString('pt-BR')}</td>
-          <td>${item.unit}</td>
+          <td>${e(item.unit)}</td>
           <td class="right">${formatCurrency(item.unitPrice)}</td>
           <td class="right" style="font-weight:600">${formatCurrency(item.quantity * item.unitPrice)}</td>
         </tr>`,
@@ -318,17 +329,17 @@ export function generateInvoiceHtml(data: InvoiceData): string {
     <div class="extras-left">
       <div class="extra-item">
         <h4>Forma de Pagamento</h4>
-        <p>${paymentLabel || '—'}</p>
+        <p>${e(paymentLabel || '—')}</p>
       </div>
       ${data.paymentNotes ? `
       <div class="extra-item">
         <h4>Notas do Pagamento</h4>
-        <p>${data.paymentNotes}</p>
+        <p>${e(data.paymentNotes)}</p>
       </div>` : ''}
       ${data.notes ? `
       <div class="extra-item">
         <h4>Observações</h4>
-        <p>${data.notes}</p>
+        <p>${e(data.notes)}</p>
       </div>` : ''}
     </div>
     <div class="totals-box">
@@ -350,9 +361,9 @@ export function generateInvoiceHtml(data: InvoiceData): string {
   <div class="footer">
     <div>Obrigado pela preferência!</div>
     <div class="footer-links">
-      ${data.company.website ? `<span>${data.company.website}</span>` : ''}
-      ${data.company.email ? `<span>${data.company.email}</span>` : ''}
-      ${data.company.whatsapp ? `<span>WhatsApp: ${data.company.whatsapp}</span>` : ''}
+      ${data.company.website ? `<span>${e(data.company.website)}</span>` : ''}
+      ${data.company.email ? `<span>${e(data.company.email)}</span>` : ''}
+      ${data.company.whatsapp ? `<span>WhatsApp: ${e(data.company.whatsapp)}</span>` : ''}
     </div>
   </div>
 

@@ -3,11 +3,12 @@ import { createApp } from '../app'
 import { signAccessToken } from '../lib/auth'
 
 const prisma = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   vendor: {
     findMany: vi.fn(),
     findUnique: vi.fn(),
     create: vi.fn(),
-    delete: vi.fn(),
+    update: vi.fn(),
   },
 }))
 
@@ -24,6 +25,7 @@ const authHeaders = {
 describe('vendor routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('returns empty search results without querying when q is blank', async () => {
@@ -69,21 +71,28 @@ describe('vendor routes', () => {
     expect(prisma.vendor.create).not.toHaveBeenCalled()
   })
 
-  it('blocks deleting vendors with linked purchases', async () => {
+  it('toggles vendor status between active and inactive', async () => {
     prisma.vendor.findUnique.mockResolvedValue({
       id: 'vendor-1',
-      _count: { purchases: 1 },
+      status: 'active',
+    })
+    prisma.vendor.update.mockResolvedValue({
+      id: 'vendor-1',
+      status: 'inactive',
     })
 
-    const response = await app.request('/api/vendors/vendor-1', {
-      method: 'DELETE',
+    const response = await app.request('/api/vendors/vendor-1/status', {
+      method: 'PATCH',
       headers: authHeaders,
+      body: JSON.stringify({ status: 'inactive' }),
     })
 
-    expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: 'Não é possível excluir este fornecedor pois existem compras vinculadas.',
-    })
-    expect(prisma.vendor.delete).not.toHaveBeenCalled()
+    expect(response.status).toBe(200)
+    expect(prisma.vendor.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'vendor-1' },
+        data: { status: 'inactive' },
+      })
+    )
   })
 })

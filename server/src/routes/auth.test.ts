@@ -21,6 +21,7 @@ const user = {
   email: 'admin@admin.com',
   firstName: 'Admin',
   lastName: 'Sistema',
+  status: 'active',
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
 }
 
@@ -38,7 +39,7 @@ describe('auth routes', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'Email and password are required',
+      error: 'Email e senha são obrigatórios.',
     })
   })
 
@@ -56,7 +57,7 @@ describe('auth routes', () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: 'Invalid credentials',
+      error: 'Credenciais inválidas.',
     })
   })
 
@@ -81,7 +82,10 @@ describe('auth routes', () => {
     expect(response.status).toBe(200)
     expect(body).toEqual({
       user: {
-        ...user,
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         createdAt: user.createdAt.toISOString(),
       },
     })
@@ -122,7 +126,7 @@ describe('auth routes', () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: 'Invalid refresh token',
+      error: 'Sessão expirada. Faça login novamente.',
     })
   })
 })

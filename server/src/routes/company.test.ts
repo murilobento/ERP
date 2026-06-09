@@ -3,6 +3,7 @@ import { createApp } from '../app'
 import { signAccessToken } from '../lib/auth'
 
 const prisma = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   company: {
     findUnique: vi.fn(),
     upsert: vi.fn(),
@@ -22,6 +23,7 @@ const authHeaders = {
 describe('company routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('returns the singleton company record', async () => {

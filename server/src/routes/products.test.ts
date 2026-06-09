@@ -10,6 +10,7 @@ const tx = vi.hoisted(() => ({
 }))
 
 const prisma = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   product: {
     findMany: vi.fn(),
     findUnique: vi.fn(),
@@ -41,6 +42,7 @@ const authHeaders = {
 describe('product routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('returns product list with stock and computed prices', async () => {

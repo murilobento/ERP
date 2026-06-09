@@ -3,6 +3,7 @@ import { createApp } from '../app'
 import { signAccessToken } from '../lib/auth'
 
 const prisma = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   supply: {
     findMany: vi.fn(),
     findUnique: vi.fn(),
@@ -29,6 +30,7 @@ const authHeaders = {
 describe('supply routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('returns empty search results without querying when q is blank', async () => {

@@ -152,14 +152,14 @@ export function Sales() {
 					onValueChange={(value) => setView(value as "table" | "kanban")}
 					className="flex flex-1 flex-col"
 				>
-					<TabsList className="grid h-9 w-full grid-cols-2 sm:inline-flex sm:h-10 sm:w-auto">
-						<TabsTrigger value="table" className="gap-1.5 text-sm">
-							<Table2 className="size-4" />
-							Tabela
+					<TabsList className="h-8">
+						<TabsTrigger value="table" className="flex-none gap-1 px-2 py-1 text-xs">
+							<Table2 className="size-3.5" />
+							<span className="hidden sm:inline">Tabela</span>
 						</TabsTrigger>
-						<TabsTrigger value="kanban" className="gap-1.5 text-sm">
-							<Kanban className="size-4" />
-							Kanban
+						<TabsTrigger value="kanban" className="flex-none gap-1 px-2 py-1 text-xs">
+							<Kanban className="size-3.5" />
+							<span className="hidden sm:inline">Kanban</span>
 						</TabsTrigger>
 					</TabsList>
 					<TabsContent value="table" className="flex flex-1 flex-col">

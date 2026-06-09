@@ -19,23 +19,57 @@ const COOKIE_OPTIONS = {
   sameSite: 'lax' as const,
 }
 
+const loginAttempts = new Map<string, { count: number; expiresAt: number }>()
+const MAX_ATTEMPTS = 5
+const WINDOW_MS = 60 * 1000
+
+function getClientIp(c: import('hono').Context): string {
+  const forwarded = c.req.header('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0].trim()
+  return 'unknown'
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const entry = loginAttempts.get(ip)
+
+  if (!entry || now > entry.expiresAt) {
+    loginAttempts.set(ip, { count: 1, expiresAt: now + WINDOW_MS })
+    return false
+  }
+
+  entry.count++
+  return entry.count > MAX_ATTEMPTS
+}
+
 authRoutes.post('/sign-in', async (c) => {
+  const ip = getClientIp(c)
+  if (isRateLimited(ip)) {
+    return c.json({ error: 'Muitas tentativas. Tente novamente em alguns segundos.' }, 429)
+  }
+
   const body = await c.req.json()
   const { email, password } = body
 
   if (!email || !password) {
-    return c.json({ error: 'Email and password are required' }, 400)
+    return c.json({ error: 'Email e senha são obrigatórios.' }, 400)
   }
 
   const user = await prisma.user.findUnique({ where: { email } })
   if (!user) {
-    return c.json({ error: 'Invalid credentials' }, 401)
+    return c.json({ error: 'Credenciais inválidas.' }, 401)
+  }
+
+  if (user.status !== 'active') {
+    return c.json({ error: 'Conta desativada.' }, 403)
   }
 
   const valid = await comparePassword(password, user.password)
   if (!valid) {
-    return c.json({ error: 'Invalid credentials' }, 401)
+    return c.json({ error: 'Credenciais inválidas.' }, 401)
   }
+
+  loginAttempts.delete(ip)
 
   const accessToken = signAccessToken(user.id)
   const refreshToken = signRefreshToken(user.id)
@@ -66,17 +100,17 @@ authRoutes.post('/refresh', async (c) => {
   const token = getCookie(c, 'refresh_token')
 
   if (!token) {
-    return c.json({ error: 'No refresh token' }, 401)
+    return c.json({ error: 'Sessão expirada. Faça login novamente.' }, 401)
   }
 
   const payload = verifyToken(token)
   if (!payload || payload.type !== 'refresh') {
-    return c.json({ error: 'Invalid refresh token' }, 401)
+    return c.json({ error: 'Sessão expirada. Faça login novamente.' }, 401)
   }
 
   const user = await prisma.user.findUnique({ where: { id: payload.sub } })
   if (!user) {
-    return c.json({ error: 'User not found' }, 401)
+    return c.json({ error: 'Usuário não encontrado.' }, 401)
   }
 
   const accessToken = signAccessToken(user.id)
@@ -125,7 +159,7 @@ authRoutes.get('/me', authMiddleware, async (c) => {
   })
 
   if (!user) {
-    return c.json({ error: 'User not found' }, 404)
+    return c.json({ error: 'Usuário não encontrado.' }, 404)
   }
 
   return c.json({ user })

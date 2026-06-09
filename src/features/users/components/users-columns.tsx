@@ -1,6 +1,7 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
 import { type User } from '../data/schema'
@@ -64,6 +65,26 @@ export const usersColumns: ColumnDef<User>[] = [
     cell: ({ row }) => (
       <div className='w-fit ps-2 text-nowrap'>{row.getValue('email')}</div>
     ),
+  },
+  {
+    accessorKey: 'status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Status' />
+    ),
+    filterFn: (row, columnId, filterValue) => {
+      if (Array.isArray(filterValue)) {
+        return filterValue.includes(row.getValue(columnId))
+      }
+      return row.getValue(columnId) === filterValue
+    },
+    cell: ({ row }) => {
+      const status = row.getValue('status') as string
+      return (
+        <Badge variant={status === 'active' ? 'default' : 'secondary'}>
+          {status === 'active' ? 'Ativo' : 'Inativo'}
+        </Badge>
+      )
+    },
   },
   {
     accessorKey: 'createdAt',

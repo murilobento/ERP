@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { type Table } from '@tanstack/react-table'
-import { Trash2 } from 'lucide-react'
+import { Power } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
@@ -18,21 +18,24 @@ type DataTableBulkActionsProps = {
 }
 
 export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const queryClient = useQueryClient()
+  const allActive = selectedRows.every((r) => r.original.status === 'active')
+  const newStatus = allActive ? 'inactive' : 'active'
+  const label = allActive ? 'desativar' : 'ativar'
 
-  const handleBulkDelete = async () => {
+  const handleBulkToggle = async () => {
     const ids = selectedRows.map((row) => row.original.id)
     try {
-      await Promise.all(ids.map((id) => api.delete(`/users/${id}`)))
-      toast.success(`${ids.length} usuário${ids.length > 1 ? 's' : ''} excluído${ids.length > 1 ? 's' : ''}.`)
+      await Promise.all(ids.map((id) => api.patch(`/users/${id}/status`, { status: newStatus })))
+      toast.success(`${ids.length} usuário${ids.length > 1 ? 's' : ''} ${allActive ? 'desativado' : 'ativado'}${ids.length > 1 ? 's' : ''}.`)
       table.resetRowSelection()
       queryClient.invalidateQueries({ queryKey: ['users'] })
     } catch {
-      toast.error('Falha ao excluir alguns usuários.')
+      toast.error('Falha ao alterar status de alguns usuários.')
     }
-    setShowDeleteConfirm(false)
+    setShowConfirm(false)
   }
 
   if (selectedRows.length === 0) return null
@@ -43,39 +46,33 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant='destructive'
+              variant={allActive ? 'destructive' : 'default'}
               size='icon'
-              onClick={() => setShowDeleteConfirm(true)}
+              onClick={() => setShowConfirm(true)}
               className='size-8'
-              aria-label='Excluir usuários selecionados'
-              title='Excluir usuários selecionados'
+              aria-label={`${label} usuários selecionados`}
+              title={`${label} usuários selecionados`}
             >
-              <Trash2 />
-              <span className='sr-only'>Excluir usuários selecionados</span>
+              <Power />
+              <span className='sr-only'>{`${label} usuários selecionados`}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Excluir usuários selecionados</p>
+            <p>{label.charAt(0).toUpperCase() + label.slice(1)} usuários selecionados</p>
           </TooltipContent>
         </Tooltip>
       </BulkActionsToolbar>
 
-      {showDeleteConfirm && (
+      {showConfirm && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
           <div className='rounded-lg border bg-background p-6 shadow-lg'>
-            <h3 className='text-lg font-semibold'>Excluir {selectedRows.length} usuário{selectedRows.length > 1 ? 's' : ''}?</h3>
-            <p className='mt-2 text-sm text-muted-foreground'>
-              Esta ação não pode ser desfeita.
-            </p>
+            <h3 className='text-lg font-semibold'>{label.charAt(0).toUpperCase() + label.slice(1)} {selectedRows.length} usuário{selectedRows.length > 1 ? 's' : ''}?</h3>
             <div className='mt-4 flex justify-end gap-2'>
-              <Button
-                variant='outline'
-                onClick={() => setShowDeleteConfirm(false)}
-              >
+              <Button variant='outline' onClick={() => setShowConfirm(false)}>
                 Cancelar
               </Button>
-              <Button variant='destructive' onClick={handleBulkDelete}>
-                Excluir
+              <Button variant={allActive ? 'destructive' : 'default'} onClick={handleBulkToggle}>
+                Confirmar
               </Button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { createApp } from '../app'
 import { signAccessToken } from '../lib/auth'
 
 const prisma = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   client: {
     findMany: vi.fn(),
     findUnique: vi.fn(),
@@ -25,6 +26,7 @@ const authHeaders = {
 describe('client routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('caps client search limit and filters by status', async () => {
@@ -83,21 +85,28 @@ describe('client routes', () => {
     )
   })
 
-  it('blocks deleting clients with linked sales', async () => {
+  it('toggles client status between active and inactive', async () => {
     prisma.client.findUnique.mockResolvedValue({
       id: 'client-1',
-      _count: { sales: 1 },
+      status: 'active',
+    })
+    prisma.client.update.mockResolvedValue({
+      id: 'client-1',
+      status: 'inactive',
     })
 
-    const response = await app.request('/api/clients/client-1', {
-      method: 'DELETE',
+    const response = await app.request('/api/clients/client-1/status', {
+      method: 'PATCH',
       headers: authHeaders,
+      body: JSON.stringify({ status: 'inactive' }),
     })
 
-    expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: 'Não é possível excluir este cliente pois existem vendas vinculadas.',
-    })
-    expect(prisma.client.delete).not.toHaveBeenCalled()
+    expect(response.status).toBe(200)
+    expect(prisma.client.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'client-1' },
+        data: { status: 'inactive' },
+      })
+    )
   })
 })

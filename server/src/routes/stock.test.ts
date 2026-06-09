@@ -3,6 +3,7 @@ import { createApp } from '../app'
 import { signAccessToken } from '../lib/auth'
 
 const prisma = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   product: {
     findUnique: vi.fn(),
   },
@@ -11,6 +12,8 @@ const prisma = vi.hoisted(() => ({
   },
   stockMovement: {
     aggregate: vi.fn(),
+  },
+  stockAdjustment: {
     create: vi.fn(),
   },
 }))
@@ -28,6 +31,7 @@ const authHeaders = {
 describe('stock routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('rejects invalid stock adjustment quantities before writing movements', async () => {
@@ -44,28 +48,35 @@ describe('stock routes', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'Quantidade deve ser um número inteiro diferente de zero.',
+      error: 'Quantidade deve ser diferente de zero.',
     })
-    expect(prisma.stockMovement.create).not.toHaveBeenCalled()
+    expect(prisma.stockAdjustment.create).not.toHaveBeenCalled()
   })
 
   it('creates product adjustment movements with stock before and after values', async () => {
     prisma.product.findUnique.mockResolvedValue({ id: 'product-1' })
     prisma.stockMovement.aggregate.mockResolvedValue({ _sum: { quantity: 7 } })
-    prisma.stockMovement.create.mockResolvedValue({
-      id: 'movement-1',
+    prisma.stockAdjustment.create.mockResolvedValue({
+      id: 'adj-1',
+      status: 'completed',
+      itemType: 'product',
       productId: 'product-1',
       supplyId: null,
       quantity: 3,
-      stockBefore: 7,
-      stockAfter: 10,
-      type: 'adjustment',
-      referenceId: null,
-      notes: 'Inventory count',
+      reason: 'Inventory count',
+      authorId: 'user-1',
+      completedById: 'user-1',
+      completedAt: new Date('2026-01-01T00:00:00.000Z'),
+      reversedById: null,
+      reversedAt: null,
+      reversalReason: null,
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      author: { id: 'user-1', firstName: 'Admin', lastName: 'Sistema' },
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
       product: { id: 'product-1', name: 'Produto', unit: 'un' },
       supply: null,
+      author: { id: 'user-1', firstName: 'Admin', lastName: 'Sistema' },
+      completedBy: { id: 'user-1', firstName: 'Admin', lastName: 'Sistema' },
+      reversedBy: null,
     })
 
     const response = await app.request('/api/stock/adjustments', {
@@ -80,17 +91,15 @@ describe('stock routes', () => {
     })
 
     expect(response.status).toBe(201)
-    expect(prisma.stockMovement.create).toHaveBeenCalledWith(
+    expect(prisma.stockAdjustment.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
+          itemType: 'product',
           productId: 'product-1',
           supplyId: null,
           authorId: 'user-1',
           quantity: 3,
-          stockBefore: 7,
-          stockAfter: 10,
-          type: 'adjustment',
-          notes: 'Inventory count',
+          reason: 'Inventory count',
         }),
       })
     )

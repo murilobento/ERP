@@ -23,18 +23,18 @@ export function TeamSwitcher({ company }: TeamSwitcherProps) {
       <SidebarMenuItem>
         <SidebarMenuButton size='lg' asChild>
           <Link to='/'>
-            <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
-              {showLogo ? (
-                <img
-                  src={logoUrl}
-                  alt={companyName}
-                  className='size-6 object-contain'
-                  onError={() => setFailedLogoUrl(logoUrl)}
-                />
-              ) : (
+            {showLogo ? (
+              <img
+                src={logoUrl}
+                alt={companyName}
+                className='size-8 rounded-lg object-contain'
+                onError={() => setFailedLogoUrl(logoUrl)}
+              />
+            ) : (
+              <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
                 <Command className='size-4' />
-              )}
-            </div>
+              </div>
+            )}
             <span className='truncate text-sm font-semibold'>{companyName}</span>
           </Link>
         </SidebarMenuButton>

@@ -13,6 +13,7 @@ model User {
   password  String
   firstName String
   lastName  String
+  status    String   @default("active")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -20,6 +21,8 @@ model User {
   stockAdjustments     StockAdjustment[]   @relation("StockAdjustmentAuthor")
   completedAdjustments StockAdjustment[]   @relation("StockAdjustmentCompletedBy")
   reversedAdjustments  StockAdjustment[]   @relation("StockAdjustmentReversedBy")
+  authoredAuditLogs    AuditLog[]          @relation("AuthorAuditLogs")
+  targetAuditLogs      AuditLog[]          @relation("TargetAuditLogs")
 }
 
 model Company {
@@ -303,4 +306,16 @@ model StockAdjustment {
   author      User      @relation("StockAdjustmentAuthor", fields: [authorId], references: [id])
   completedBy User?     @relation("StockAdjustmentCompletedBy", fields: [completedById], references: [id])
   reversedBy  User?     @relation("StockAdjustmentReversedBy", fields: [reversedById], references: [id])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  action         String
+  authorId       String
+  targetUserId   String
+  changes        Json     @default("{}")
+  createdAt      DateTime @default(now())
+
+  author     User @relation("AuthorAuditLogs", fields: [authorId], references: [id])
+  targetUser User @relation("TargetAuditLogs", fields: [targetUserId], references: [id])
 }

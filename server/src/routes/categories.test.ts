@@ -3,6 +3,7 @@ import { createApp } from '../app'
 import { signAccessToken } from '../lib/auth'
 
 const prisma = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   category: {
     findUnique: vi.fn(),
     create: vi.fn(),
@@ -24,6 +25,7 @@ const authHeaders = {
 describe('category routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('rejects category creation without a name', async () => {

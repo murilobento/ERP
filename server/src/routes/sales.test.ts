@@ -14,6 +14,7 @@ const tx = vi.hoisted(() => ({
 }))
 
 const prisma = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   client: {
     findUnique: vi.fn(),
   },
@@ -47,6 +48,7 @@ const authHeaders = {
 describe('sale routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('rejects sales without a delivery date', async () => {
@@ -88,7 +90,7 @@ describe('sale routes', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'Não é permitido repetir o mesmo produto na venda.',
+      error: 'Não é permitido repetir o mesmo produto na venda (mesmo kit).',
     })
     expect(prisma.product.findMany).not.toHaveBeenCalled()
     expect(prisma.sale.create).not.toHaveBeenCalled()

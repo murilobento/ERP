@@ -29,6 +29,7 @@ import { Route as AuthenticatedKitsIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCompanyIndexRouteImport } from './routes/_authenticated/company/index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
+import { Route as AuthenticatedAuditLogsIndexRouteImport } from './routes/_authenticated/audit-logs/index'
 import { Route as AuthenticatedStockMovementsRouteImport } from './routes/_authenticated/stock/movements'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 
@@ -139,6 +140,12 @@ const AuthenticatedCategoriesIndexRoute =
     path: '/categories/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAuditLogsIndexRoute =
+  AuthenticatedAuditLogsIndexRouteImport.update({
+    id: '/audit-logs/',
+    path: '/audit-logs/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStockMovementsRoute =
   AuthenticatedStockMovementsRouteImport.update({
     id: '/stock/movements',
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/stock/movements': typeof AuthenticatedStockMovementsRoute
+  '/audit-logs/': typeof AuthenticatedAuditLogsIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/company/': typeof AuthenticatedCompanyIndexRoute
@@ -185,6 +193,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/stock/movements': typeof AuthenticatedStockMovementsRoute
+  '/audit-logs': typeof AuthenticatedAuditLogsIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/company': typeof AuthenticatedCompanyIndexRoute
@@ -210,6 +219,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/_authenticated/stock/movements': typeof AuthenticatedStockMovementsRoute
+  '/_authenticated/audit-logs/': typeof AuthenticatedAuditLogsIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/company/': typeof AuthenticatedCompanyIndexRoute
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/errors/$error'
     | '/stock/movements'
+    | '/audit-logs/'
     | '/categories/'
     | '/clients/'
     | '/company/'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/'
     | '/errors/$error'
     | '/stock/movements'
+    | '/audit-logs'
     | '/categories'
     | '/clients'
     | '/company'
@@ -282,6 +294,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
     | '/_authenticated/stock/movements'
+    | '/_authenticated/audit-logs/'
     | '/_authenticated/categories/'
     | '/_authenticated/clients/'
     | '/_authenticated/company/'
@@ -448,6 +461,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCategoriesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/audit-logs/': {
+      id: '/_authenticated/audit-logs/'
+      path: '/audit-logs'
+      fullPath: '/audit-logs/'
+      preLoaderRoute: typeof AuthenticatedAuditLogsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/stock/movements': {
       id: '/_authenticated/stock/movements'
       path: '/stock/movements'
@@ -469,6 +489,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedStockMovementsRoute: typeof AuthenticatedStockMovementsRoute
+  AuthenticatedAuditLogsIndexRoute: typeof AuthenticatedAuditLogsIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedCompanyIndexRoute: typeof AuthenticatedCompanyIndexRoute
@@ -487,6 +508,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedStockMovementsRoute: AuthenticatedStockMovementsRoute,
+  AuthenticatedAuditLogsIndexRoute: AuthenticatedAuditLogsIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedCompanyIndexRoute: AuthenticatedCompanyIndexRoute,

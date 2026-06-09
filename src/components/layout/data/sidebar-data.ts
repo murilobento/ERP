@@ -15,6 +15,7 @@ import {
   BadgeDollarSign,
   Tag,
   PackageCheck,
+  ScrollText,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -38,6 +39,7 @@ export const sidebarData: SidebarData = {
         items: [
           { title: 'Empresa', url: '/company', icon: Building2 },
           { title: 'Usuários', url: '/users', icon: Users },
+          { title: 'Logs de Auditoria', url: '/audit-logs', icon: ScrollText },
         ],
       },
     ],

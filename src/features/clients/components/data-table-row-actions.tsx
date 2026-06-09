@@ -1,6 +1,8 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Eye, Trash2, UserPen } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { Eye, UserPen, Power } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,6 +12,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import api from '@/lib/api'
 import { type Client } from '../data/schema'
 import { useClients } from './clients-provider'
 
@@ -19,6 +22,20 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useClients()
+  const queryClient = useQueryClient()
+  const isActive = row.original.status === 'active'
+
+  async function toggleStatus() {
+    const newStatus = isActive ? 'inactive' : 'active'
+    try {
+      await api.patch(`/clients/${row.original.id}/status`, { status: newStatus })
+      await queryClient.invalidateQueries({ queryKey: ['clients'] })
+      toast.success(isActive ? 'Cliente desativado com sucesso.' : 'Cliente ativado com sucesso.')
+    } catch {
+      toast.error('Falha ao alterar status do cliente.')
+    }
+  }
+
   return (
     <>
       <DropdownMenu modal={false}>
@@ -31,7 +48,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             <span className='sr-only'>Abrir menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-40'>
+        <DropdownMenuContent align='end' className='w-48'>
           <DropdownMenuItem
             onClick={() => {
               setCurrentRow(row.original)
@@ -57,15 +74,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => {
-              setCurrentRow(row.original)
-              setOpen('delete')
-            }}
-            className='text-red-500!'
+            onClick={toggleStatus}
+            className={isActive ? 'text-red-500!' : 'text-green-600!'}
           >
-            Excluir
+            {isActive ? 'Desativar' : 'Ativar'}
             <DropdownMenuShortcut>
-              <Trash2 size={16} />
+              <Power size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>

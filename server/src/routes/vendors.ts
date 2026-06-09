@@ -129,23 +129,27 @@ vendorRoutes.patch('/:id', async (c) => {
   return c.json({ vendor })
 })
 
-vendorRoutes.delete('/:id', async (c) => {
+vendorRoutes.patch('/:id/status', async (c) => {
   const vendorId = c.req.param('id')
+  const body = await c.req.json()
+  const { status } = body as { status: string }
 
-  const existing = await prisma.vendor.findUnique({
-    where: { id: vendorId },
-    include: { _count: { select: { purchases: true } } },
-  })
+  if (status !== 'active' && status !== 'inactive') {
+    return c.json({ error: 'Status inválido.' }, 400)
+  }
+
+  const existing = await prisma.vendor.findUnique({ where: { id: vendorId } })
   if (!existing) {
     return c.json({ error: 'Fornecedor não encontrado.' }, 404)
   }
 
-  if (existing._count.purchases > 0) {
-    return c.json({ error: 'Não é possível excluir este fornecedor pois existem compras vinculadas.' }, 400)
-  }
+  const vendor = await prisma.vendor.update({
+    where: { id: vendorId },
+    data: { status },
+    select: VENDOR_SELECT,
+  })
 
-  await prisma.vendor.delete({ where: { id: vendorId } })
-  return c.json({ ok: true })
+  return c.json({ vendor })
 })
 
 export { vendorRoutes }

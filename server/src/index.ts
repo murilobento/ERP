@@ -18,7 +18,11 @@ async function seedDefaultUser() {
   }
 }
 
-seedDefaultUser().finally(() => {
+async function startServer() {
+  if (process.env.NODE_ENV !== 'production') {
+    await seedDefaultUser()
+  }
+
   console.log(`Server running on http://localhost:${port}`)
   const server = serve({ fetch: app.fetch, port })
 
@@ -31,4 +35,6 @@ seedDefaultUser().finally(() => {
 
   process.once('SIGINT', shutdown)
   process.once('SIGTERM', shutdown)
-})
+}
+
+startServer()

@@ -8,6 +8,7 @@ const prisma = vi.hoisted(() => ({
   },
   user: {
     findMany: vi.fn(),
+    findUnique: vi.fn().mockResolvedValue({ id: 'user-1', status: 'active' }),
   },
 }))
 
@@ -20,6 +21,7 @@ const app = createApp({ enableLogger: false })
 describe('api security boundaries', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
   })
 
   it('allows unauthenticated health checks', async () => {
@@ -49,6 +51,19 @@ describe('api security boundaries', () => {
     expect(prisma.client.findMany).not.toHaveBeenCalled()
   })
 
+  it('blocks inactive users from accessing the api', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'inactive' })
+
+    const response = await app.request('/api/clients', {
+      headers: {
+        Cookie: `access_token=${signAccessToken('user-1')}`,
+      },
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({ error: 'Conta desativada.' })
+  })
+
   it('does not select password hashes from user listings', async () => {
     prisma.user.findMany.mockResolvedValue([
       {
@@ -56,6 +71,7 @@ describe('api security boundaries', () => {
         email: 'admin@admin.com',
         firstName: 'Admin',
         lastName: 'Sistema',
+        status: 'active',
         createdAt: new Date('2026-01-01T00:00:00.000Z'),
         updatedAt: new Date('2026-01-01T00:00:00.000Z'),
       },
