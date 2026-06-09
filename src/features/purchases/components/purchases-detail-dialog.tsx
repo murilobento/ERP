@@ -3,9 +3,7 @@ import {
   CheckCircle2,
   Loader2,
   Pen,
-  Plus,
   RotateCcw,
-  Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { handleServerError } from '@/lib/handle-server-error'
@@ -21,35 +19,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  ProductSupplyCombobox,
-  type ProductSupplySearchItem,
-} from '@/components/product-supply-combobox'
-import {
-  VendorCombobox,
-  type VendorSearchItem,
-} from '@/components/vendor-combobox'
 import { type Purchase, purchaseStatusMap } from '../data/schema'
 import { usePurchases } from './purchases-provider'
+import { PurchaseEditForm } from './purchase-edit-form'
 
 type PurchaseResponse = {
   purchase: Purchase
-}
-
-type EditItemForm = {
-  supplyId: string
-  packages: number
-  packageCost: number
 }
 
 export function PurchasesDetailDialog() {
@@ -58,23 +33,9 @@ export function PurchasesDetailDialog() {
   const [showReverse, setShowReverse] = useState(false)
   const [reverseReason, setReverseReason] = useState('')
   const [confirmComplete, setConfirmComplete] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const queryClient = useQueryClient()
   const currentRowId = currentRow?.id
-
-  const [isEditing, setIsEditing] = useState(false)
-  const [editVendorId, setEditVendorId] = useState('')
-  const [editSelectedVendor, setEditSelectedVendor] =
-    useState<VendorSearchItem | null>(null)
-  const [editNotes, setEditNotes] = useState('')
-  const [editDraftItem, setEditDraftItem] = useState<EditItemForm>({
-    supplyId: '',
-    packages: 1,
-    packageCost: 0,
-  })
-  const [editItems, setEditItems] = useState<EditItemForm[]>([])
-  const [editSelectedSupplies, setEditSelectedSupplies] = useState<
-    Record<string, ProductSupplySearchItem>
-  >({})
 
   const { data: detail } = useQuery({
     queryKey: ['purchase', currentRowId],
@@ -98,95 +59,29 @@ export function PurchasesDetailDialog() {
         item.id === updatedPurchase.id ? updatedPurchase : item
       )
     )
-
     queryClient.setQueryData<Purchase>(
       ['purchase', updatedPurchase.id],
       updatedPurchase
     )
-
     setCurrentRow(updatedPurchase)
   }
 
-  function enterEditMode() {
-    setEditVendorId(purchase.vendorId || '')
-    setEditSelectedVendor(purchase.vendor)
-    setEditNotes(purchase.notes)
-    setEditDraftItem({ supplyId: '', packages: 1, packageCost: 0 })
-    setEditItems(
-      purchase.items.map((i) => ({
-        supplyId: i.supplyId,
-        packages: i.packages,
-        packageCost: i.packageCost,
-      }))
-    )
-    setEditSelectedSupplies(
-      Object.fromEntries(purchase.items.map((i) => [i.supplyId, i.supply]))
-    )
-    setIsEditing(true)
-  }
-
-  function exitEditMode() {
-    setIsEditing(false)
-  }
-
-  function updateEditSelectedSupply(item: ProductSupplySearchItem | null) {
-    if (!item) return
-    setEditSelectedSupplies((current) => ({ ...current, [item.id]: item }))
-  }
-
-  function addEditItem() {
-    if (!editDraftItem.supplyId || editDraftItem.packages <= 0) {
-      toast.error('Selecione um insumo e informe a quantidade de embalagens.')
-      return
-    }
-    if (editItems.some((item) => item.supplyId === editDraftItem.supplyId)) {
-      toast.error('Este insumo já foi adicionado.')
-      return
-    }
-    setEditItems([...editItems, editDraftItem])
-    setEditDraftItem({ supplyId: '', packages: 1, packageCost: 0 })
-  }
-
-  function removeEditItem(index: number) {
-    setEditItems(editItems.filter((_, i) => i !== index))
-  }
-
-  function updateEditItemPackages(index: number, packages: number) {
-    setEditItems((current) =>
-      current.map((item, i) => (i === index ? { ...item, packages } : item))
-    )
-  }
-
-  async function saveEdit() {
-    if (!editVendorId) {
-      toast.error('Fornecedor é obrigatório.')
-      return
-    }
-    if (editItems.some((item) => item.packages <= 0)) {
-      toast.error('A quantidade de embalagens de cada item deve ser maior que zero.')
-      return
-    }
-    const validItems = editItems.filter((i) => i.supplyId && i.packages > 0)
-    if (validItems.length === 0) {
-      toast.error('Adicione pelo menos um item.')
-      return
-    }
-
+  async function saveEdit(editData: {
+    vendorId: string
+    notes: string
+    items: { supplyId: string; packages: number; packageCost: number }[]
+  }) {
     setIsLoading(true)
     try {
       const { data } = await api.patch<PurchaseResponse>(
         `/purchases/${purchase.id}`,
-        {
-          vendorId: editVendorId,
-          notes: editNotes,
-          items: validItems,
-        }
+        editData
       )
       syncPurchase(data.purchase)
       queryClient.invalidateQueries({ queryKey: ['purchases'] })
       queryClient.invalidateQueries({ queryKey: ['purchase', purchase.id] })
       toast.success('Compra atualizada com sucesso.')
-      exitEditMode()
+      setIsEditing(false)
     } catch (error: unknown) {
       handleServerError(error)
     } finally {
@@ -248,7 +143,7 @@ export function PurchasesDetailDialog() {
       setShowReverse(false)
       setReverseReason('')
       setConfirmComplete(false)
-      exitEditMode()
+      setIsEditing(false)
       setOpen(null)
       setTimeout(() => setCurrentRow(null), 300)
     }
@@ -271,284 +166,12 @@ export function PurchasesDetailDialog() {
 
         <div className='space-y-4'>
           {isEditing && (
-            <>
-              <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
-                <Label className='sm:col-span-2 sm:text-end'>Fornecedor</Label>
-                <VendorCombobox
-                  value={editVendorId}
-                  onValueChange={setEditVendorId}
-                  onVendorChange={setEditSelectedVendor}
-                  selectedVendor={editSelectedVendor}
-                  className='min-w-0 sm:col-span-4'
-                  placeholder='Selecione o fornecedor'
-                />
-              </div>
-
-              <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
-                <Label className='sm:col-span-2 sm:text-end'>Observação</Label>
-                <Input
-                  className='min-w-0 sm:col-span-4'
-                  placeholder='Opcional'
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  autoComplete='off'
-                />
-              </div>
-
-              <div className='space-y-2'>
-                <Label className='mb-2 block text-sm font-medium'>Itens</Label>
-                <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]'>
-                  <div className='min-w-0 sm:col-span-2 md:col-span-1'>
-                    <Label className='text-xs text-muted-foreground'>
-                      Insumo
-                    </Label>
-                    <ProductSupplyCombobox
-                      type='supply'
-                      value={editDraftItem.supplyId}
-                      onValueChange={(val) =>
-                        setEditDraftItem((current) => ({
-                          ...current,
-                          supplyId: val,
-                        }))
-                      }
-                      onItemChange={updateEditSelectedSupply}
-                      selectedItem={editSelectedSupplies[editDraftItem.supplyId]}
-                      placeholder='Selecione...'
-                    />
-                  </div>
-                  <div className='min-w-0'>
-                      <Label className='text-xs text-muted-foreground'>
-                      Quantidade
-                    </Label>
-                    <Input
-                      type='number'
-                      min='1'
-                      step='1'
-                      value={editDraftItem.packages || ''}
-                      onChange={(e) =>
-                        setEditDraftItem((current) => ({
-                          ...current,
-                          packages: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className='min-w-0'>
-                    <Label className='text-xs text-muted-foreground'>
-                      Preço emb. (R$)
-                    </Label>
-                    <Input
-                      type='number'
-                      min='0'
-                      step='0.01'
-                      value={editDraftItem.packageCost || ''}
-                      onChange={(e) =>
-                        setEditDraftItem((current) => ({
-                          ...current,
-                          packageCost: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                    />
-                  </div>
-                  <Button
-                    type='button'
-                    onClick={addEditItem}
-                    className='w-full sm:col-span-2 md:col-span-1 md:w-auto'
-                  >
-                    <Plus size={16} />
-                    Adicionar
-                  </Button>
-                </div>
-
-                <div className='max-h-[260px] overflow-y-auto rounded-md border'>
-                  <div className='hidden sm:block'>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Insumo</TableHead>
-                          <TableHead>Quantidade</TableHead>
-                          <TableHead>Preço emb.</TableHead>
-                          <TableHead>Total</TableHead>
-                          <TableHead className='w-10' />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {editItems.length === 0 ? (
-                          <TableRow>
-                            <TableCell
-                              colSpan={5}
-                              className='h-16 text-center text-muted-foreground'
-                            >
-                              Nenhum item adicionado.
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          editItems.map((item, index) => {
-                            const supply = editSelectedSupplies[item.supplyId]
-                            const total = supply
-                              ? item.packages * (supply.packageQuantity || 1)
-                              : 0
-                            const packagesInvalid = item.packages <= 0
-
-                            return (
-                              <TableRow key={item.supplyId}>
-                                <TableCell className='font-medium'>
-                                  {supply?.name || item.supplyId}
-                                </TableCell>
-                                <TableCell>
-                                  <div className='flex items-center gap-2'>
-                                    <Input
-                                      type='number'
-                                      min='1'
-                                      step='1'
-                                      aria-invalid={packagesInvalid}
-                                      className='h-8 w-20'
-                                      value={item.packages || ''}
-                                      onChange={(e) =>
-                                        updateEditItemPackages(
-                                          index,
-                                          parseInt(e.target.value) || 0
-                                        )
-                                      }
-                                    />
-                                    {supply?.packageUnit && (
-                                      <span className='text-xs text-muted-foreground'>
-                                        {supply.packageUnit}(s)
-                                      </span>
-                                    )}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {item.packageCost > 0
-                                    ? `R$ ${item.packageCost.toFixed(2)}`
-                                    : '—'}
-                                </TableCell>
-                                <TableCell>
-                                  {total} {supply?.unit || ''}
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    type='button'
-                                    variant='ghost'
-                                    size='icon'
-                                    className='text-red-500'
-                                    onClick={() => removeEditItem(index)}
-                                  >
-                                    <Trash2 size={16} />
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            )
-                          })
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  <div className='space-y-2 p-2 sm:hidden'>
-                    {editItems.length === 0 ? (
-                      <div className='py-6 text-center text-sm text-muted-foreground'>
-                        Nenhum item adicionado.
-                      </div>
-                    ) : (
-                      editItems.map((item, index) => {
-                        const supply = editSelectedSupplies[item.supplyId]
-                        const total = supply
-                          ? item.packages * (supply.packageQuantity || 1)
-                          : 0
-                        const packagesInvalid = item.packages <= 0
-
-                        return (
-                          <div
-                            key={item.supplyId}
-                            className='space-y-2 rounded-md border p-3'
-                          >
-                            <div className='flex items-start justify-between gap-2'>
-                              <div className='font-medium'>
-                                {supply?.name || item.supplyId}
-                              </div>
-                              <Button
-                                type='button'
-                                variant='ghost'
-                                size='icon'
-                                className='text-red-500'
-                                onClick={() => removeEditItem(index)}
-                              >
-                                <Trash2 size={16} />
-                              </Button>
-                            </div>
-                            <div className='grid grid-cols-2 gap-x-3 gap-y-2 text-sm'>
-                              <div>
-                                <Label className='text-xs text-muted-foreground'>
-                              Quantidade
-                            </Label>
-                                <div className='mt-1 flex items-center gap-2'>
-                                  <Input
-                                    type='number'
-                                    min='1'
-                                    step='1'
-                                    aria-invalid={packagesInvalid}
-                                    className='h-8 w-20'
-                                    value={item.packages || ''}
-                                    onChange={(e) =>
-                                      updateEditItemPackages(
-                                        index,
-                                        parseInt(e.target.value) || 0
-                                      )
-                                    }
-                                  />
-                                  {supply?.packageUnit && (
-                                    <span className='text-xs text-muted-foreground'>
-                                      {supply.packageUnit}(s)
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <div>
-                                <Label className='text-xs text-muted-foreground'>
-                                  Preço emb.
-                                </Label>
-                                <div className='mt-1'>
-                                  {item.packageCost > 0
-                                    ? `R$ ${item.packageCost.toFixed(2)}`
-                                    : '—'}
-                                </div>
-                              </div>
-                              <div className='col-span-2'>
-                                <Label className='text-xs text-muted-foreground'>
-                                  Total
-                                </Label>
-                                <div className='mt-1 font-medium'>
-                                  {total} {supply?.unit || ''}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter className='gap-2'>
-                <Button
-                  variant='outline'
-                  onClick={exitEditMode}
-                  disabled={isLoading}
-                >
-                  Cancelar
-                </Button>
-                <Button onClick={saveEdit} disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className='animate-spin' />
-                  ) : (
-                    <CheckCircle2 size={16} className='me-1' />
-                  )}
-                  Salvar Alterações
-                </Button>
-              </DialogFooter>
-            </>
+            <PurchaseEditForm
+              purchase={purchase}
+              isLoading={isLoading}
+              onSave={saveEdit}
+              onCancel={() => setIsEditing(false)}
+            />
           )}
 
           {!isEditing && confirmComplete && (
@@ -664,7 +287,7 @@ export function PurchasesDetailDialog() {
 
               <DialogFooter className='gap-2'>
                 {canEdit && (
-                  <Button onClick={enterEditMode} disabled={isLoading}>
+                  <Button onClick={() => setIsEditing(true)} disabled={isLoading}>
                     <Pen size={16} className='me-1' />
                     Editar
                   </Button>

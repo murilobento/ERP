@@ -22,6 +22,15 @@ import {
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/date-picker'
 import { saleStatusMap, type SaleStatus } from '../data/schema'
+import {
+  type DatePreset,
+  datePresetOptions,
+  parseFilterDate,
+  formatFilterDate,
+  getPresetRange,
+  getDateRangeLabel,
+  isPresetActive,
+} from '@/features/shared/filter-date-utils'
 
 type SalesFiltersProps = {
   search: Record<string, unknown>
@@ -42,92 +51,6 @@ const statusOptions = Object.entries(saleStatusMap).map(([value, config]) => ({
   value: value as SaleStatus,
   label: config.label,
 }))
-
-type DatePreset =
-  | 'today'
-  | 'tomorrow'
-  | 'yesterday'
-  | 'this_month'
-  | 'last_month'
-
-type DatePresetOption = {
-  value: DatePreset
-  label: string
-}
-
-const datePresetOptions: DatePresetOption[] = [
-  { value: 'today', label: 'Hoje' },
-  { value: 'tomorrow', label: 'Amanhã' },
-  { value: 'yesterday', label: 'Ontem' },
-  { value: 'this_month', label: 'Este mês' },
-  { value: 'last_month', label: 'Mês passado' },
-]
-
-function parseFilterDate(value: string) {
-  if (!value) return undefined
-  const date = new Date(`${value}T00:00:00`)
-  return Number.isNaN(date.getTime()) ? undefined : date
-}
-
-function formatFilterDate(date: Date | undefined) {
-  if (!date) return ''
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-function getPresetRange(preset: DatePreset) {
-  const base = new Date()
-  base.setHours(0, 0, 0, 0)
-
-  if (preset === 'today') {
-    const value = formatFilterDate(base)
-    return { from: value, to: value }
-  }
-
-  if (preset === 'tomorrow') {
-    const tomorrow = new Date(base)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const value = formatFilterDate(tomorrow)
-    return { from: value, to: value }
-  }
-
-  if (preset === 'yesterday') {
-    const yesterday = new Date(base)
-    yesterday.setDate(yesterday.getDate() - 1)
-    const value = formatFilterDate(yesterday)
-    return { from: value, to: value }
-  }
-
-  if (preset === 'this_month') {
-    const from = new Date(base.getFullYear(), base.getMonth(), 1)
-    const to = new Date(base.getFullYear(), base.getMonth() + 1, 0)
-    return { from: formatFilterDate(from), to: formatFilterDate(to) }
-  }
-
-  const from = new Date(base.getFullYear(), base.getMonth() - 1, 1)
-  const to = new Date(base.getFullYear(), base.getMonth(), 0)
-  return { from: formatFilterDate(from), to: formatFilterDate(to) }
-}
-
-function getDatePresetLabel(from: string, to: string) {
-  const preset = datePresetOptions.find((option) => {
-    const range = getPresetRange(option.value)
-    return from === range.from && to === range.to
-  })
-
-  return preset?.label
-}
-
-function getDateRangeLabel(from: string, to: string) {
-  const presetLabel = getDatePresetLabel(from, to)
-  if (presetLabel) return presetLabel
-  if (from && to) return `${from} até ${to}`
-  if (from) return `A partir de ${from}`
-  if (to) return `Até ${to}`
-  return ''
-}
 
 function getFilters(search: Record<string, unknown>): SalesFilterValues {
   return {
@@ -241,11 +164,6 @@ export function SalesFilters({ search, navigate }: SalesFiltersProps) {
   ) {
     const range = getPresetRange(preset)
     updateFilter({ ...filters, [fromKey]: range.from, [toKey]: range.to })
-  }
-
-  function isPresetActive(preset: DatePreset, from: string, to: string) {
-    const range = getPresetRange(preset)
-    return from === range.from && to === range.to
   }
 
   return (
