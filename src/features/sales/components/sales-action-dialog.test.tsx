@@ -75,6 +75,7 @@ vi.mock('@/components/client-combobox', () => ({
   }) => (
     <button
       type='button'
+      data-testid='client-combobox'
       onClick={() => {
         onValueChange(client.id)
         onClientChange?.(client)
@@ -99,6 +100,7 @@ vi.mock('@/components/product-supply-combobox', () => ({
   }) => (
     <button
       type='button'
+      data-testid='product-combobox'
       onClick={() => {
         onValueChange(product.id)
         onItemChange?.(product)
@@ -107,6 +109,10 @@ vi.mock('@/components/product-supply-combobox', () => ({
       {selectedItem?.name || placeholder || 'Selecionar produto'}
     </button>
   ),
+}))
+
+vi.mock('@/components/kit-combobox', () => ({
+  KitCombobox: () => <div data-testid='kit-combobox' />,
 }))
 
 vi.mock('@/components/date-picker', () => ({
@@ -119,7 +125,11 @@ vi.mock('@/components/date-picker', () => ({
     onSelect: (date: Date) => void
     placeholder?: string
   }) => (
-    <button type='button' onClick={() => onSelect(new Date(2026, 0, 15))}>
+    <button
+      type='button'
+      data-testid='date-picker'
+      onClick={() => onSelect(new Date(2026, 0, 15))}
+    >
       {selected?.toISOString().slice(0, 10) || placeholder || 'Selecionar data'}
     </button>
   ),
@@ -166,10 +176,14 @@ function renderDialog(
   )
 }
 
-function numberInput(index: number) {
-  return document.querySelectorAll<HTMLInputElement>('input[type="number"]')[
-    index
-  ]
+function draftQuantityInput() {
+  const inputs = document.querySelectorAll<HTMLInputElement>('input[type="number"]')
+  return inputs[0]
+}
+
+function draftPriceInput() {
+  const inputs = document.querySelectorAll<HTMLInputElement>('input[type="number"]')
+  return inputs[1]
 }
 
 function textInput(placeholder: string) {
@@ -178,18 +192,24 @@ function textInput(placeholder: string) {
   )!
 }
 
+function submitButton() {
+  return document.querySelector<HTMLButtonElement>(
+    'button[class*="submit"], button:not([data-testid])'
+  )!
+}
+
 async function selectClientAndDate() {
-  await userEvent.click(document.body.querySelector('button')!)
-  await userEvent.click(document.body.querySelectorAll('button')[1])
+  await userEvent.click(document.body.querySelector('[data-testid="client-combobox"]')!)
+  await userEvent.click(document.body.querySelector('[data-testid="date-picker"]')!)
 }
 
 async function addSaleItem(quantity = '2', unitPrice = '30') {
-  await userEvent.click(document.body.querySelectorAll('button')[2])
-  await userEvent.clear(numberInput(0))
-  await userEvent.type(numberInput(0), quantity)
-  await userEvent.clear(numberInput(1))
-  await userEvent.type(numberInput(1), unitPrice)
-  await userEvent.click(document.body.querySelectorAll('button')[3])
+  await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
+  await userEvent.clear(draftQuantityInput())
+  await userEvent.type(draftQuantityInput(), quantity)
+  await userEvent.clear(draftPriceInput())
+  await userEvent.type(draftPriceInput(), unitPrice)
+  await userEvent.click(Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Adicionar')!)
 }
 
 describe('SalesActionDialog', () => {
@@ -225,16 +245,16 @@ describe('SalesActionDialog', () => {
     await selectClientAndDate()
     await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))
 
-    expect(toastError).toHaveBeenCalledWith('Adicione pelo menos um item.')
+    expect(toastError).toHaveBeenCalledWith('Adicione pelo menos um item ou kit.')
     expect(apiPost).not.toHaveBeenCalled()
   })
 
   it('blocks negative unit prices before adding items', async () => {
     const { getByText } = await renderDialog()
 
-    await userEvent.click(document.body.querySelectorAll('button')[2])
-    await userEvent.clear(numberInput(1))
-    await userEvent.type(numberInput(1), '-1')
+    await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
+    await userEvent.clear(draftPriceInput())
+    await userEvent.type(draftPriceInput(), '-1')
     await userEvent.click(getByText('Adicionar'))
 
     expect(toastError).toHaveBeenCalledWith(
@@ -246,9 +266,9 @@ describe('SalesActionDialog', () => {
   it('auto-fills the unit price with the suggested sale price on selection', async () => {
     await renderDialog()
 
-    await userEvent.click(document.body.querySelectorAll('button')[2])
+    await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
 
-    expect(numberInput(1).value).toBe('42.5')
+    expect(draftPriceInput().value).toBe('42.5')
   })
 
   it('rounds the suggested sale price to the nearest cent', async () => {
@@ -256,9 +276,9 @@ describe('SalesActionDialog', () => {
     try {
       await renderDialog()
 
-      await userEvent.click(document.body.querySelectorAll('button')[2])
+      await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
 
-      expect(numberInput(1).value).toBe('16.47')
+      expect(draftPriceInput().value).toBe('16.47')
     } finally {
       product.salePrice = 42.5
     }
@@ -268,13 +288,13 @@ describe('SalesActionDialog', () => {
     const { getByRole } = await renderDialog()
 
     await selectClientAndDate()
-    await userEvent.click(document.body.querySelectorAll('button')[2])
-    expect(numberInput(1).value).toBe('42.5')
-    await userEvent.clear(numberInput(0))
-    await userEvent.type(numberInput(0), '3')
-    await userEvent.clear(numberInput(1))
-    await userEvent.type(numberInput(1), '99.9')
-    await userEvent.click(document.body.querySelectorAll('button')[3])
+    await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
+    expect(draftPriceInput().value).toBe('42.5')
+    await userEvent.clear(draftQuantityInput())
+    await userEvent.type(draftQuantityInput(), '3')
+    await userEvent.clear(draftPriceInput())
+    await userEvent.type(draftPriceInput(), '99.9')
+    await userEvent.click(Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Adicionar')!)
     await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))
 
     await vi.waitFor(() => expect(apiPost).toHaveBeenCalledOnce())
@@ -354,7 +374,9 @@ describe('SalesActionDialog', () => {
 
     await selectClientAndDate()
     await addSaleItem('2', '30')
-    const rowQuantityInput = numberInput(2)
+
+    const allNumberInputs = document.querySelectorAll<HTMLInputElement>('input[type="number"]')
+    const rowQuantityInput = allNumberInputs[allNumberInputs.length - 1]
     expect(rowQuantityInput.value).toBe('2')
     expect(getByText('R$ 60,00')).toBeTruthy()
 
@@ -378,7 +400,9 @@ describe('SalesActionDialog', () => {
 
     await selectClientAndDate()
     await addSaleItem('2', '30')
-    const rowQuantityInput = numberInput(2)
+
+    const allNumberInputs = document.querySelectorAll<HTMLInputElement>('input[type="number"]')
+    const rowQuantityInput = allNumberInputs[allNumberInputs.length - 1]
     await userEvent.clear(rowQuantityInput)
 
     await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))

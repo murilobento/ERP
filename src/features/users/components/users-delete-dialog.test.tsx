@@ -99,7 +99,7 @@ describe('UsersDeleteDialog', () => {
     await userEvent.click(getByRole('button', { name: 'Excluir' }))
 
     await vi.waitFor(() =>
-      expect(toastError).toHaveBeenCalledWith('Falha ao excluir usuário.')
+      expect(toastError).toHaveBeenCalledWith('Algo deu errado!')
     )
     expect(onOpenChange).not.toHaveBeenCalledWith(false)
     expect(invalidateQueries).not.toHaveBeenCalled()

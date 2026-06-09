@@ -86,6 +86,7 @@ export default defineConfig({
     exclude: ['server/**'],
     silent: 'passed-only',
     unstubEnvs: true,
+    fileParallelism: false,
     browser: {
       enabled: true,
       provider: playwright(),
