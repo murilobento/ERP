@@ -1,14 +1,17 @@
-import { UserPlus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ContactPrimaryButtons } from '@/features/shared/contact-primary-buttons'
 import { useClients } from './clients-provider'
+
+const clientConfig = {
+  entityLabel: 'Cliente',
+  entityLabelLower: 'cliente',
+  endpoint: 'clients',
+  queryKey: 'clients',
+  formId: 'client-form',
+  namePlaceholder: 'João Silva',
+  entityPlural: 'clientes',
+} as const
 
 export function ClientsPrimaryButtons() {
   const { setOpen } = useClients()
-  return (
-    <div className='flex gap-2'>
-      <Button className='space-x-1' onClick={() => setOpen('add')}>
-        <span>Adicionar Cliente</span> <UserPlus size={18} />
-      </Button>
-    </div>
-  )
+  return <ContactPrimaryButtons config={clientConfig} onAdd={() => setOpen('add')} />
 }

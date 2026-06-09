@@ -8,13 +8,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { FullscreenToggle } from '@/components/fullscreen-toggle'
-import { ThemeSwitch } from '@/components/theme-switch'
+import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { RecentSales } from './components/recent-sales'
 
@@ -38,13 +33,7 @@ export function Dashboard() {
   return (
     <>
       {/* ===== Top Heading ===== */}
-      <Header>
-        <Search className='me-auto' />
-        <ThemeSwitch />
-        <FullscreenToggle />
-        <ConfigDrawer />
-        <ProfileDropdown />
-      </Header>
+      <PageHeader fixed={false} />
 
       {/* ===== Main ===== */}
       <Main>

@@ -8,6 +8,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
@@ -187,10 +188,7 @@ export function PurchasesDetailDialog() {
       toast.success('Compra atualizada com sucesso.')
       exitEditMode()
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }
@@ -213,10 +211,7 @@ export function PurchasesDetailDialog() {
       setOpen(null)
       setCurrentRow(null)
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }
@@ -242,10 +237,7 @@ export function PurchasesDetailDialog() {
       setOpen(null)
       setCurrentRow(null)
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }

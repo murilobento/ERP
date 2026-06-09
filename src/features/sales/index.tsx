@@ -9,13 +9,8 @@ import {
 	Table2,
 } from "lucide-react";
 import { lazy, Suspense, useMemo, useState } from "react";
-import { ConfigDrawer } from "@/components/config-drawer";
-import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ProfileDropdown } from "@/components/profile-dropdown";
-import { Search } from "@/components/search";
-import { FullscreenToggle } from "@/components/fullscreen-toggle";
-import { ThemeSwitch } from "@/components/theme-switch";
+import { PageHeader } from "@/components/page-header";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -81,13 +76,7 @@ export function Sales() {
 
 	return (
 		<SalesProvider>
-			<Header fixed>
-				<Search className="me-auto" />
-				<ThemeSwitch />
-				<FullscreenToggle />
-				<ConfigDrawer />
-				<ProfileDropdown />
-			</Header>
+			<PageHeader />
 
 			<Main className="flex flex-1 flex-col gap-3 sm:gap-6">
 				<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">

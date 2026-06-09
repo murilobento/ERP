@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -33,10 +34,7 @@ export function KitsDeleteDialog({
       toast.success('Kit excluído com sucesso.')
       onOpenChange(false)
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Falha ao excluir kit.'
-      toast.error(message)
+      handleServerError(error)
     }
   }
 

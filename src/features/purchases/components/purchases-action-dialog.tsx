@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import {
@@ -156,10 +157,7 @@ export function PurchasesActionDialog({
       queryClient.invalidateQueries({ queryKey: ['purchases'] })
       onOpenChange(false)
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }

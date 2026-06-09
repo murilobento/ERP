@@ -1,4 +1,5 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { handleServerError } from '@/lib/handle-server-error'
 import { type Row } from '@tanstack/react-table'
 import { Eye, FileText, Pen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -25,8 +26,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   async function handleInvoice() {
     try {
       await downloadInvoice(sale.id, sale.customer)
-    } catch {
-      // silencioso — erro já tratado pela rede
+    } catch (error: unknown) {
+      handleServerError(error)
     }
   }
 

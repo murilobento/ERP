@@ -98,7 +98,7 @@ describe('CategoriesDeleteDialog', () => {
     await userEvent.click(getByRole('button', { name: 'Excluir' }))
 
     await vi.waitFor(() =>
-      expect(toastError).toHaveBeenCalledWith('Falha ao excluir categoria.')
+      expect(toastError).toHaveBeenCalledWith('Algo deu errado!')
     )
     expect(onOpenChange).not.toHaveBeenCalledWith(false)
     expect(invalidateQueries).not.toHaveBeenCalled()

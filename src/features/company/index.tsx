@@ -4,16 +4,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Save } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { FullscreenToggle } from '@/components/fullscreen-toggle'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
+import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { useDocumentTitle } from '@/hooks/use-document-title'
+import { useCepLookup } from '@/hooks/use-cep-lookup'
+import { handleServerError } from '@/lib/handle-server-error'
 import api from '@/lib/api'
 import {
   CompanyAddressForm,
@@ -36,13 +33,14 @@ type CompanyResponse = {
 export function Company() {
   useDocumentTitle('Empresa')
   const [isSaving, setIsSaving] = useState(false)
-  const [isLoadingCep, setIsLoadingCep] = useState(false)
   const queryClient = useQueryClient()
 
   const form = useForm<CompanyForm>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: emptyCompanyValues,
   })
+
+  const { fetchCep, isLoadingCep } = useCepLookup(form)
 
   const { data: company, isLoading } = useQuery({
     queryKey: ['company'],
@@ -60,31 +58,6 @@ export function Company() {
 
   const logoUrl = useWatch({ control: form.control, name: 'logoUrl' })
 
-  async function fetchCep(rawCep: string) {
-    const cep = rawCep.replace(/\D/g, '')
-    if (cep.length !== 8) return
-
-    setIsLoadingCep(true)
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
-      const data = await res.json()
-
-      if (data.erro) {
-        toast.error('CEP não encontrado.')
-        return
-      }
-
-      form.setValue('street', data.logradouro || '')
-      form.setValue('neighborhood', data.bairro || '')
-      form.setValue('city', data.localidade || '')
-      form.setValue('state', data.uf || '')
-    } catch {
-      toast.error('Erro ao buscar CEP.')
-    } finally {
-      setIsLoadingCep(false)
-    }
-  }
-
   async function onSubmit(values: CompanyForm) {
     setIsSaving(true)
     try {
@@ -93,10 +66,7 @@ export function Company() {
       form.reset(toCompanyFormValues(res.data.company))
       toast.success('Empresa salva com sucesso.')
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsSaving(false)
     }
@@ -104,13 +74,7 @@ export function Company() {
 
   return (
     <>
-      <Header fixed>
-        <Search className='me-auto' />
-        <ThemeSwitch />
-        <FullscreenToggle />
-        <ConfigDrawer />
-        <ProfileDropdown />
-      </Header>
+      <PageHeader />
 
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div className='flex flex-wrap items-end justify-between gap-2'>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -30,8 +31,8 @@ export function CategoriesDeleteDialog({
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Categoria excluída com sucesso.')
       onOpenChange(false)
-    } catch {
-      toast.error('Falha ao excluir categoria.')
+    } catch (error: unknown) {
+      handleServerError(error)
     }
   }
 

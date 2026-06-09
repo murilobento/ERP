@@ -1,6 +1,5 @@
 import { type NavigateFn } from '@/hooks/use-table-url-state'
-import { DataTableShell } from '@/features/shared/data-table-shell'
-import { useDataTable } from '@/features/shared/use-data-table'
+import { ContactTable } from '@/features/shared/contact-table'
 import { type Client } from '../data/schema'
 import { useClients } from './clients-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
@@ -14,54 +13,18 @@ type DataTableProps = {
 
 export function ClientsTable({ data, search, navigate }: DataTableProps) {
   const { setOpen, setCurrentRow } = useClients()
-  const { table } = useDataTable({
-    data,
-    columns,
-    search,
-    navigate,
-    globalFilterFn: (row, _columnId, filterValue) => {
-      const search = String(filterValue).toLowerCase()
-      const { name, phone, street, number, neighborhood, city, state } =
-        row.original
-      const address = [street, number, neighborhood, city, state]
-        .filter(Boolean)
-        .join(', ')
-        .toLowerCase()
-      return (
-        name.toLowerCase().includes(search) ||
-        phone.toLowerCase().includes(search) ||
-        address.includes(search)
-      )
-    },
-  })
 
   return (
-    <DataTableShell
-      table={table}
-      columnCount={columns.length}
-      searchPlaceholder='Filtrar por nome, telefone ou endereço...'
-      filters={[
-        {
-          columnId: 'status',
-          title: 'Status',
-          options: [
-            { label: 'Ativo', value: 'active' },
-            { label: 'Inativo', value: 'inactive' },
-          ],
-        },
-      ]}
+    <ContactTable
+      data={data}
+      columns={columns}
+      search={search}
+      navigate={navigate}
+      bulkActions={(table) => <DataTableBulkActions table={table} />}
       onRowClick={(row) => {
         setCurrentRow(row)
         setOpen('view')
       }}
-      labels={{
-        name: 'Nome',
-        phone: 'Telefone',
-        address: 'Endereço',
-        status: 'Status',
-        createdAt: 'Criado em',
-      }}
-      bulkActions={<DataTableBulkActions table={table} />}
     />
   )
 }

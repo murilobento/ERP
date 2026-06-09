@@ -2,6 +2,7 @@ import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
 import { Eye, Pen, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,10 +31,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       queryClient.invalidateQueries({ queryKey: ['stock-adjustments'] })
       toast.success('Acerto removido.')
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     }
   }
 

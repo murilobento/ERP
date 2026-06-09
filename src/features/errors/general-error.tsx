@@ -1,36 +1,41 @@
-import { useNavigate, useRouter } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { DefaultErrorActions, ErrorPage } from '@/components/error-page'
 
 type GeneralErrorProps = React.HTMLAttributes<HTMLDivElement> & {
   minimal?: boolean
 }
 
-export function GeneralError({
-  className,
-  minimal = false,
-}: GeneralErrorProps) {
-  const navigate = useNavigate()
-  const { history } = useRouter()
+export function GeneralError({ className, minimal = false }: GeneralErrorProps) {
+  if (minimal) {
+    return (
+      <div className={cn('h-svh w-full', className)}>
+        <ErrorPage
+          code='500'
+          title='Ops! Algo deu errado :)'
+          description={
+            <>
+              Pedimos desculpas pelo inconveniente. <br /> Por favor, tente novamente
+              mais tarde.
+            </>
+          }
+        />
+      </div>
+    )
+  }
+
   return (
     <div className={cn('h-svh w-full', className)}>
-      <div className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>
-        {!minimal && (
-          <h1 className='text-[7rem] leading-tight font-bold'>500</h1>
-        )}
-        <span className='font-medium'>Ops! Algo deu errado {`:')`}</span>
-        <p className='text-center text-muted-foreground'>
-          Pedimos desculpas pelo inconveniente. <br /> Por favor, tente novamente mais tarde.
-        </p>
-        {!minimal && (
-          <div className='mt-6 flex gap-4'>
-            <Button variant='outline' onClick={() => history.go(-1)}>
-              Voltar
-            </Button>
-            <Button onClick={() => navigate({ to: '/' })}>Voltar ao Início</Button>
-          </div>
-        )}
-      </div>
+      <ErrorPage
+        code='500'
+        title='Ops! Algo deu errado :)'
+        description={
+          <>
+            Pedimos desculpas pelo inconveniente. <br /> Por favor, tente novamente
+            mais tarde.
+          </>
+        }
+        actions={<DefaultErrorActions />}
+      />
     </div>
   )
 }

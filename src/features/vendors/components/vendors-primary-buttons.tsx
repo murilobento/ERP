@@ -1,14 +1,17 @@
-import { UserPlus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ContactPrimaryButtons } from '@/features/shared/contact-primary-buttons'
 import { useVendors } from './vendors-provider'
+
+const vendorConfig = {
+  entityLabel: 'Fornecedor',
+  entityLabelLower: 'fornecedor',
+  endpoint: 'vendors',
+  queryKey: 'vendors',
+  formId: 'vendor-form',
+  namePlaceholder: 'Fornecedor Exemplo',
+  entityPlural: 'fornecedores',
+} as const
 
 export function VendorsPrimaryButtons() {
   const { setOpen } = useVendors()
-  return (
-    <div className='flex gap-2'>
-      <Button className='space-x-1' onClick={() => setOpen('add')}>
-        <span>Adicionar Fornecedor</span> <UserPlus size={18} />
-      </Button>
-    </div>
-  )
+  return <ContactPrimaryButtons config={vendorConfig} onAdd={() => setOpen('add')} />
 }

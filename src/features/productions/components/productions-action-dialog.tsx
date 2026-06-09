@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import {
@@ -97,10 +98,7 @@ export function ProductionsActionDialog({
       resetForm()
       onOpenChange(false)
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }
@@ -114,7 +112,7 @@ export function ProductionsActionDialog({
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-2xl'>
+      <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <DialogTitle>Nova Produção</DialogTitle>
           <DialogDescription>
@@ -123,11 +121,11 @@ export function ProductionsActionDialog({
         </DialogHeader>
 
         <div className='space-y-4 px-0.5'>
-          <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
-            <Label className='col-span-2 text-end'>Observação</Label>
+          <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
+            <Label className='sm:col-span-2 sm:text-end'>Observação</Label>
             <Input
               placeholder='Opcional'
-              className='col-span-4'
+              className='min-w-0 sm:col-span-4'
               autoComplete='off'
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -136,8 +134,8 @@ export function ProductionsActionDialog({
 
           <div className='space-y-2'>
             <Label className='mb-2 block text-sm font-medium'>Itens</Label>
-            <div className='grid grid-cols-[1fr_7rem_auto] items-end gap-2'>
-              <div>
+            <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_auto]'>
+              <div className='min-w-0 sm:col-span-2 md:col-span-1'>
                 <Label className='text-xs text-muted-foreground'>Produto</Label>
                 <ProductSupplyCombobox
                   type='product'
@@ -150,7 +148,7 @@ export function ProductionsActionDialog({
                   placeholder='Selecione o produto'
                 />
               </div>
-              <div>
+              <div className='min-w-0'>
                 <Label className='text-xs text-muted-foreground'>Quantidade</Label>
                 <Input
                   type='number'
@@ -166,7 +164,7 @@ export function ProductionsActionDialog({
                   }
                 />
               </div>
-              <Button type='button' onClick={addItem}>
+              <Button type='button' onClick={addItem} className='w-full sm:col-span-2 md:col-span-1 md:w-auto'>
                 <Plus size={16} />
                 Adicionar
               </Button>

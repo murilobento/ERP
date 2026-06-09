@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Loader2, CheckCircle2, Clock, XCircle, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
@@ -139,10 +140,7 @@ export function ProductionsDetailDialog() {
       setOpen(null)
       setCurrentRow(null)
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }
@@ -167,10 +165,7 @@ export function ProductionsDetailDialog() {
       setOpen(null)
       setCurrentRow(null)
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }
@@ -188,7 +183,7 @@ export function ProductionsDetailDialog() {
         }
       }}
     >
-      <DialogContent className='sm:max-w-2xl'>
+      <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
             <DialogTitle>Detalhes da Produção</DialogTitle>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { DatePicker } from '@/components/date-picker'
@@ -167,10 +168,7 @@ export function SalesKanbanActionDialog() {
       toast.success(`Venda movida para ${targetLabel.toLowerCase()}.`)
       close()
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Algo deu errado.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }

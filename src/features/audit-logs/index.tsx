@@ -1,12 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { FullscreenToggle } from '@/components/fullscreen-toggle'
-import { ThemeSwitch } from '@/components/theme-switch'
+import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { AuditLogsTable } from './components/audit-logs-table'
@@ -29,13 +24,7 @@ export function AuditLogs() {
 
   return (
     <>
-      <Header fixed>
-        <Search className='me-auto' />
-        <ThemeSwitch />
-        <FullscreenToggle />
-        <ConfigDrawer />
-        <ProfileDropdown />
-      </Header>
+      <PageHeader />
 
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div>

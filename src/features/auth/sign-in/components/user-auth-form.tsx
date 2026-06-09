@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { Loader2, LogIn } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import { useAuthStore } from '@/stores/auth-store'
 import api from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -67,10 +68,7 @@ export function UserAuthForm({
 
       toast.success(`Bem-vindo de volta, ${res.data.user.firstName}!`)
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Credenciais inválidas.'
-      toast.error(message)
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }

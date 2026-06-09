@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
 import { CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -39,10 +40,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
       queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || 'Falha ao concluir compras selecionadas.'
-      toast.error(message)
+      handleServerError(error)
     }
   }
 

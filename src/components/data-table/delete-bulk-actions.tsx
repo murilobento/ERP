@@ -3,7 +3,18 @@ import { useQueryClient } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { handleServerError } from '@/lib/handle-server-error'
 import api from '@/lib/api'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -41,8 +52,8 @@ export function DataTableDeleteBulkActions<TData extends { id: string }>({
       )
       table.resetRowSelection()
       queryClient.invalidateQueries({ queryKey })
-    } catch {
-      toast.error(`Falha ao excluir ${entityNamePlural}.`)
+    } catch (error: unknown) {
+      handleServerError(error)
     }
 
     setShowDeleteConfirm(false)
@@ -79,30 +90,25 @@ export function DataTableDeleteBulkActions<TData extends { id: string }>({
         </Tooltip>
       </BulkActionsToolbar>
 
-      {showDeleteConfirm && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
-          <div className='rounded-lg border bg-background p-6 shadow-lg'>
-            <h3 className='text-lg font-semibold'>
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
               Excluir {selectedRows.length}{' '}
               {selectedRows.length > 1 ? entityNamePlural : entityName}?
-            </h3>
-            <p className='mt-2 text-sm text-muted-foreground'>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
               Esta ação não pode ser desfeita.
-            </p>
-            <div className='mt-4 flex justify-end gap-2'>
-              <Button
-                variant='outline'
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                Cancelar
-              </Button>
-              <Button variant='destructive' onClick={handleBulkDelete}>
-                Excluir
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction className='bg-destructive text-white hover:bg-destructive/90' onClick={handleBulkDelete}>
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
