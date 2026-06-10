@@ -16,6 +16,7 @@ export function AuditLogsTable({ data, search, navigate }: DataTableProps) {
     columns,
     search,
     navigate,
+    defaultColumnVisibility: { createdAt: false },
     globalFilterEnabled: false,
   })
 
@@ -26,6 +27,12 @@ export function AuditLogsTable({ data, search, navigate }: DataTableProps) {
       searchPlaceholder='Filtrar logs...'
       searchKey='actionLabel'
       filters={[]}
+      labels={{
+        createdAt: 'Criado em',
+        actionLabel: 'Ação',
+        author: 'Autor',
+        targetUser: 'Usuário Afetado',
+      }}
     />
   )
 }

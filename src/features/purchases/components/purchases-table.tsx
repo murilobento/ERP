@@ -19,6 +19,7 @@ export function PurchasesTable({ data, search, navigate }: DataTableProps) {
     columns,
     search,
     navigate,
+    defaultColumnVisibility: { createdAt: false },
     globalFilterEnabled: false,
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()

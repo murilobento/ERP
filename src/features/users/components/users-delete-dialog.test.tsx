@@ -29,6 +29,7 @@ const user: User = {
   email: 'murilo@example.com',
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
+  status: 'active',
 }
 
 function confirmationInput() {

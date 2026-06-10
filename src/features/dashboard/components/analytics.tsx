@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import {
   Card,
   CardContent,
@@ -5,144 +6,154 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  TrendingUp,
+} from 'lucide-react'
+import api from '@/lib/api'
+import { formatCurrency } from '@/features/sales/data/schema'
 import { AnalyticsChart } from './analytics-chart'
 
+const paymentMethodLabels: Record<string, string> = {
+  pix: 'Pix',
+  cash: 'Dinheiro',
+  credit_card: 'Cartão de Crédito',
+  debit_card: 'Cartão de Débito',
+  bank_transfer: 'Transferência',
+  boleto: 'Boleto',
+  other: 'Outro',
+}
+
+const statusLabels: Record<string, string> = {
+  in_preparation: 'Em Preparo',
+  ready_for_delivery: 'Pronto para Entrega',
+  delivered: 'Entregue',
+  completed: 'Concluído',
+}
+
+export type AnalyticsResponse = {
+  byPaymentMethod: { method: string; count: number; total: number }[]
+  byStatus: { status: string; count: number; total: number }[]
+  monthlyProfit: { month: string; profit: number }[]
+  avgTicket: number
+  paidPercentage: number
+  pendingPercentage: number
+  salesThisMonth: number
+}
+
 export function Analytics() {
+  const { data: analytics } = useQuery({
+    queryKey: ['dashboard', 'analytics'],
+    queryFn: async () => {
+      const res = await api.get('/dashboard/analytics')
+      return res.data as AnalyticsResponse
+    },
+    refetchOnWindowFocus: false,
+  })
+
   return (
-    <div className='space-y-4'>
+    <div className='space-y-3'>
       <Card>
-        <CardHeader>
-          <CardTitle>Visão Geral de Tráfego</CardTitle>
-          <CardDescription>Cliques semanais e visitantes únicos</CardDescription>
+        <CardHeader className='px-4 py-3'>
+          <CardTitle className='text-sm'>Evolução do Lucro Mensal</CardTitle>
+          <CardDescription className='text-xs'>
+            Lucro bruto (Receita - Custo) nos últimos 12 meses
+          </CardDescription>
         </CardHeader>
-        <CardContent className='px-6'>
-          <AnalyticsChart />
+        <CardContent className='px-4 pb-3'>
+          <AnalyticsChart data={analytics?.monthlyProfit ?? []} />
         </CardContent>
       </Card>
-      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total de Cliques</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <path d='M3 3v18h18' />
-              <path d='M7 15l4-4 4 4 4-6' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>1,248</div>
-            <p className='text-xs text-muted-foreground'>+12,4% vs semana anterior</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Visitantes Únicos
+      <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
+        <Card className='border-green-200 bg-green-50 px-4 py-3 dark:border-green-800 dark:bg-green-950'>
+          <div className='flex items-center justify-between'>
+            <CardTitle className='text-xs font-medium text-green-600 dark:text-green-400'>
+              Ticket Médio
             </CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <circle cx='12' cy='7' r='4' />
-              <path d='M6 21v-2a6 6 0 0 1 12 0v2' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>832</div>
-            <p className='text-xs text-muted-foreground'>+5,8% vs semana anterior</p>
-          </CardContent>
+            <DollarSign className='h-3.5 w-3.5 text-green-400 dark:text-green-500' />
+          </div>
+          <div className='mt-1 text-xl font-bold text-green-700 dark:text-green-300'>
+            {formatCurrency(analytics?.avgTicket ?? 0)}
+          </div>
+          <p className='text-[11px] text-green-500 dark:text-green-400'>
+            Por venda concluída
+          </p>
         </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Taxa de Rejeição</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <path d='M3 12h6l3 6 3-6h6' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>42%</div>
-            <p className='text-xs text-muted-foreground'>-3,2% vs semana anterior</p>
-          </CardContent>
+        <Card className='border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-950'>
+          <div className='flex items-center justify-between'>
+            <CardTitle className='text-xs font-medium text-blue-600 dark:text-blue-400'>
+              % Faturado
+            </CardTitle>
+            <CheckCircle2 className='h-3.5 w-3.5 text-blue-400 dark:text-blue-500' />
+          </div>
+          <div className='mt-1 text-xl font-bold text-blue-700 dark:text-blue-300'>
+            {(analytics?.paidPercentage ?? 0).toFixed(1)}%
+          </div>
+          <p className='text-[11px] text-blue-500 dark:text-blue-400'>
+            Vendas pagas
+          </p>
         </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Sessão Média</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <circle cx='12' cy='12' r='10' />
-              <path d='M12 6v6l4 2' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>3m 24s</div>
-            <p className='text-xs text-muted-foreground'>+18s vs semana anterior</p>
-          </CardContent>
+        <Card className='border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950'>
+          <div className='flex items-center justify-between'>
+            <CardTitle className='text-xs font-medium text-amber-600 dark:text-amber-400'>
+              % Pendente
+            </CardTitle>
+            <Clock className='h-3.5 w-3.5 text-amber-400 dark:text-amber-500' />
+          </div>
+          <div className='mt-1 text-xl font-bold text-amber-700 dark:text-amber-300'>
+            {(analytics?.pendingPercentage ?? 0).toFixed(1)}%
+          </div>
+          <p className='text-[11px] text-amber-500 dark:text-amber-400'>
+            A receber
+          </p>
+        </Card>
+        <Card className='border-purple-200 bg-purple-50 px-4 py-3 dark:border-purple-800 dark:bg-purple-950'>
+          <div className='flex items-center justify-between'>
+            <CardTitle className='text-xs font-medium text-purple-600 dark:text-purple-400'>
+              Vendas no Mês
+            </CardTitle>
+            <TrendingUp className='h-3.5 w-3.5 text-purple-400 dark:text-purple-500' />
+          </div>
+          <div className='mt-1 text-xl font-bold text-purple-700 dark:text-purple-300'>
+            {analytics?.salesThisMonth ?? 0}
+          </div>
+          <p className='text-[11px] text-purple-500 dark:text-purple-400'>
+            Concluídas este mês
+          </p>
         </Card>
       </div>
-      <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
+      <div className='grid grid-cols-1 gap-3 lg:grid-cols-7'>
         <Card className='col-span-1 lg:col-span-4'>
-          <CardHeader>
-            <CardTitle>Referências</CardTitle>
-            <CardDescription>Principais fontes de tráfego</CardDescription>
+          <CardHeader className='px-4 py-3'>
+            <CardTitle className='text-sm'>Por Método de Pagamento</CardTitle>
+            <CardDescription className='text-xs'>Distribuição das vendas concluídas</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className='px-4 pb-3'>
             <SimpleBarList
-              items={[
-                { name: 'Direto', value: 512 },
-                { name: 'Product Hunt', value: 238 },
-                { name: 'Twitter', value: 174 },
-                { name: 'Blog', value: 104 },
-              ]}
+              items={(analytics?.byPaymentMethod ?? []).map((p) => ({
+                name: paymentMethodLabels[p.method] ?? p.method,
+                value: p.total,
+              }))}
               barClass='bg-primary'
-              valueFormatter={(n) => `${n}`}
+              valueFormatter={(n) => formatCurrency(n)}
             />
           </CardContent>
         </Card>
         <Card className='col-span-1 lg:col-span-3'>
-          <CardHeader>
-            <CardTitle>Dispositivos</CardTitle>
-            <CardDescription>Como os usuários acessam seu app</CardDescription>
+          <CardHeader className='px-4 py-3'>
+            <CardTitle className='text-sm'>Por Status da Venda</CardTitle>
+            <CardDescription className='text-xs'>Quantidade e valor por status</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className='px-4 pb-3'>
             <SimpleBarList
-              items={[
-                { name: 'Desktop', value: 74 },
-                { name: 'Mobile', value: 22 },
-                { name: 'Tablet', value: 4 },
-              ]}
+              items={(analytics?.byStatus ?? []).map((s) => ({
+                name: statusLabels[s.status] ?? s.status,
+                value: s.count,
+              }))}
               barClass='bg-muted-foreground'
-              valueFormatter={(n) => `${n}%`}
+              valueFormatter={(n) => `${n} vendas`}
             />
           </CardContent>
         </Card>
@@ -162,18 +173,18 @@ function SimpleBarList({
 }) {
   const max = Math.max(...items.map((i) => i.value), 1)
   return (
-    <ul className='space-y-3'>
+    <ul className='space-y-2'>
       {items.map((i) => {
         const width = `${Math.round((i.value / max) * 100)}%`
         return (
           <li key={i.name} className='flex items-center justify-between gap-3'>
             <div className='min-w-0 flex-1'>
-              <div className='mb-1 truncate text-xs text-muted-foreground'>
+              <div className='mb-0.5 truncate text-xs text-muted-foreground'>
                 {i.name}
               </div>
-              <div className='h-2.5 w-full rounded-full bg-muted'>
+              <div className='h-1.5 w-full rounded-full bg-muted'>
                 <div
-                  className={`h-2.5 rounded-full ${barClass}`}
+                  className={`h-1.5 rounded-full ${barClass}`}
                   style={{ width }}
                 />
               </div>

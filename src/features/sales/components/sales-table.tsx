@@ -18,6 +18,7 @@ export function SalesTable({ data, search, navigate }: SalesTableProps) {
     columns,
     search,
     navigate,
+    defaultColumnVisibility: { createdAt: false },
     globalFilterEnabled: false,
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
@@ -45,6 +46,7 @@ export function SalesTable({ data, search, navigate }: SalesTableProps) {
         total: 'Total',
         status: 'Status',
         createdAt: 'Criado em',
+        deliveryDate: 'Entrega',
       }}
     />
   )

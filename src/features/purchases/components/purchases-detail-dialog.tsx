@@ -19,6 +19,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { type Purchase, purchaseStatusMap } from '../data/schema'
 import { usePurchases } from './purchases-provider'
 import { PurchaseEditForm } from './purchase-edit-form'

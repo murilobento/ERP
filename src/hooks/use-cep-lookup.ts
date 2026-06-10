@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
-import { type UseFormReturn, type FieldValues } from 'react-hook-form'
+import { type UseFormReturn, type FieldValues, type Path } from 'react-hook-form'
 
 export function useCepLookup<TFieldValues extends FieldValues = FieldValues>(
   form: UseFormReturn<TFieldValues>,
@@ -22,10 +22,10 @@ export function useCepLookup<TFieldValues extends FieldValues = FieldValues>(
           return
         }
 
-        form.setValue('street', data.logradouro || '')
-        form.setValue('neighborhood', data.bairro || '')
-        form.setValue('city', data.localidade || '')
-        form.setValue('state', data.uf || '')
+        form.setValue('street' as Path<TFieldValues>, data.logradouro || '')
+        form.setValue('neighborhood' as Path<TFieldValues>, data.bairro || '')
+        form.setValue('city' as Path<TFieldValues>, data.localidade || '')
+        form.setValue('state' as Path<TFieldValues>, data.uf || '')
       } catch {
         toast.error('Erro ao buscar CEP.')
       } finally {

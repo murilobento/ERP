@@ -19,6 +19,7 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
     columns,
     search,
     navigate,
+    defaultColumnVisibility: { createdAt: false },
     globalFilterEnabled: false,
   })
 

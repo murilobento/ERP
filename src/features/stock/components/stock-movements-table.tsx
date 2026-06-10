@@ -16,6 +16,7 @@ export function StockMovementsTable({ data, search, navigate }: DataTableProps) 
     columns,
     search,
     navigate,
+    defaultColumnVisibility: { createdAt: false },
     globalFilterEnabled: false,
   })
 

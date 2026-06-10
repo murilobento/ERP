@@ -22,7 +22,7 @@ export type ContactRowActionsProps = {
   row: Row<Contact>
 }
 
-export function createContactRowActions(config: ContactConfig, useEntity: () => { setOpen: (value: string | null) => void; setCurrentRow: (row: Contact | null) => void }, hasView = false) {
+export function createContactRowActions<DialogType extends string>(config: ContactConfig, useEntity: () => { setOpen: (value: DialogType | null) => void; setCurrentRow: (row: Contact | null) => void }, hasView = false) {
   function ContactRowActions({ row }: ContactRowActionsProps) {
     const { setOpen, setCurrentRow } = useEntity()
     const queryClient = useQueryClient()
@@ -63,7 +63,7 @@ export function createContactRowActions(config: ContactConfig, useEntity: () => 
                 <DropdownMenuItem
                   onClick={() => {
                     setCurrentRow(row.original)
-                    setOpen('view')
+                    setOpen('view' as DialogType)
                   }}
                 >
                   Ver detalhes
@@ -77,7 +77,7 @@ export function createContactRowActions(config: ContactConfig, useEntity: () => 
             <DropdownMenuItem
               onClick={() => {
                 setCurrentRow(row.original)
-                setOpen('edit')
+                setOpen('edit' as DialogType)
               }}
             >
               Editar

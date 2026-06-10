@@ -68,9 +68,23 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
     },
   },
   {
+    accessorKey: 'stock',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estoque' />
+    ),
+    cell: ({ row }) => {
+      const stock = row.getValue('stock') as number
+      return (
+        <Badge variant={stock > 0 ? 'default' : 'secondary'}>
+          {stock}
+        </Badge>
+      )
+    },
+  },
+  {
     accessorKey: 'unit',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Unidade base' />
+      <DataTableColumnHeader column={column} title='Unidade' />
     ),
     cell: ({ row }) => (
       <div className='w-fit ps-2 text-nowrap'>{row.getValue('unit')}</div>
@@ -87,20 +101,6 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
       const unit = row.original.unit
       return (
         <span>R$ {costPrice.toFixed(2)}/{unit}</span>
-      )
-    },
-  },
-  {
-    accessorKey: 'stock',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estoque' />
-    ),
-    cell: ({ row }) => {
-      const stock = row.getValue('stock') as number
-      return (
-        <Badge variant={stock > 0 ? 'default' : 'secondary'}>
-          {stock}
-        </Badge>
       )
     },
   },

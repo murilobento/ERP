@@ -118,7 +118,7 @@ export function createContactColumns(
     },
     {
       id: 'actions',
-      cell: DataTableRowActions,
+      cell: ({ row }) => <DataTableRowActions row={row} />,
     },
   ]
 }

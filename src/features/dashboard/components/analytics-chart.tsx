@@ -1,75 +1,77 @@
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { formatCurrency } from '@/features/sales/data/schema'
 
-const data = [
-  {
-    name: 'Mon',
-    clicks: Math.floor(Math.random() * 900) + 100,
-    uniques: Math.floor(Math.random() * 700) + 80,
-  },
-  {
-    name: 'Tue',
-    clicks: Math.floor(Math.random() * 900) + 100,
-    uniques: Math.floor(Math.random() * 700) + 80,
-  },
-  {
-    name: 'Wed',
-    clicks: Math.floor(Math.random() * 900) + 100,
-    uniques: Math.floor(Math.random() * 700) + 80,
-  },
-  {
-    name: 'Thu',
-    clicks: Math.floor(Math.random() * 900) + 100,
-    uniques: Math.floor(Math.random() * 700) + 80,
-  },
-  {
-    name: 'Fri',
-    clicks: Math.floor(Math.random() * 900) + 100,
-    uniques: Math.floor(Math.random() * 700) + 80,
-  },
-  {
-    name: 'Sat',
-    clicks: Math.floor(Math.random() * 900) + 100,
-    uniques: Math.floor(Math.random() * 700) + 80,
-  },
-  {
-    name: 'Sun',
-    clicks: Math.floor(Math.random() * 900) + 100,
-    uniques: Math.floor(Math.random() * 700) + 80,
-  },
-]
+const monthLabels: Record<string, string> = {
+  '01': 'Jan',
+  '02': 'Fev',
+  '03': 'Mar',
+  '04': 'Abr',
+  '05': 'Mai',
+  '06': 'Jun',
+  '07': 'Jul',
+  '08': 'Ago',
+  '09': 'Set',
+  '10': 'Out',
+  '11': 'Nov',
+  '12': 'Dez',
+}
 
-export function AnalyticsChart() {
+function formatMonth(month: string) {
+  const parts = month.split('-')
+  return monthLabels[parts[1]] ?? month
+}
+
+function formatTick(value: number) {
+  if (value >= 1000) {
+    return `R$${(value / 1000).toFixed(0)}k`
+  }
+  return `R$${value}`
+}
+
+export function AnalyticsChart({
+  data,
+}: {
+  data: { month: string; profit: number }[]
+}) {
+  const chartData = data.map((d) => ({
+    name: formatMonth(d.month),
+    Lucro: d.profit,
+  }))
+
   return (
-    <ResponsiveContainer width='100%' height={300}>
-      <AreaChart data={data}>
+    <ResponsiveContainer width='100%' height={220}>
+      <AreaChart data={chartData}>
+        <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
         <XAxis
           dataKey='name'
-          stroke='#888888'
           fontSize={12}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
-          stroke='#888888'
           fontSize={12}
           tickLine={false}
           axisLine={false}
+          tickFormatter={formatTick}
+        />
+        <Tooltip
+          formatter={((value: number | string) => [formatCurrency(Number(value)), 'Lucro']) as never}
         />
         <Area
           type='monotone'
-          dataKey='clicks'
-          stroke='currentColor'
-          className='text-primary'
-          fill='currentColor'
+          dataKey='Lucro'
+          stroke='hsl(142, 71%, 45%)'
+          fill='hsl(142, 71%, 45%)'
           fillOpacity={0.15}
-        />
-        <Area
-          type='monotone'
-          dataKey='uniques'
-          stroke='currentColor'
-          className='text-muted-foreground'
-          fill='currentColor'
-          fillOpacity={0.1}
+          strokeWidth={2}
         />
       </AreaChart>
     </ResponsiveContainer>

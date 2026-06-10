@@ -15,6 +15,7 @@ import { categoryRoutes } from './routes/categories'
 import { kitRoutes } from './routes/kits'
 import { companyRoutes } from './routes/company'
 import { auditLogRoutes } from './routes/audit-logs'
+import { dashboardRoutes } from './routes/dashboard'
 
 export function createApp({ enableLogger = true } = {}) {
   const app = new Hono()
@@ -47,6 +48,7 @@ export function createApp({ enableLogger = true } = {}) {
   app.route('/api/kits', kitRoutes)
   app.route('/api/company', companyRoutes)
   app.route('/api/audit-logs', auditLogRoutes)
+  app.route('/api/dashboard', dashboardRoutes)
 
   app.get('/api/health', (c) => c.json({ status: 'ok' }))
 

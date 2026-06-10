@@ -19,6 +19,7 @@ export function SuppliesTable({ data, search, navigate }: DataTableProps) {
     columns,
     search,
     navigate,
+    defaultColumnVisibility: { createdAt: false },
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
       const { name } = row.original
@@ -47,7 +48,9 @@ export function SuppliesTable({ data, search, navigate }: DataTableProps) {
       }}
       labels={{
         name: 'Nome',
+        packageUnit: 'Embalagem',
         unit: 'Unidade',
+        costPrice: 'Preço de custo',
         stock: 'Estoque',
         status: 'Status',
         createdAt: 'Criado em',

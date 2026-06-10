@@ -2,18 +2,15 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type ColumnDef, type Table } from '@tanstack/react-table'
-import { type Contact, type ContactConfig } from './contact-types'
+import { type Contact } from './contact-types'
 
 type ContactTableProps = {
   data: Contact[]
   columns: ColumnDef<Contact>[]
   search: Record<string, unknown>
   navigate: NavigateFn
-  config: ContactConfig
   bulkActions: (table: Table<Contact>) => React.ReactNode
   onRowClick: (row: Contact) => void
-  useEntity: () => { setOpen: (value: string | null) => void; setCurrentRow: (row: Contact | null) => void }
-  rowClickAction: string
 }
 
 export function ContactTable({
@@ -29,6 +26,7 @@ export function ContactTable({
     columns,
     search,
     navigate,
+    defaultColumnVisibility: { createdAt: false },
     globalFilterFn: (row, _columnId, filterValue) => {
       const searchStr = String(filterValue).toLowerCase()
       const { name, phone, street, number, neighborhood, city, state } =
@@ -60,7 +58,7 @@ export function ContactTable({
           ],
         },
       ]}
-      onRowClick={(row) => onRowClick(row.original)}
+      onRowClick={onRowClick}
       labels={{
         name: 'Nome',
         phone: 'Telefone',

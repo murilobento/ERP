@@ -1,21 +1,22 @@
 import {
   Users,
-  UserCheck,
+  Contact,
   Wallet,
   Shield,
-  ShoppingCart,
+  Store,
   Package,
-  PackagePlus,
+  FlaskConical,
   Factory,
   Warehouse,
-  ClipboardList,
-  BoxesIcon,
+  ArrowRightLeft,
+  PackageOpen,
   Truck,
   Building2,
   BadgeDollarSign,
   Tag,
   PackageCheck,
   ScrollText,
+  BarChart3,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -27,12 +28,19 @@ export const sidebarData: SidebarData = {
   },
   modules: [
     { name: 'Administrativo', icon: Shield },
-    { name: 'Comercial', icon: ShoppingCart },
+    { name: 'Comercial', icon: Store },
     { name: 'Estoque', icon: Package },
     { name: 'Financeiro', icon: Wallet },
   ],
   navGroupsByModule: {
-    Financeiro: [],
+    Financeiro: [
+      {
+        title: 'Geral',
+        items: [
+          { title: 'Painel Financeiro', url: '/', icon: BarChart3 },
+        ],
+      },
+    ],
     Administrativo: [
       {
         title: 'Geral',
@@ -47,8 +55,8 @@ export const sidebarData: SidebarData = {
       {
         title: 'Geral',
         items: [
-          { title: 'Clientes', url: '/clients', icon: UserCheck },
-          { title: 'Fornecedores', url: '/vendors', icon: Building2 },
+          { title: 'Clientes', url: '/clients', icon: Contact },
+          { title: 'Fornecedores', url: '/vendors', icon: Truck },
           { title: 'Vendas', url: '/sales', icon: BadgeDollarSign },
         ],
       },
@@ -60,11 +68,11 @@ export const sidebarData: SidebarData = {
           { title: 'Acerto de Estoque', url: '/stock', icon: Warehouse },
           { title: 'Categorias', url: '/categories', icon: Tag },
           { title: 'Compras', url: '/purchases', icon: Truck },
-          { title: 'Insumos', url: '/supplies', icon: PackagePlus },
+          { title: 'Insumos', url: '/supplies', icon: FlaskConical },
           { title: 'Kits', url: '/kits', icon: PackageCheck },
-          { title: 'Movimentações', url: '/stock/movements', icon: ClipboardList },
+          { title: 'Movimentações', url: '/stock/movements', icon: ArrowRightLeft },
           { title: 'Produções', url: '/productions', icon: Factory },
-          { title: 'Produtos', url: '/products', icon: BoxesIcon },
+          { title: 'Produtos', url: '/products', icon: PackageOpen },
         ],
       },
     ],

@@ -192,12 +192,6 @@ function textInput(placeholder: string) {
   )!
 }
 
-function submitButton() {
-  return document.querySelector<HTMLButtonElement>(
-    'button[class*="submit"], button:not([data-testid])'
-  )!
-}
-
 async function selectClientAndDate() {
   await userEvent.click(document.body.querySelector('[data-testid="client-combobox"]')!)
   await userEvent.click(document.body.querySelector('[data-testid="date-picker"]')!)
