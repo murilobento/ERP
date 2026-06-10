@@ -58,6 +58,7 @@ export function KitsActionDialog({
 }: KitsActionDialogProps) {
   const isEdit = !!currentRow && open
   const [isLoading, setIsLoading] = useState(false)
+  const [localFinalPrice, setLocalFinalPrice] = useState<string | null>(null)
   const [name, setName] = useState(isEdit ? currentRow!.name : '')
   const [description, setDescription] = useState(isEdit ? currentRow!.description : '')
   const [statusValue, setStatusValue] = useState(isEdit ? currentRow!.status : 'active')
@@ -271,12 +272,13 @@ export function KitsActionDialog({
               type='number'
               min='0'
               max={discountType === 'percentage' ? '100' : undefined}
-              step={discountType === 'percentage' ? '1' : '0.01'}
+              step={discountType === 'percentage' ? '0.01' : '0.01'}
               className='min-w-0 sm:col-span-4'
               value={discountValue || ''}
-              onChange={(e) =>
+              onChange={(e) => {
+                setLocalFinalPrice(null)
                 setDiscountValue(parseFloat(e.target.value) || 0)
-              }
+              }}
               autoComplete='off'
             />
           </div>
@@ -499,9 +501,38 @@ export function KitsActionDialog({
               </div>
               <div>
                 <p className='text-xs text-muted-foreground'>Preço final</p>
-                <p className='font-semibold text-green-600'>
-                  {formatCurrency(kitFinalPrice)}
-                </p>
+                {kitTotalPrice > 0 ? (
+                  <div className='flex items-center gap-1'>
+                    <span className='text-sm text-muted-foreground'>R$</span>
+                    <Input
+                      type='number'
+                      min='0'
+                      step='0.01'
+                      className='h-7 w-24 font-semibold text-green-600'
+                      autoComplete='off'
+                      value={localFinalPrice ?? kitFinalPrice.toFixed(2)}
+                      onChange={(e) => {
+                        setLocalFinalPrice(e.target.value)
+                        const val = parseFloat(e.target.value)
+                        if (isNaN(val) || val < 0) return
+                        if (val >= kitTotalPrice) {
+                          setDiscountValue(0)
+                          return
+                        }
+                        const discount = kitTotalPrice - val
+                        if (discountType === 'percentage') {
+                          const pct = Math.round((discount / kitTotalPrice) * 10000) / 100
+                          setDiscountValue(pct)
+                        } else {
+                          setDiscountValue(Math.round(discount * 100) / 100)
+                        }
+                      }}
+                      onBlur={() => setLocalFinalPrice(null)}
+                    />
+                  </div>
+                ) : (
+                  <p className='font-semibold text-green-600'>—</p>
+                )}
               </div>
             </div>
           )}

@@ -64,6 +64,7 @@ export function ProductsActionDialog({
 }: ProductActionDialogProps) {
   const isEdit = !!currentRow
   const [isLoading, setIsLoading] = useState(false)
+  const [localSalePrice, setLocalSalePrice] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
   const { data: categories = [] } = useQuery({
@@ -214,11 +215,14 @@ export function ProductsActionDialog({
                     <Input
                       type='number'
                       min='0'
-                      step='1'
+                      step='0.01'
                       className='col-span-4'
                       autoComplete='off'
                       value={field.value || ''}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        setLocalSalePrice(null)
+                        field.onChange(parseFloat(e.target.value) || 0)
+                      }}
                     />
                   </FormControl>
                   <FormMessage className='col-span-4 col-start-3' />
@@ -241,11 +245,31 @@ export function ProductsActionDialog({
                 </div>
                 <div>
                   <Label className='text-muted-foreground'>Preço de venda</Label>
-                  <p className='font-medium'>
-                    {costPrice > 0
-                      ? `R$ ${salePrice.toFixed(2)}/${currentRow.unit}`
-                      : '—'}
-                  </p>
+                  {costPrice > 0 ? (
+                    <div className='flex items-center gap-1'>
+                      <span className='text-sm text-muted-foreground'>R$</span>
+                      <Input
+                        type='number'
+                        min='0'
+                        step='0.01'
+                        className='h-7 font-medium'
+                        autoComplete='off'
+                        value={localSalePrice ?? salePrice.toFixed(2)}
+                        onChange={(e) => {
+                          setLocalSalePrice(e.target.value)
+                          const val = parseFloat(e.target.value)
+                          if (!isNaN(val) && val >= 0) {
+                            const newMargin = Math.round(((val / costPrice) - 1) * 10000) / 100
+                            form.setValue('margin', newMargin >= 0 ? newMargin : 0)
+                          }
+                        }}
+                        onBlur={() => setLocalSalePrice(null)}
+                      />
+                      <span className='text-sm text-muted-foreground'>/{currentRow.unit}</span>
+                    </div>
+                  ) : (
+                    <p className='font-medium'>—</p>
+                  )}
                 </div>
               </div>
             )}
