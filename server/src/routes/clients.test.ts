@@ -57,7 +57,7 @@ describe('client routes', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'All required fields must be provided',
+      error: 'Todos os campos obrigatórios devem ser preenchidos.',
     })
     expect(prisma.client.create).not.toHaveBeenCalled()
   })

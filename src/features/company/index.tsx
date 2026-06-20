@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Save } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
-import { toast } from 'sonner'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useCepLookup } from '@/hooks/use-cep-lookup'
-import { handleServerError } from '@/lib/handle-server-error'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import {
   CompanyAddressForm,
@@ -32,7 +32,7 @@ type CompanyResponse = {
 
 export function Company() {
   useDocumentTitle('Empresa')
-  const [isSaving, setIsSaving] = useState(false)
+  const { run, isLoading: isSaving } = useEntityMutation()
   const queryClient = useQueryClient()
 
   const form = useForm<CompanyForm>({
@@ -43,7 +43,7 @@ export function Company() {
   const { fetchCep, isLoadingCep } = useCepLookup(form)
 
   const { data: company, isLoading } = useQuery({
-    queryKey: ['company'],
+    queryKey: queryKeys.company,
     queryFn: async () => {
       const res = await api.get<CompanyResponse>('/company')
       return res.data.company
@@ -59,17 +59,14 @@ export function Company() {
   const logoUrl = useWatch({ control: form.control, name: 'logoUrl' })
 
   async function onSubmit(values: CompanyForm) {
-    setIsSaving(true)
-    try {
-      const res = await api.put<{ company: Company }>('/company', values)
-      queryClient.setQueryData(['company'], res.data.company)
-      form.reset(toCompanyFormValues(res.data.company))
-      toast.success('Empresa salva com sucesso.')
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsSaving(false)
-    }
+    await run({
+      mutation: async () => {
+        const res = await api.put<{ company: Company }>('/company', values)
+        queryClient.setQueryData(queryKeys.company, res.data.company)
+        form.reset(toCompanyFormValues(res.data.company))
+      },
+      successMessage: 'Empresa salva com sucesso.',
+    })
   }
 
   return (

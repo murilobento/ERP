@@ -3,6 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { SuppliesDialogs } from './components/supplies-dialogs'
 import { SuppliesPrimaryButtons } from './components/supplies-primary-buttons'
@@ -18,7 +19,7 @@ export function Supplies() {
   const navigate = route.useNavigate()
 
   const { data: supplies = [] } = useQuery({
-    queryKey: ['supplies'],
+    queryKey: queryKeys.supplies,
     queryFn: async () => {
       const res = await api.get('/supplies')
       return res.data.supplies as SupplyWithStock[]

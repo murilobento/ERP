@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
@@ -22,18 +21,16 @@ export function UsersDeleteDialog({
   currentRow,
 }: UsersDeleteDialogProps) {
   const [value, setValue] = useState('')
-  const queryClient = useQueryClient()
+  const { run } = useEntityMutation()
 
   const handleDelete = async () => {
     if (value.trim() !== currentRow.email) return
-    try {
-      await api.delete(`/users/${currentRow.id}`)
-      queryClient.invalidateQueries({ queryKey: ['users'] })
-      toast.success('Usuário excluído com sucesso.')
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    }
+    await run({
+      mutation: () => api.delete(`/users/${currentRow.id}`),
+      invalidate: [queryKeys.users],
+      successMessage: 'Usuário excluída com sucesso.',
+      onSuccess: () => onOpenChange(false),
+    })
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query-keys'
 import {
   Clock,
   DollarSign,
@@ -60,7 +61,7 @@ export function Dashboard() {
   useDocumentTitle('Painel')
 
   const { data: metrics } = useQuery({
-    queryKey: ['dashboard', 'metrics'],
+    queryKey: queryKeys.dashboard.metrics,
     queryFn: async () => {
       const res = await api.get('/dashboard/metrics')
       return res.data as MetricsResponse

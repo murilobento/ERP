@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Pen } from 'lucide-react'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -48,7 +49,7 @@ export function ClientsDetailDialog({
   const currentRowId = currentRow?.id
 
   const { data: detail, isLoading } = useQuery({
-    queryKey: ['client', currentRowId],
+    queryKey: queryKeys.client(currentRowId!),
     queryFn: async () => {
       const res = await api.get<{ client: ClientDetail }>(`/clients/${currentRowId}`)
       return res.data.client

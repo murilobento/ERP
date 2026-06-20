@@ -1,9 +1,8 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
 import { Eye, Pen, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -22,17 +21,15 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useAdjustments()
-  const queryClient = useQueryClient()
+  const { run } = useEntityMutation()
   const adjustment = row.original
 
   async function handleDelete() {
-    try {
-      await api.delete(`/stock/adjustments/${adjustment.id}`)
-      queryClient.invalidateQueries({ queryKey: ['stock-adjustments'] })
-      toast.success('Acerto removido.')
-    } catch (error: unknown) {
-      handleServerError(error)
-    }
+    await run({
+      mutation: () => api.delete(`/stock/adjustments/${adjustment.id}`),
+      invalidate: [queryKeys.stock.adjustments],
+      successMessage: 'Acerto removido.',
+    })
   }
 
   return (

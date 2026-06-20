@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { InfoIcon, PackageIcon } from 'lucide-react'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import {
   Dialog,
   DialogContent,
@@ -66,7 +67,7 @@ export function PreparationSummaryDialog({
   preparationSales,
 }: PreparationSummaryDialogProps) {
   const { data: balancesData } = useQuery({
-    queryKey: ['stock-balances'],
+    queryKey: queryKeys.stock.balances,
     queryFn: async () => {
       const res = await api.get('/stock/balances')
       return res.data.balances as StockBalance[]

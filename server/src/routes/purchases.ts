@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
-import { getSupplyStockMap } from '../lib/stock'
+import { recordPurchaseCompletion, recordPurchaseReversal } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
 
 const purchaseRoutes = new Hono()
@@ -268,27 +268,21 @@ purchaseRoutes.post('/:id/complete', async (c) => {
       },
     })
 
-    const stockBySupply = await getSupplyStockMap(
-      existing.items.map((item) => item.supplyId),
-      tx
-    )
-
-    for (const item of existing.items) {
-      const stockBefore = stockBySupply.get(item.supplyId) ?? 0
-
-      await tx.stockMovement.create({
-        data: {
-          supplyId: item.supplyId,
-          authorId: userId,
-          quantity: item.quantity,
-          stockBefore,
-          stockAfter: stockBefore + item.quantity,
-          type: 'purchase',
-          referenceId: purchaseId,
-          notes: `Compra de ${existing.supplier} — ${item.packages} ${item.supply.packageUnit || 'embalagem'}(s) de ${item.supply.name} → ${item.quantity} ${item.supply.unit}`,
+    await recordPurchaseCompletion(tx, {
+      purchaseId,
+      supplier: existing.supplier,
+      authorId: userId,
+      items: existing.items.map((item) => ({
+        supplyId: item.supplyId,
+        quantity: item.quantity,
+        packages: item.packages,
+        supply: {
+          name: item.supply.name,
+          unit: item.supply.unit,
+          packageUnit: item.supply.packageUnit,
         },
-      })
-    }
+      })),
+    })
 
     const affectedSupplyIds = [...new Set(existing.items.map((i) => i.supplyId))]
     for (const supplyId of affectedSupplyIds) {
@@ -352,28 +346,23 @@ purchaseRoutes.post('/:id/reverse', async (c) => {
       },
     })
 
-    const stockBySupply = await getSupplyStockMap(
-      existing.items.map((item) => item.supplyId),
-      tx
-    )
-
-    for (const item of existing.items) {
-      const quantity = -item.quantity
-      const stockBefore = stockBySupply.get(item.supplyId) ?? 0
-
-      await tx.stockMovement.create({
-        data: {
-          supplyId: item.supplyId,
-          authorId: userId,
-          quantity,
-          stockBefore,
-          stockAfter: stockBefore + quantity,
-          type: 'purchase_reversal',
-          referenceId: purchaseId,
-          notes: `Estorno da compra de ${existing.supplier} — ${item.quantity} ${item.supply.unit} de ${item.supply.name} | Motivo: ${reason.trim()} | Autor: ${authorName}`,
+    await recordPurchaseReversal(tx, {
+      purchaseId,
+      supplier: existing.supplier,
+      authorId: userId,
+      authorName,
+      reason: reason.trim(),
+      items: existing.items.map((item) => ({
+        supplyId: item.supplyId,
+        quantity: item.quantity,
+        packages: item.packages,
+        supply: {
+          name: item.supply.name,
+          unit: item.supply.unit,
+          packageUnit: item.supply.packageUnit,
         },
-      })
-    }
+      })),
+    })
 
     const affectedSupplyIds = [...new Set(existing.items.map((i) => i.supplyId))]
     for (const supplyId of affectedSupplyIds) {

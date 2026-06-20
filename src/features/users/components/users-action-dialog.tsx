@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -75,8 +73,7 @@ export function UsersActionDialog({
   onOpenChange,
 }: UserActionDialogProps) {
   const isEdit = !!currentRow
-  const [isLoading, setIsLoading] = useState(false)
-  const queryClient = useQueryClient()
+  const { run, isLoading } = useEntityMutation()
 
   const form = useForm<UserForm>({
     resolver: zodResolver(formSchema),
@@ -100,34 +97,34 @@ export function UsersActionDialog({
   const isPasswordTouched = !!form.formState.dirtyFields.password
 
   async function onSubmit(values: UserForm) {
-    setIsLoading(true)
-    try {
-      if (isEdit) {
-        const payload: Record<string, string> = {
-          firstName: values.firstName,
-          lastName: values.lastName,
-          email: values.email,
+    await run({
+      mutation: async () => {
+        if (isEdit) {
+          const payload: Record<string, string> = {
+            firstName: values.firstName,
+            lastName: values.lastName,
+            email: values.email,
+          }
+          if (values.password) payload.password = values.password
+          await api.patch(`/users/${currentRow.id}`, payload)
+        } else {
+          await api.post('/users', {
+            firstName: values.firstName,
+            lastName: values.lastName,
+            email: values.email,
+            password: values.password,
+          })
         }
-        if (values.password) payload.password = values.password
-        await api.patch(`/users/${currentRow.id}`, payload)
-        toast.success('Usuário atualizado com sucesso.')
-      } else {
-        await api.post('/users', {
-          firstName: values.firstName,
-          lastName: values.lastName,
-          email: values.email,
-          password: values.password,
-        })
-        toast.success('Usuário criado com sucesso.')
-      }
-      queryClient.invalidateQueries({ queryKey: ['users'] })
-      form.reset()
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+      },
+      invalidate: [queryKeys.users],
+      successMessage: isEdit
+        ? 'Usuário atualizado com sucesso.'
+        : 'Usuário criado com sucesso.',
+      onSuccess: () => {
+        form.reset()
+        onOpenChange(false)
+      },
+    })
   }
 
   return (

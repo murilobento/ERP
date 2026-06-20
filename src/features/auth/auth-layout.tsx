@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Command } from 'lucide-react'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 
 type PublicCompany = {
   name: string
@@ -19,7 +20,7 @@ type AuthLayoutProps = {
 export function AuthLayout({ children }: AuthLayoutProps) {
   const [failedLogoUrl, setFailedLogoUrl] = useState<string | undefined>()
   const { data: company } = useQuery({
-    queryKey: ['company-public'],
+    queryKey: queryKeys.companyPublic,
     queryFn: async () => {
       const res = await api.get<PublicCompanyResponse>('/company/public')
       return res.data.company

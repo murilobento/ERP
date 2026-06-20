@@ -1,8 +1,7 @@
 import { useState } from 'react'
+import { type QueryKey } from '@tanstack/react-query'
 import { AlertTriangle } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import api from '@/lib/api'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
@@ -16,7 +15,7 @@ type DeleteEntityDialogProps = {
   onOpenChange: (open: boolean) => void
   currentRow: DeleteableEntity | null
   endpoint: string
-  queryKey: string[]
+  queryKey: QueryKey
   entityLabel: string
   successMessage: string
   formId: string
@@ -33,20 +32,18 @@ export function DeleteEntityDialog({
   formId,
 }: DeleteEntityDialogProps) {
   const [value, setValue] = useState('')
-  const queryClient = useQueryClient()
+  const { run } = useEntityMutation()
 
   if (!currentRow) return null
 
   const handleDelete = async () => {
     if (value.trim() !== currentRow.name) return
-    try {
-      await api.delete(`/${endpoint}/${currentRow.id}`)
-      queryClient.invalidateQueries({ queryKey })
-      toast.success(successMessage)
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    }
+    await run({
+      mutation: () => api.delete(`/${endpoint}/${currentRow.id}`),
+      invalidate: [queryKey],
+      successMessage,
+      onSuccess: () => onOpenChange(false),
+    })
   }
 
   return (

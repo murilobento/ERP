@@ -5,6 +5,7 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import { AdjustmentsDialogs } from './components/adjustments-dialogs'
 import { AdjustmentsFilters } from './components/adjustments-filters'
 import { AdjustmentsPrimaryButtons } from './components/adjustments-primary-buttons'
@@ -21,7 +22,7 @@ export function Stock() {
   const navigate = route.useNavigate()
 
   const { data: adjustments = [] } = useQuery({
-    queryKey: ['stock-adjustments'],
+    queryKey: queryKeys.stock.adjustments,
     queryFn: async () => {
       const res = await api.get('/stock/adjustments')
       return res.data.adjustments as StockAdjustment[]

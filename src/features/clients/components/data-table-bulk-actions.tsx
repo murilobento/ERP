@@ -1,12 +1,13 @@
 import { type Table } from '@tanstack/react-table'
 import { ContactBulkActions } from '@/features/shared/contact-bulk-actions'
+import { queryKeys } from '@/lib/query-keys'
 import { type Client } from '../data/schema'
 
 const clientConfig = {
   entityLabel: 'Cliente',
   entityLabelLower: 'cliente',
   endpoint: 'clients',
-  queryKey: 'clients',
+  queryKey: queryKeys.clients,
   formId: 'client-form',
   namePlaceholder: 'João Silva',
   entityPlural: 'clientes',

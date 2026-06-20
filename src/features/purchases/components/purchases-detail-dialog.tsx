@@ -5,9 +5,9 @@ import {
   Pen,
   RotateCcw,
 } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,7 +31,7 @@ type PurchaseResponse = {
 
 export function PurchasesDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = usePurchases()
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [showReverse, setShowReverse] = useState(false)
   const [reverseReason, setReverseReason] = useState('')
   const [confirmComplete, setConfirmComplete] = useState(false)
@@ -40,7 +40,7 @@ export function PurchasesDetailDialog() {
   const currentRowId = currentRow?.id
 
   const { data: detail } = useQuery({
-    queryKey: ['purchase', currentRowId],
+    queryKey: queryKeys.purchase(currentRowId!),
     queryFn: async () => {
       const res = await api.get<PurchaseResponse>(`/purchases/${currentRowId}`)
       return res.data.purchase
@@ -56,13 +56,12 @@ export function PurchasesDetailDialog() {
   const canEdit = purchase.status === 'pending'
 
   function syncPurchase(updatedPurchase: Purchase) {
-    queryClient.setQueryData<Purchase[]>(['purchases'], (old) =>
-      old?.map((item) =>
-        item.id === updatedPurchase.id ? updatedPurchase : item
-      )
+    queryClient.setQueryData<Purchase[]>(
+      queryKeys.purchases,
+      (old) => old?.map((item) => (item.id === updatedPurchase.id ? updatedPurchase : item))
     )
     queryClient.setQueryData<Purchase>(
-      ['purchase', updatedPurchase.id],
+      queryKeys.purchase(updatedPurchase.id),
       updatedPurchase
     )
     setCurrentRow(updatedPurchase)
@@ -73,71 +72,69 @@ export function PurchasesDetailDialog() {
     notes: string
     items: { supplyId: string; packages: number; packageCost: number }[]
   }) {
-    setIsLoading(true)
-    try {
-      const { data } = await api.patch<PurchaseResponse>(
-        `/purchases/${purchase.id}`,
-        editData
-      )
-      syncPurchase(data.purchase)
-      queryClient.invalidateQueries({ queryKey: ['purchases'] })
-      queryClient.invalidateQueries({ queryKey: ['purchase', purchase.id] })
-      toast.success('Compra atualizada com sucesso.')
-      setIsEditing(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        const { data } = await api.patch<PurchaseResponse>(
+          `/purchases/${purchase.id}`,
+          editData
+        )
+        syncPurchase(data.purchase)
+      },
+      invalidate: [queryKeys.purchases, queryKeys.purchase(purchase.id)],
+      successMessage: 'Compra atualizada com sucesso.',
+      onSuccess: () => setIsEditing(false),
+    })
   }
 
   async function handleComplete() {
     if (!currentRow) return
-    setIsLoading(true)
-    try {
-      const { data } = await api.post<PurchaseResponse>(
-        `/purchases/${currentRow.id}/complete`
-      )
-      syncPurchase(data.purchase)
-      queryClient.invalidateQueries({ queryKey: ['purchases'] })
-      queryClient.invalidateQueries({ queryKey: ['purchase', currentRow.id] })
-      queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      toast.success('Compra concluída. Estoque atualizado.')
-      setConfirmComplete(false)
-      setOpen(null)
-      setCurrentRow(null)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        const { data } = await api.post<PurchaseResponse>(
+          `/purchases/${currentRow.id}/complete`
+        )
+        syncPurchase(data.purchase)
+      },
+      invalidate: [
+        queryKeys.purchases,
+        queryKeys.purchase(currentRow.id),
+        queryKeys.stock.balances,
+        queryKeys.stock.movements,
+      ],
+      successMessage: 'Compra concluída. Estoque atualizado.',
+      onSuccess: () => {
+        setConfirmComplete(false)
+        setOpen(null)
+        setCurrentRow(null)
+      },
+    })
   }
 
   async function handleReverse() {
     if (!currentRow || !reverseReason.trim()) return
-    setIsLoading(true)
-    try {
-      const { data } = await api.post<PurchaseResponse>(
-        `/purchases/${currentRow.id}/reverse`,
-        { reason: reverseReason.trim() }
-      )
-      syncPurchase(data.purchase)
-      queryClient.invalidateQueries({ queryKey: ['purchases'] })
-      queryClient.invalidateQueries({ queryKey: ['purchase', currentRow.id] })
-      queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      toast.success('Estorno realizado. Estoque revertido.')
-      setShowReverse(false)
-      setReverseReason('')
-      setConfirmComplete(false)
-      setOpen(null)
-      setCurrentRow(null)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        const { data } = await api.post<PurchaseResponse>(
+          `/purchases/${currentRow.id}/reverse`,
+          { reason: reverseReason.trim() }
+        )
+        syncPurchase(data.purchase)
+      },
+      invalidate: [
+        queryKeys.purchases,
+        queryKeys.purchase(currentRow.id),
+        queryKeys.stock.balances,
+        queryKeys.stock.movements,
+      ],
+      successMessage: 'Estorno realizado. Estoque revertido.',
+      onSuccess: () => {
+        setShowReverse(false)
+        setReverseReason('')
+        setConfirmComplete(false)
+        setOpen(null)
+        setCurrentRow(null)
+      },
+    })
   }
 
   function handleClose(state: boolean) {

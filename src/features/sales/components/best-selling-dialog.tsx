@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { InfoIcon, TrophyIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import {
   Dialog,
   DialogContent,
@@ -154,7 +155,7 @@ export function BestSellingDialog({
   const [to, setTo] = useState(preset.to)
 
   const { data: sales = [] } = useQuery({
-    queryKey: ['sales'],
+    queryKey: queryKeys.sales,
     queryFn: async () => {
       const res = await api.get('/sales')
       return res.data.sales as Sale[]

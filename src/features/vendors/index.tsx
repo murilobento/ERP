@@ -3,6 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { VendorsDialogs } from './components/vendors-dialogs'
 import { VendorsPrimaryButtons } from './components/vendors-primary-buttons'
@@ -18,7 +19,7 @@ export function Vendors() {
   const navigate = route.useNavigate()
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors,
     queryFn: async () => {
       const res = await api.get('/vendors')
       return res.data.vendors as Vendor[]

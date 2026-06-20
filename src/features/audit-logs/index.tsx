@@ -4,6 +4,7 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import { AuditLogsTable } from './components/audit-logs-table'
 import { type AuditLog } from './data/schema'
 
@@ -15,7 +16,7 @@ export function AuditLogs() {
   const navigate = route.useNavigate()
 
   const { data: logs = [] } = useQuery({
-    queryKey: ['audit-logs'],
+    queryKey: queryKeys.auditLogs,
     queryFn: async () => {
       const res = await api.get('/audit-logs')
       return res.data.logs as AuditLog[]

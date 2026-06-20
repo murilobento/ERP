@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query-keys'
 import { getRouteApi } from '@tanstack/react-router'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -23,7 +24,7 @@ export function StockMovements() {
   const navigate = route.useNavigate()
 
   const { data: movements = [] } = useQuery({
-    queryKey: ['stock-movements'],
+    queryKey: queryKeys.stock.movements,
     queryFn: async () => {
       const res = await api.get('/stock/movements')
       return res.data.movements as StockMovement[]

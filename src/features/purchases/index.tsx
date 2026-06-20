@@ -5,6 +5,7 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import { PurchasesDialogs } from './components/purchases-dialogs'
 import { PurchasesFilters } from './components/purchases-filters'
 import { PurchasesPrimaryButtons } from './components/purchases-primary-buttons'
@@ -21,7 +22,7 @@ export function Purchases() {
   const navigate = route.useNavigate()
 
   const { data: purchases = [] } = useQuery({
-    queryKey: ['purchases'],
+    queryKey: queryKeys.purchases,
     queryFn: async () => {
       const res = await api.get('/purchases')
       return res.data.purchases as Purchase[]

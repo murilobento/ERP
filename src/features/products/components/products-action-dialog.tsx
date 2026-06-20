@@ -3,9 +3,9 @@ import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -63,12 +63,11 @@ export function ProductsActionDialog({
   onOpenChange,
 }: ProductActionDialogProps) {
   const isEdit = !!currentRow
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [localSalePrice, setLocalSalePrice] = useState<string | null>(null)
-  const queryClient = useQueryClient()
 
   const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
+    queryKey: queryKeys.categories,
     queryFn: async () => {
       const res = await api.get('/categories')
       return res.data.categories as CategoryOption[]
@@ -95,23 +94,23 @@ export function ProductsActionDialog({
   })
 
   async function onSubmit(values: ProductForm) {
-    setIsLoading(true)
-    try {
-      if (isEdit) {
-        await api.patch(`/products/${currentRow.id}`, values)
-        toast.success('Produto atualizado com sucesso.')
-      } else {
-        await api.post('/products', values)
-        toast.success('Produto criado com sucesso.')
-      }
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      form.reset()
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        if (isEdit) {
+          await api.patch(`/products/${currentRow.id}`, values)
+        } else {
+          await api.post('/products', values)
+        }
+      },
+      invalidate: [queryKeys.products],
+      successMessage: isEdit
+        ? 'Produto atualizado com sucesso.'
+        : 'Produto criado com sucesso.',
+      onSuccess: () => {
+        form.reset()
+        onOpenChange(false)
+      },
+    })
   }
 
   const statusValue = useWatch({ control: form.control, name: 'status' })

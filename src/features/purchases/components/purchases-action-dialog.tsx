@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import {
   ProductSupplyCombobox,
@@ -48,7 +48,7 @@ export function PurchasesActionDialog({
   open,
   onOpenChange,
 }: PurchasesActionDialogProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [vendorId, setVendorId] = useState('')
   const [selectedVendor, setSelectedVendor] = useState<VendorSearchItem | null>(null)
   const [notes, setNotes] = useState('')
@@ -57,7 +57,6 @@ export function PurchasesActionDialog({
   const [selectedSupplies, setSelectedSupplies] = useState<
     Record<string, ProductSupplySearchItem>
   >({})
-  const queryClient = useQueryClient()
   const { currentRow } = usePurchases()
 
   const isEdit = !!currentRow && open
@@ -137,30 +136,21 @@ export function PurchasesActionDialog({
       return
     }
 
-    setIsLoading(true)
-    try {
-      if (isEdit && currentRow) {
-        await api.patch(`/purchases/${currentRow.id}`, {
-          vendorId,
-          notes,
-          items: validItems,
-        })
-        toast.success('Compra atualizada com sucesso.')
-      } else {
-        await api.post('/purchases', {
-          vendorId,
-          notes,
-          items: validItems,
-        })
-        toast.success('Compra criada com sucesso.')
-      }
-      queryClient.invalidateQueries({ queryKey: ['purchases'] })
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        const payload = { vendorId, notes, items: validItems }
+        if (isEdit && currentRow) {
+          await api.patch(`/purchases/${currentRow.id}`, payload)
+        } else {
+          await api.post('/purchases', payload)
+        }
+      },
+      invalidate: [queryKeys.purchases],
+      successMessage: isEdit
+        ? 'Compra atualizada com sucesso.'
+        : 'Compra criada com sucesso.',
+      onSuccess: () => onOpenChange(false),
+    })
   }
 
   return (

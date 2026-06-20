@@ -1,4 +1,10 @@
-import { type StockAdjustment, type StockAdjustmentStatus, stockAdjustmentStatusMap, type StockMovement } from './schema'
+import { isWithinRange } from '../../shared/filter-date-utils'
+import {
+  type StockAdjustment,
+  type StockAdjustmentStatus,
+  stockAdjustmentStatusMap,
+  type StockMovement,
+} from './schema'
 
 type MovementType = string
 
@@ -30,58 +36,41 @@ export const movementTypeOptions: { value: string; label: string }[] = [
   { value: 'adjustment_reversal', label: 'Estorno de Ajuste' },
 ]
 
-export const adjustmentStatusOptions = Object.entries(stockAdjustmentStatusMap).map(
-  ([value, config]) => ({
-    value: value as StockAdjustmentStatus,
-    label: config.label,
-  })
-)
+export const adjustmentStatusOptions = Object.entries(
+  stockAdjustmentStatusMap
+).map(([value, config]) => ({
+  value: value as StockAdjustmentStatus,
+  label: config.label,
+}))
 
 const validMovementTypes = movementTypeOptions.map((o) => o.value)
 const validAdjustmentStatuses = adjustmentStatusOptions.map((o) => o.value)
 
-export function getMovementsFilters(search: Record<string, unknown>): MovementsFilterValues {
+export function getMovementsFilters(
+  search: Record<string, unknown>
+): MovementsFilterValues {
   return {
     filter: typeof search.filter === 'string' ? search.filter : '',
     itemType: Array.isArray(search.itemType)
-      ? (search.itemType.filter((v) => v === 'product' || v === 'supply') as ('product' | 'supply')[])
+      ? (search.itemType.filter((v) => v === 'product' || v === 'supply') as (
+          | 'product'
+          | 'supply'
+        )[])
       : [],
     movementTypes: Array.isArray(search.movementTypes)
-      ? (search.movementTypes.filter((v) => validMovementTypes.includes(v)) as MovementType[])
+      ? (search.movementTypes.filter((v) =>
+          validMovementTypes.includes(v)
+        ) as MovementType[])
       : [],
     dateFrom: typeof search.dateFrom === 'string' ? search.dateFrom : '',
     dateTo: typeof search.dateTo === 'string' ? search.dateTo : '',
   }
 }
 
-function getDayStart(value: string) {
-  if (!value) return null
-  const date = new Date(`${value}T00:00:00`)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
-function getDayEnd(value: string) {
-  if (!value) return null
-  const date = new Date(`${value}T23:59:59.999`)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
-export function isWithinRange(dateValue: string | null, from: string, to: string) {
-  if (!from && !to) return true
-  if (!dateValue) return false
-
-  const date = new Date(dateValue)
-  const start = getDayStart(from)
-  const end = getDayEnd(to)
-
-  if (Number.isNaN(date.getTime())) return false
-  if (start && date < start) return false
-  if (end && date > end) return false
-
-  return true
-}
-
-export function filterMovements(movements: StockMovement[], search: Record<string, unknown>) {
+export function filterMovements(
+  movements: StockMovement[],
+  search: Record<string, unknown>
+) {
   const filters = getMovementsFilters(search)
   const text = filters.filter.trim().toLowerCase()
 
@@ -99,7 +88,10 @@ export function filterMovements(movements: StockMovement[], search: Record<strin
       if (!filters.itemType.includes(type)) return false
     }
 
-    if (filters.movementTypes.length > 0 && !filters.movementTypes.includes(m.type)) {
+    if (
+      filters.movementTypes.length > 0 &&
+      !filters.movementTypes.includes(m.type)
+    ) {
       return false
     }
 
@@ -111,21 +103,31 @@ export function filterMovements(movements: StockMovement[], search: Record<strin
   })
 }
 
-export function getAdjustmentsFilters(search: Record<string, unknown>): AdjustmentsFilterValues {
+export function getAdjustmentsFilters(
+  search: Record<string, unknown>
+): AdjustmentsFilterValues {
   return {
     filter: typeof search.filter === 'string' ? search.filter : '',
     status: Array.isArray(search.status)
-      ? (search.status.filter((v) => validAdjustmentStatuses.includes(v)) as StockAdjustmentStatus[])
+      ? (search.status.filter((v) =>
+          validAdjustmentStatuses.includes(v)
+        ) as StockAdjustmentStatus[])
       : [],
     itemType: Array.isArray(search.itemType)
-      ? (search.itemType.filter((v) => v === 'product' || v === 'supply') as ('product' | 'supply')[])
+      ? (search.itemType.filter((v) => v === 'product' || v === 'supply') as (
+          | 'product'
+          | 'supply'
+        )[])
       : [],
     dateFrom: typeof search.dateFrom === 'string' ? search.dateFrom : '',
     dateTo: typeof search.dateTo === 'string' ? search.dateTo : '',
   }
 }
 
-export function filterAdjustments(adjustments: StockAdjustment[], search: Record<string, unknown>) {
+export function filterAdjustments(
+  adjustments: StockAdjustment[],
+  search: Record<string, unknown>
+) {
   const filters = getAdjustmentsFilters(search)
   const text = filters.filter.trim().toLowerCase()
 

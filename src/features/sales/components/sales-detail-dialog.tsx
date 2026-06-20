@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import {
   Dialog,
@@ -34,7 +34,7 @@ type SaleResponse = {
 
 export function SalesDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = useSales()
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [confirmAction, setConfirmAction] =
     useState<SalesDetailConfirmAction>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -42,7 +42,7 @@ export function SalesDetailDialog() {
   const currentRowId = currentRow?.id
 
   const { data: detail } = useQuery({
-    queryKey: ['sale', currentRowId],
+    queryKey: queryKeys.sale(currentRowId!),
     queryFn: async () => {
       const res = await api.get<SaleResponse>(`/sales/${currentRowId}`)
       return res.data.sale
@@ -66,42 +66,42 @@ export function SalesDetailDialog() {
   }
 
   function syncSale(updatedSale: Sale) {
-    queryClient.setQueryData<Sale[]>(['sales'], (old) =>
+    queryClient.setQueryData<Sale[]>(queryKeys.sales, (old) =>
       old?.map((item) => (item.id === updatedSale.id ? updatedSale : item))
     )
-    queryClient.setQueryData<Sale>(['sale', updatedSale.id], updatedSale)
+    queryClient.setQueryData<Sale>(queryKeys.sale(updatedSale.id), updatedSale)
     setCurrentRow(updatedSale)
   }
 
   async function postAction(path: string, payload?: Record<string, unknown>) {
-    setIsLoading(true)
-    try {
-      const { data } = await api.post<SaleResponse>(
-        `/sales/${sale.id}/${path}`,
-        payload
-      )
-      syncSale(data.sale)
-      queryClient.invalidateQueries({ queryKey: ['sales'] })
-      queryClient.invalidateQueries({ queryKey: ['sale', sale.id] })
-      if (path === 'deliver' || path === 'reverse') {
-        queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-        queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      }
-      const messages: Record<string, string> = {
-        'ready-for-delivery': 'Venda marcada como pronta para entrega.',
-        deliver: 'Venda entregue. Estoque atualizado.',
-        complete: 'Venda concluída.',
-        reverse: 'Estorno realizado. Produtos devolvidos ao estoque.',
-      }
-      toast.success(messages[path])
-      resetActionState()
-      setOpen(null)
-      setCurrentRow(null)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
+    const messages: Record<string, string> = {
+      'ready-for-delivery': 'Venda marcada como pronta para entrega.',
+      deliver: 'Venda entregue. Estoque atualizado.',
+      complete: 'Venda concluída.',
+      reverse: 'Estorno realizado. Produtos devolvidos ao estoque.',
     }
+    await run({
+      mutation: async () => {
+        const { data } = await api.post<SaleResponse>(
+          `/sales/${sale.id}/${path}`,
+          payload
+        )
+        syncSale(data.sale)
+      },
+      invalidate: [
+        queryKeys.sales,
+        queryKeys.sale(sale.id),
+        ...(path === 'deliver' || path === 'reverse'
+          ? [queryKeys.stock.balances, queryKeys.stock.movements]
+          : []),
+      ],
+      successMessage: messages[path],
+      onSuccess: () => {
+        resetActionState()
+        setOpen(null)
+        setCurrentRow(null)
+      },
+    })
   }
 
   async function saveEdit(editData: {
@@ -116,24 +116,20 @@ export function SalesDetailDialog() {
     const day = String(editData.deliveryDate.getDate()).padStart(2, '0')
     const deliveryDateStr = `${year}-${month}-${day}`
 
-    setIsLoading(true)
-    try {
-      const { data } = await api.patch<SaleResponse>(`/sales/${sale.id}`, {
-        clientId: editData.clientId,
-        notes: editData.notes,
-        deliveryDate: deliveryDateStr,
-        items: editData.items,
-      })
-      syncSale(data.sale)
-      queryClient.invalidateQueries({ queryKey: ['sales'] })
-      queryClient.invalidateQueries({ queryKey: ['sale', sale.id] })
-      toast.success('Venda atualizada com sucesso.')
-      exitEditMode()
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        const { data } = await api.patch<SaleResponse>(`/sales/${sale.id}`, {
+          clientId: editData.clientId,
+          notes: editData.notes,
+          deliveryDate: deliveryDateStr,
+          items: editData.items,
+        })
+        syncSale(data.sale)
+      },
+      invalidate: [queryKeys.sales, queryKeys.sale(sale.id)],
+      successMessage: 'Venda atualizada com sucesso.',
+      onSuccess: () => exitEditMode(),
+    })
   }
 
   function handleClose(state: boolean) {

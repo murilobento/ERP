@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
+import { computeProductPrices } from '../lib/pricing'
 import { getProductStock, getProductStockMap } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
 
@@ -26,15 +27,6 @@ const COMPOSITION_SELECT = {
   supply: {
     select: { id: true, name: true, unit: true, costPrice: true },
   },
-}
-
-function computeProductPrices(product: { margin: number; composition: { quantity: number; supply: { costPrice: number } }[] }) {
-  const costPrice = product.composition.reduce(
-    (sum, c) => sum + c.quantity * c.supply.costPrice,
-    0
-  )
-  const salePrice = costPrice * (1 + product.margin / 100)
-  return { costPrice, salePrice }
 }
 
 productRoutes.get('/', async (c) => {

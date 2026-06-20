@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { type Table } from '@tanstack/react-table'
 import { Power } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -22,21 +21,24 @@ type DataTableBulkActionsProps = {
 export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const [showConfirm, setShowConfirm] = useState(false)
   const selectedRows = table.getFilteredSelectedRowModel().rows
-  const queryClient = useQueryClient()
+  const { run } = useEntityMutation()
   const allActive = selectedRows.every((r) => r.original.status === 'active')
   const newStatus = allActive ? 'inactive' : 'active'
   const label = allActive ? 'desativar' : 'ativar'
 
   const handleBulkToggle = async () => {
     const ids = selectedRows.map((row) => row.original.id)
-    try {
-      await Promise.all(ids.map((id) => api.patch(`/users/${id}/status`, { status: newStatus })))
-      toast.success(`${ids.length} usuário${ids.length > 1 ? 's' : ''} ${allActive ? 'desativado' : 'ativado'}${ids.length > 1 ? 's' : ''}.`)
-      table.resetRowSelection()
-      queryClient.invalidateQueries({ queryKey: ['users'] })
-    } catch (error: unknown) {
-      handleServerError(error)
-    }
+    await run({
+      mutation: () =>
+        Promise.all(
+          ids.map((id) =>
+            api.patch(`/users/${id}/status`, { status: newStatus })
+          )
+        ),
+      invalidate: [queryKeys.users],
+      successMessage: `${ids.length} usuário${ids.length > 1 ? 's' : ''} ${allActive ? 'desativado' : 'ativado'}${ids.length > 1 ? 's' : ''}.`,
+      onSuccess: () => table.resetRowSelection(),
+    })
     setShowConfirm(false)
   }
 

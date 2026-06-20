@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
+import { computeKitPricing } from '../lib/pricing'
 import { authMiddleware } from '../middleware/auth'
 
 const kitRoutes = new Hono()
@@ -36,42 +37,6 @@ const KIT_ITEM_SELECT = {
       },
     },
   },
-}
-
-function computeProductSalePrice(product: {
-  margin: number
-  composition: { quantity: number; supply: { costPrice: number } }[]
-}) {
-  const costPrice = product.composition.reduce(
-    (sum, c) => sum + c.quantity * c.supply.costPrice,
-    0
-  )
-  return costPrice * (1 + product.margin / 100)
-}
-
-function computeKitPricing(
-  kit: {
-    discountType: string
-    discountValue: number
-    items: {
-      quantity: number
-      product: {
-        margin: number
-        composition: { quantity: number; supply: { costPrice: number } }[]
-      }
-    }[]
-  }
-) {
-  const totalPrice = kit.items.reduce(
-    (sum, item) => sum + computeProductSalePrice(item.product) * item.quantity,
-    0
-  )
-  const discount =
-    kit.discountType === 'percentage'
-      ? totalPrice * (kit.discountValue / 100)
-      : kit.discountValue
-  const finalPrice = Math.max(0, totalPrice - discount)
-  return { totalPrice, discount, finalPrice }
 }
 
 kitRoutes.get('/', async (c) => {

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import {
   ProductSupplyCombobox,
@@ -42,7 +42,7 @@ export function ProductionsActionDialog({
   open,
   onOpenChange,
 }: ProductionsActionDialogProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [notes, setNotes] = useState('')
   const [draftItem, setDraftItem] = useState<ItemForm>({
     productId: '',
@@ -52,7 +52,6 @@ export function ProductionsActionDialog({
   const [selectedProducts, setSelectedProducts] = useState<
     Record<string, ProductSupplySearchItem>
   >({})
-  const queryClient = useQueryClient()
 
   function resetForm() {
     setNotes('')
@@ -90,18 +89,15 @@ export function ProductionsActionDialog({
       return
     }
 
-    setIsLoading(true)
-    try {
-      await api.post('/productions', { notes, items })
-      queryClient.invalidateQueries({ queryKey: ['productions'] })
-      toast.success('Produção criada com sucesso.')
-      resetForm()
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: () => api.post('/productions', { notes, items }),
+      invalidate: [queryKeys.productions],
+      successMessage: 'Produção criada com sucesso.',
+      onSuccess: () => {
+        resetForm()
+        onOpenChange(false)
+      },
+    })
   }
 
   return (

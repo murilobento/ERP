@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query-keys'
 import {
   Card,
   CardContent,
@@ -45,7 +46,7 @@ export type AnalyticsResponse = {
 
 export function Analytics() {
   const { data: analytics } = useQuery({
-    queryKey: ['dashboard', 'analytics'],
+    queryKey: queryKeys.dashboard.analytics,
     queryFn: async () => {
       const res = await api.get('/dashboard/analytics')
       return res.data as AnalyticsResponse

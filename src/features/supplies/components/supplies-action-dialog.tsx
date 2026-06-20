@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -51,8 +49,7 @@ export function SuppliesActionDialog({
   onOpenChange,
 }: SupplyActionDialogProps) {
   const isEdit = !!currentRow
-  const [isLoading, setIsLoading] = useState(false)
-  const queryClient = useQueryClient()
+  const { run, isLoading } = useEntityMutation()
 
   const form = useForm<SupplyForm>({
     resolver: zodResolver(formSchema),
@@ -74,23 +71,23 @@ export function SuppliesActionDialog({
   })
 
   async function onSubmit(values: SupplyForm) {
-    setIsLoading(true)
-    try {
-      if (isEdit) {
-        await api.patch(`/supplies/${currentRow.id}`, values)
-        toast.success('Insumo atualizado com sucesso.')
-      } else {
-        await api.post('/supplies', values)
-        toast.success('Insumo criado com sucesso.')
-      }
-      queryClient.invalidateQueries({ queryKey: ['supplies'] })
-      form.reset()
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        if (isEdit) {
+          await api.patch(`/supplies/${currentRow.id}`, values)
+        } else {
+          await api.post('/supplies', values)
+        }
+      },
+      invalidate: [queryKeys.supplies],
+      successMessage: isEdit
+        ? 'Insumo atualizado com sucesso.'
+        : 'Insumo criado com sucesso.',
+      onSuccess: () => {
+        form.reset()
+        onOpenChange(false)
+      },
+    })
   }
 
   const [statusValue, unit, packageQuantity] = useWatch({

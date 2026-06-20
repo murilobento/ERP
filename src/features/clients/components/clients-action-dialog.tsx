@@ -1,11 +1,12 @@
 import { ContactActionDialog } from '@/features/shared/contact-action-dialog'
+import { queryKeys } from '@/lib/query-keys'
 import { type Client } from '../data/schema'
 
 const clientConfig = {
   entityLabel: 'Cliente',
   entityLabelLower: 'cliente',
   endpoint: 'clients',
-  queryKey: 'clients',
+  queryKey: queryKeys.clients,
   formId: 'client-form',
   namePlaceholder: 'João Silva',
   entityPlural: 'clientes',

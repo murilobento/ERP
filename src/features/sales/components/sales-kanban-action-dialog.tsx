@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { DatePicker } from '@/components/date-picker'
 import { Button } from '@/components/ui/button'
@@ -115,7 +116,7 @@ function setDatePreservingTime(date: Date | undefined, currentValue: string) {
 
 export function SalesKanbanActionDialog() {
   const { kanbanAction, setKanbanAction } = useSales()
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paidAt, setPaidAt] = useState(toDateTimeLocal(new Date()))
   const [paymentNotes, setPaymentNotes] = useState('')
@@ -142,36 +143,32 @@ export function SalesKanbanActionDialog() {
   }
 
   function syncSale(updatedSale: Sale) {
-    queryClient.setQueryData<Sale[]>(['sales'], (old) =>
+    queryClient.setQueryData<Sale[]>(queryKeys.sales, (old) =>
       old?.map((item) => (item.id === updatedSale.id ? updatedSale : item))
     )
-    queryClient.setQueryData<Sale>(['sale', updatedSale.id], updatedSale)
+    queryClient.setQueryData<Sale>(queryKeys.sale(updatedSale.id), updatedSale)
   }
 
   async function submit(payload?: Record<string, unknown>) {
-    setIsLoading(true)
-    try {
-      const { data } = await api.post<SaleResponse>(
-        `/sales/${sale.id}/${activeTransition.path}`,
-        payload
-      )
-      syncSale(data.sale)
-      queryClient.invalidateQueries({ queryKey: ['sales'] })
-      queryClient.invalidateQueries({ queryKey: ['sale', sale.id] })
-      if (
-        activeTransition.path === 'deliver' ||
+    await run({
+      mutation: async () => {
+        const { data } = await api.post<SaleResponse>(
+          `/sales/${sale.id}/${activeTransition.path}`,
+          payload
+        )
+        syncSale(data.sale)
+      },
+      invalidate: [
+        queryKeys.sales,
+        queryKeys.sale(sale.id),
+        ...(activeTransition.path === 'deliver' ||
         activeTransition.path === 'reverse'
-      ) {
-        queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-        queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      }
-      toast.success(`Venda movida para ${targetLabel.toLowerCase()}.`)
-      close()
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+          ? [queryKeys.stock.balances, queryKeys.stock.movements]
+          : []),
+      ],
+      successMessage: `Venda movida para ${targetLabel.toLowerCase()}.`,
+      onSuccess: () => close(),
+    })
   }
 
   function submitPayment() {

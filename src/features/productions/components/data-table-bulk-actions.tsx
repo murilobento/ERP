@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
 import { CheckCircle2, Clock, XCircle } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -45,7 +44,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const [confirmAction, setConfirmAction] =
     useState<ProductionBulkAction | null>(null)
   const selectedRows = table.getFilteredSelectedRowModel().rows
-  const queryClient = useQueryClient()
+  const { run } = useEntityMutation()
 
   const eligibleRows = {
     start: selectedRows.filter((row) => row.original.status === 'draft'),
@@ -60,22 +59,27 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const handleBulkAction = async (action: ProductionBulkAction) => {
     const rows = eligibleRows[action]
 
-    try {
-      await Promise.all(
-        rows.map((row) => api.post(`/productions/${row.original.id}/${action}`))
-      )
-      toast.success(actionConfig[action].success)
-      table.resetRowSelection()
-      queryClient.invalidateQueries({ queryKey: ['productions'] })
-      if (action === 'complete') {
-        queryClient.invalidateQueries({ queryKey: ['products'] })
-        queryClient.invalidateQueries({ queryKey: ['supplies'] })
-        queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-        queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      }
-    } catch (error: unknown) {
-      handleServerError(error)
-    }
+    await run({
+      mutation: () =>
+        Promise.all(
+          rows.map((row) =>
+            api.post(`/productions/${row.original.id}/${action}`)
+          )
+        ),
+      invalidate: [
+        queryKeys.productions,
+        ...(action === 'complete'
+          ? [
+              queryKeys.products,
+              queryKeys.supplies,
+              queryKeys.stock.balances,
+              queryKeys.stock.movements,
+            ]
+          : []),
+      ],
+      successMessage: actionConfig[action].success,
+      onSuccess: () => table.resetRowSelection(),
+    })
 
     setConfirmAction(null)
   }

@@ -3,9 +3,8 @@ import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import {
   ProductSupplyCombobox,
@@ -62,10 +61,9 @@ export function AdjustmentsActionDialog({
   open,
   onOpenChange,
 }: AdjustmentsActionDialogProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [selectedItem, setSelectedItem] =
     useState<ProductSupplySearchItem | null>(null)
-  const queryClient = useQueryClient()
   const { currentRow } = useAdjustments()
   const isEdit = !!currentRow && open
 
@@ -95,24 +93,24 @@ export function AdjustmentsActionDialog({
   const nextStock = currentStock + (Number.isFinite(quantity) ? quantity : 0)
 
   async function onSubmit(values: AdjustmentForm) {
-    setIsLoading(true)
-    try {
-      if (isEdit) {
-        await api.patch(`/stock/adjustments/${currentRow.id}`, values)
-        toast.success('Acerto atualizado com sucesso.')
-      } else {
-        await api.post('/stock/adjustments', values)
-        toast.success('Acerto criado com sucesso.')
-      }
-      queryClient.invalidateQueries({ queryKey: ['stock-adjustments'] })
-      form.reset()
-      setSelectedItem(null)
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        if (isEdit) {
+          await api.patch(`/stock/adjustments/${currentRow.id}`, values)
+        } else {
+          await api.post('/stock/adjustments', values)
+        }
+      },
+      invalidate: [queryKeys.stock.adjustments],
+      successMessage: isEdit
+        ? 'Acerto atualizado com sucesso.'
+        : 'Acerto criado com sucesso.',
+      onSuccess: () => {
+        form.reset()
+        setSelectedItem(null)
+        onOpenChange(false)
+      },
+    })
   }
 
   return (

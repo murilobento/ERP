@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,15 +25,14 @@ type AdjustmentResponse = {
 
 export function AdjustmentsDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = useAdjustments()
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [confirmComplete, setConfirmComplete] = useState(false)
   const [showReverse, setShowReverse] = useState(false)
   const [reverseReason, setReverseReason] = useState('')
-  const queryClient = useQueryClient()
   const currentRowId = currentRow?.id
 
   const { data: detail } = useQuery({
-    queryKey: ['stock-adjustment', currentRowId],
+    queryKey: queryKeys.stock.adjustment(currentRowId ?? ''),
     queryFn: async () => {
       const res = await api.get<AdjustmentResponse>(`/stock/adjustments/${currentRowId}`)
       return res.data.adjustment
@@ -53,42 +52,37 @@ export function AdjustmentsDetailDialog() {
 
   async function handleComplete() {
     if (!adjustment) return
-    setIsLoading(true)
-    try {
-      await api.post(`/stock/adjustments/${adjustment.id}/complete`)
-      queryClient.invalidateQueries({ queryKey: ['stock-adjustments'] })
-      queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['supplies'] })
-      toast.success('Acerto concluído com sucesso.')
-      handleClose()
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: () => api.post(`/stock/adjustments/${adjustment.id}/complete`),
+      invalidate: [
+        queryKeys.stock.adjustments,
+        queryKeys.stock.balances,
+        queryKeys.stock.movements,
+        queryKeys.products,
+        queryKeys.supplies,
+      ],
+      successMessage: 'Acerto concluído com sucesso.',
+      onSuccess: () => handleClose(),
+    })
   }
 
   async function handleReverse() {
     if (!adjustment || !reverseReason.trim()) return
-    setIsLoading(true)
-    try {
-      await api.post(`/stock/adjustments/${adjustment.id}/reverse`, {
-        reason: reverseReason.trim(),
-      })
-      queryClient.invalidateQueries({ queryKey: ['stock-adjustments'] })
-      queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['supplies'] })
-      toast.success('Acerto estornado com sucesso.')
-      handleClose()
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: () =>
+        api.post(`/stock/adjustments/${adjustment.id}/reverse`, {
+          reason: reverseReason.trim(),
+        }),
+      invalidate: [
+        queryKeys.stock.adjustments,
+        queryKeys.stock.balances,
+        queryKeys.stock.movements,
+        queryKeys.products,
+        queryKeys.supplies,
+      ],
+      successMessage: 'Acerto estornado com sucesso.',
+      onSuccess: () => handleClose(),
+    })
   }
 
   const itemName = adjustment?.product?.name || adjustment?.supply?.name || '—'

@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { type QueryKey } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
 import { Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import api from '@/lib/api'
 import {
   AlertDialog,
@@ -26,7 +25,7 @@ import { DataTableBulkActions as BulkActionsToolbar } from './bulk-actions'
 type DataTableDeleteBulkActionsProps<TData extends { id: string }> = {
   table: Table<TData>
   endpoint: string
-  queryKey: string[]
+  queryKey: QueryKey
   entityName: string
   entityNamePlural: string
 }
@@ -40,21 +39,18 @@ export function DataTableDeleteBulkActions<TData extends { id: string }>({
 }: DataTableDeleteBulkActionsProps<TData>) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const selectedRows = table.getFilteredSelectedRowModel().rows
-  const queryClient = useQueryClient()
+  const { run } = useEntityMutation()
 
   const handleBulkDelete = async () => {
     const ids = selectedRows.map((row) => row.original.id)
 
-    try {
-      await Promise.all(ids.map((id) => api.delete(`${endpoint}/${id}`)))
-      toast.success(
-        `${ids.length} ${ids.length > 1 ? entityNamePlural : entityName} excluído${ids.length > 1 ? 's' : ''}.`
-      )
-      table.resetRowSelection()
-      queryClient.invalidateQueries({ queryKey })
-    } catch (error: unknown) {
-      handleServerError(error)
-    }
+    await run({
+      mutation: () =>
+        Promise.all(ids.map((id) => api.delete(`${endpoint}/${id}`))),
+      invalidate: [queryKey],
+      successMessage: `${ids.length} ${ids.length > 1 ? entityNamePlural : entityName} excluído${ids.length > 1 ? 's' : ''}.`,
+      onSuccess: () => table.resetRowSelection(),
+    })
 
     setShowDeleteConfirm(false)
   }

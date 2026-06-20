@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -48,8 +46,7 @@ export function CategoriesActionDialog({
   onOpenChange,
 }: CategoryActionDialogProps) {
   const isEdit = !!currentRow
-  const [isLoading, setIsLoading] = useState(false)
-  const queryClient = useQueryClient()
+  const { run, isLoading } = useEntityMutation()
 
   const form = useForm<CategoryForm>({
     resolver: zodResolver(formSchema),
@@ -65,23 +62,23 @@ export function CategoriesActionDialog({
   })
 
   async function onSubmit(values: CategoryForm) {
-    setIsLoading(true)
-    try {
-      if (isEdit) {
-        await api.patch(`/categories/${currentRow.id}`, values)
-        toast.success('Categoria atualizada com sucesso.')
-      } else {
-        await api.post('/categories', values)
-        toast.success('Categoria criada com sucesso.')
-      }
-      queryClient.invalidateQueries({ queryKey: ['categories'] })
-      form.reset()
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        if (isEdit) {
+          await api.patch(`/categories/${currentRow.id}`, values)
+        } else {
+          await api.post('/categories', values)
+        }
+      },
+      invalidate: [queryKeys.categories],
+      successMessage: isEdit
+        ? 'Categoria atualizada com sucesso.'
+        : 'Categoria criada com sucesso.',
+      onSuccess: () => {
+        form.reset()
+        onOpenChange(false)
+      },
+    })
   }
 
   const statusValue = useWatch({ control: form.control, name: 'status' })

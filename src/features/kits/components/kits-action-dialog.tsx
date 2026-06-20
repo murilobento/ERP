@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -57,7 +57,7 @@ export function KitsActionDialog({
   currentRow,
 }: KitsActionDialogProps) {
   const isEdit = !!currentRow && open
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [localFinalPrice, setLocalFinalPrice] = useState<string | null>(null)
   const [name, setName] = useState(isEdit ? currentRow!.name : '')
   const [description, setDescription] = useState(isEdit ? currentRow!.description : '')
@@ -101,7 +101,6 @@ export function KitsActionDialog({
         )
       : {}
   )
-  const queryClient = useQueryClient()
 
   function handleOpenChange(state: boolean) {
     onOpenChange(state)
@@ -173,36 +172,28 @@ export function KitsActionDialog({
 
     const validItems = items.filter((i) => i.productId && i.quantity > 0)
 
-    setIsLoading(true)
-    try {
-      if (isEdit && currentRow) {
-        await api.patch(`/kits/${currentRow.id}`, {
+    await run({
+      mutation: async () => {
+        const payload = {
           name: name.trim(),
           description: description.trim(),
           status: statusValue,
           discountType,
           discountValue,
           items: validItems,
-        })
-        toast.success('Kit atualizado com sucesso.')
-      } else {
-        await api.post('/kits', {
-          name: name.trim(),
-          description: description.trim(),
-          status: statusValue,
-          discountType,
-          discountValue,
-          items: validItems,
-        })
-        toast.success('Kit criado com sucesso.')
-      }
-      queryClient.invalidateQueries({ queryKey: ['kits'] })
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+        }
+        if (isEdit && currentRow) {
+          await api.patch(`/kits/${currentRow.id}`, payload)
+        } else {
+          await api.post('/kits', payload)
+        }
+      },
+      invalidate: [queryKeys.kits],
+      successMessage: isEdit
+        ? 'Kit atualizado com sucesso.'
+        : 'Kit criado com sucesso.',
+      onSuccess: () => onOpenChange(false),
+    })
   }
 
   return (

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Loader2, CheckCircle2, Clock, XCircle, RotateCcw } from 'lucide-react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -62,13 +62,13 @@ function getProductionItems(production: Production | ProductionDetail) {
 
 export function ProductionsDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = useProductions()
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [confirmAction, setConfirmAction] = useState<'complete' | 'cancel' | 'reverse' | null>(null)
   const [reverseReason, setReverseReason] = useState('')
   const queryClient = useQueryClient()
 
   const { data: detail } = useQuery({
-    queryKey: ['production', currentRow?.id],
+    queryKey: queryKeys.production(currentRow?.id ?? ''),
     queryFn: async () => {
       const res = await api.get(`/productions/${currentRow?.id}`)
       return res.data as ProductionDetailResponse
@@ -87,14 +87,14 @@ export function ProductionsDetailDialog() {
   const statusConfig = statusMap[status] || { label: status, variant: 'secondary' as const }
 
   function syncProduction(updatedProduction: Production) {
-    queryClient.setQueryData<Production[]>(['productions'], (old) =>
+    queryClient.setQueryData<Production[]>(queryKeys.productions, (old) =>
       old?.map((item) =>
         item.id === updatedProduction.id ? updatedProduction : item
       )
     )
 
     queryClient.setQueryData<ProductionDetailResponse>(
-      ['production', updatedProduction.id],
+      queryKeys.production(updatedProduction.id),
       (old) => {
         if (!old) return old
 
@@ -118,57 +118,58 @@ export function ProductionsDetailDialog() {
 
   async function handleAction(action: 'start' | 'complete' | 'cancel') {
     if (!currentRow) return
-    setIsLoading(true)
-    try {
-      const { data } = await api.post<ProductionActionResponse>(
-        `/productions/${currentRow.id}/${action}`
-      )
-      syncProduction(data.production)
-      queryClient.invalidateQueries({ queryKey: ['productions'] })
-      queryClient.invalidateQueries({ queryKey: ['production', currentRow.id] })
-      if (action === 'complete') {
-        queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-        queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      }
-      const messages = {
-        start: 'Produção iniciada.',
-        complete: 'Produção concluída. Estoque atualizado.',
-        cancel: 'Produção cancelada.',
-      }
-      toast.success(messages[action])
-      setConfirmAction(null)
-      setOpen(null)
-      setCurrentRow(null)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
+    const messages: Record<string, string> = {
+      start: 'Produção iniciada.',
+      complete: 'Produção concluída. Estoque atualizado.',
+      cancel: 'Produção cancelada.',
     }
+    await run({
+      mutation: async () => {
+        const { data } = await api.post<ProductionActionResponse>(
+          `/productions/${currentRow.id}/${action}`
+        )
+        syncProduction(data.production)
+      },
+      invalidate: [
+        queryKeys.productions,
+        queryKeys.production(currentRow.id),
+        ...(action === 'complete'
+          ? [queryKeys.stock.balances, queryKeys.stock.movements]
+          : []),
+      ],
+      successMessage: messages[action],
+      onSuccess: () => {
+        setConfirmAction(null)
+        setOpen(null)
+        setCurrentRow(null)
+      },
+    })
   }
 
   async function handleReverse() {
     if (!currentRow || !reverseReason.trim()) return
-    setIsLoading(true)
-    try {
-      const { data } = await api.post<ProductionActionResponse>(
-        `/productions/${currentRow.id}/reverse`,
-        { reason: reverseReason.trim() }
-      )
-      syncProduction(data.production)
-      queryClient.invalidateQueries({ queryKey: ['productions'] })
-      queryClient.invalidateQueries({ queryKey: ['production', currentRow.id] })
-      queryClient.invalidateQueries({ queryKey: ['stock-balances'] })
-      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
-      toast.success('Estorno realizado. Estoque revertido.')
-      setConfirmAction(null)
-      setReverseReason('')
-      setOpen(null)
-      setCurrentRow(null)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        const { data } = await api.post<ProductionActionResponse>(
+          `/productions/${currentRow.id}/reverse`,
+          { reason: reverseReason.trim() }
+        )
+        syncProduction(data.production)
+      },
+      invalidate: [
+        queryKeys.productions,
+        queryKeys.production(currentRow.id),
+        queryKeys.stock.balances,
+        queryKeys.stock.movements,
+      ],
+      successMessage: 'Estorno realizado. Estoque revertido.',
+      onSuccess: () => {
+        setConfirmAction(null)
+        setReverseReason('')
+        setOpen(null)
+        setCurrentRow(null)
+      },
+    })
   }
 
   return (

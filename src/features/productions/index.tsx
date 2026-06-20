@@ -5,6 +5,7 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import { ProductionsDialogs } from './components/productions-dialogs'
 import { ProductionsFilters } from './components/productions-filters'
 import { ProductionsPrimaryButtons } from './components/productions-primary-buttons'
@@ -21,7 +22,7 @@ export function Productions() {
   const navigate = route.useNavigate()
 
   const { data: productions = [] } = useQuery({
-    queryKey: ['productions'],
+    queryKey: queryKeys.productions,
     queryFn: async () => {
       const res = await api.get('/productions')
       return res.data.productions as Production[]

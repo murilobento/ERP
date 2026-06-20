@@ -3,6 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { KitsDialogs } from './components/kits-dialogs'
 import { KitsPrimaryButtons } from './components/kits-primary-buttons'
@@ -18,7 +19,7 @@ export function Kits() {
   const navigate = route.useNavigate()
 
   const { data: kits = [] } = useQuery({
-    queryKey: ['kits'],
+    queryKey: queryKeys.kits,
     queryFn: async () => {
       const res = await api.get('/kits')
       return res.data.kits as Kit[]

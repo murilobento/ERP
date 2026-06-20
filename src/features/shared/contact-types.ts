@@ -1,3 +1,5 @@
+import { type QueryKey } from '@tanstack/react-query'
+
 export type Contact = {
   id: string
   name: string
@@ -18,7 +20,7 @@ export type ContactConfig = {
   entityLabel: string
   entityLabelLower: string
   endpoint: string
-  queryKey: string
+  queryKey: QueryKey
   formId: string
   namePlaceholder: string
   entityPlural: string

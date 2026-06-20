@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { Loader2, Plus, PackageCheck } from 'lucide-react'
 import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import {
@@ -57,7 +57,7 @@ export function SalesActionDialog({
 }: SalesActionDialogProps) {
   const { currentRow } = useSales()
   const isEdit = !!currentRow && open
-  const [isLoading, setIsLoading] = useState(false)
+  const { run, isLoading } = useEntityMutation()
   const [clientId, setClientId] = useState(isEdit ? currentRow.clientId : '')
   const [selectedClient, setSelectedClient] = useState<ClientSearchItem | null>(
     isEdit ? currentRow.client : null
@@ -130,8 +130,6 @@ export function SalesActionDialog({
         )
       : []
   )
-
-  const queryClient = useQueryClient()
 
   function handleOpenChange(state: boolean) {
     onOpenChange(state)
@@ -250,22 +248,20 @@ export function SalesActionDialog({
       }))
     }
 
-    setIsLoading(true)
-    try {
-      if (isEdit && currentRow) {
-        await api.patch(`/sales/${currentRow.id}`, payload)
-        toast.success('Venda atualizada com sucesso.')
-      } else {
-        await api.post('/sales', payload)
-        toast.success('Venda criada com sucesso.')
-      }
-      queryClient.invalidateQueries({ queryKey: ['sales'] })
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        if (isEdit && currentRow) {
+          await api.patch(`/sales/${currentRow.id}`, payload)
+        } else {
+          await api.post('/sales', payload)
+        }
+      },
+      invalidate: [queryKeys.sales],
+      successMessage: isEdit
+        ? 'Venda atualizada com sucesso.'
+        : 'Venda criada com sucesso.',
+      onSuccess: () => onOpenChange(false),
+    })
   }
 
   const standaloneTotal = items.reduce(

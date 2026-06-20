@@ -155,7 +155,7 @@ describe('sale routes', () => {
         },
       ],
     })
-    prisma.stockMovement.groupBy.mockResolvedValue([
+    tx.stockMovement.groupBy.mockResolvedValue([
       { productId: 'product-1', _sum: { quantity: 2 } },
     ])
 
@@ -166,7 +166,7 @@ describe('sale routes', () => {
 
     expect(response.status).toBe(400)
     expect((await response.json()).error).toContain('Estoque insuficiente')
-    expect(prisma.$transaction).not.toHaveBeenCalled()
+    expect(tx.stockMovement.create).not.toHaveBeenCalled()
   })
 
   it('delivers a ready sale and creates negative stock movements', async () => {

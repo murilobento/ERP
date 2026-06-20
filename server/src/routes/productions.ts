@@ -1,6 +1,12 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
-import { getProductStockMap, getSupplyStockMap } from '../lib/stock'
+import {
+  expandConsumption,
+  getSupplyStockMap,
+  recordProductionCompletion,
+  recordProductionReversal,
+  StockLedgerError,
+} from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
 
 const productionRoutes = new Hono()
@@ -192,30 +198,15 @@ productionRoutes.get('/:id', async (c) => {
           },
         ]
 
-  const compositionMap = new Map<
-    string,
-    { supplyId: string; supplyName: string; unit: string; needed: number }
-  >()
-
-  for (const item of productionItems) {
-    for (const comp of item.product.composition) {
-      const current = compositionMap.get(comp.supplyId)
-      const needed = comp.quantity * item.quantity
-
-      if (current) {
-        current.needed += needed
-      } else {
-        compositionMap.set(comp.supplyId, {
-          supplyId: comp.supplyId,
-          supplyName: comp.supply.name,
-          unit: comp.supply.unit,
-          needed,
-        })
-      }
-    }
-  }
-
-  const compositionNeeded = Array.from(compositionMap.values())
+  const compositionNeeded = Array.from(
+    expandConsumption(productionItems),
+    ([supplyId, consumed]) => ({
+      supplyId,
+      supplyName: consumed.name,
+      unit: consumed.unit,
+      needed: consumed.quantity,
+    })
+  )
   const stockBySupply = await getSupplyStockMap(
     compositionNeeded.map((item) => item.supplyId)
   )
@@ -365,79 +356,29 @@ productionRoutes.post('/:id/complete', async (c) => {
           },
         ]
 
-  await prisma.$transaction(async (tx) => {
-    await tx.production.update({
-      where: { id: productionId },
-      data: { status: 'completed', completedAt: new Date() },
-    })
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.production.update({
+        where: { id: productionId },
+        data: { status: 'completed', completedAt: new Date() },
+      })
 
-    const productStockById = await getProductStockMap(
-      productionItems.map((item) => item.productId),
-      tx
-    )
-
-    for (const item of productionItems) {
-      const productStockBefore = productStockById.get(item.productId) ?? 0
-
-      await tx.stockMovement.create({
-        data: {
+      await recordProductionCompletion(tx, {
+        productionId,
+        authorId: userId,
+        items: productionItems.map((item) => ({
           productId: item.productId,
-          authorId: userId,
           quantity: item.quantity,
-          stockBefore: productStockBefore,
-          stockAfter: productStockBefore + item.quantity,
-          type: 'production_output',
-          referenceId: productionId,
-          notes: `Produção #${productionId} — ${item.quantity} ${item.product.unit} de ${item.product.name}`,
-        },
+          product: item.product,
+        })),
       })
+    })
+  } catch (err) {
+    if (err instanceof StockLedgerError) {
+      return c.json({ error: err.message }, 400)
     }
-
-    const supplyConsumption = new Map<
-      string,
-      { quantity: number; unit: string; name: string }
-    >()
-
-    for (const item of productionItems) {
-      for (const comp of item.product.composition) {
-        const quantity = comp.quantity * item.quantity
-        const current = supplyConsumption.get(comp.supplyId)
-
-        if (current) {
-          current.quantity += quantity
-        } else {
-          supplyConsumption.set(comp.supplyId, {
-            quantity,
-            unit: comp.supply.unit,
-            name: comp.supply.name,
-          })
-        }
-      }
-    }
-
-    const supplyStockById = await getSupplyStockMap(
-      [...supplyConsumption.keys()],
-      tx
-    )
-
-    for (const [supplyId, comp] of supplyConsumption) {
-      const quantity = -comp.quantity
-      const supplyStockBefore = supplyStockById.get(supplyId) ?? 0
-
-      await tx.stockMovement.create({
-        data: {
-          supplyId,
-          authorId: userId,
-          quantity,
-          stockBefore: supplyStockBefore,
-          stockAfter: supplyStockBefore + quantity,
-          type: 'production_consumption',
-          referenceId: productionId,
-          notes: `Produção #${productionId} — consumo de ${comp.quantity} ${comp.unit} de ${comp.name}`,
-        },
-      })
-    }
-  })
+    throw err
+  }
 
   const production = await prisma.production.findUnique({
     where: { id: productionId },
@@ -535,69 +476,16 @@ productionRoutes.post('/:id/reverse', async (c) => {
       },
     })
 
-    const productStockById = await getProductStockMap(
-      productionItems.map((item) => item.productId),
-      tx
-    )
-
-    for (const item of productionItems) {
-      const productStockBefore = productStockById.get(item.productId) ?? 0
-      const productQuantity = -item.quantity
-
-      await tx.stockMovement.create({
-        data: {
-          productId: item.productId,
-          authorId: userId,
-          quantity: productQuantity,
-          stockBefore: productStockBefore,
-          stockAfter: productStockBefore + productQuantity,
-          type: 'production_reversal',
-          referenceId: productionId,
-          notes: `Estorno da produção #${productionId} — ${item.quantity} ${item.product.unit} de ${item.product.name} | Motivo: ${reason.trim()}`,
-        },
-      })
-    }
-
-    const supplyReturns = new Map<
-      string,
-      { quantity: number; unit: string; name: string }
-    >()
-
-    for (const item of productionItems) {
-      for (const comp of item.product.composition) {
-        const quantity = comp.quantity * item.quantity
-        const current = supplyReturns.get(comp.supplyId)
-
-        if (current) {
-          current.quantity += quantity
-        } else {
-          supplyReturns.set(comp.supplyId, {
-            quantity,
-            unit: comp.supply.unit,
-            name: comp.supply.name,
-          })
-        }
-      }
-    }
-
-    const supplyStockById = await getSupplyStockMap([...supplyReturns.keys()], tx)
-
-    for (const [supplyId, comp] of supplyReturns) {
-      const supplyStockBefore = supplyStockById.get(supplyId) ?? 0
-
-      await tx.stockMovement.create({
-        data: {
-          supplyId,
-          authorId: userId,
-          quantity: comp.quantity,
-          stockBefore: supplyStockBefore,
-          stockAfter: supplyStockBefore + comp.quantity,
-          type: 'production_reversal',
-          referenceId: productionId,
-          notes: `Estorno da produção #${productionId} — devolução de ${comp.quantity} ${comp.unit} de ${comp.name}`,
-        },
-      })
-    }
+    await recordProductionReversal(tx, {
+      productionId,
+      authorId: userId,
+      reason: reason.trim(),
+      items: productionItems.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        product: item.product,
+      })),
+    })
   })
 
   const production = await prisma.production.findUnique({

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import { type Company } from '@/features/company/data/schema'
 
 type CompanyResponse = {
@@ -11,7 +12,7 @@ const COMPANY_FALLBACK = 'Bendito Doce'
 
 export function useDocumentTitle(pageTitle: string) {
   const { data: company } = useQuery({
-    queryKey: ['company'],
+    queryKey: queryKeys.company,
     queryFn: async () => {
       const res = await api.get<CompanyResponse>('/company')
       return res.data.company

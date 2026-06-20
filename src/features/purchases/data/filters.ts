@@ -1,4 +1,7 @@
+import { isWithinRange } from '../../shared/filter-date-utils'
 import { purchaseStatusMap, type Purchase, type PurchaseStatus } from './schema'
+
+export { isWithinRange }
 
 type PurchasesFilterValues = {
   filter: string
@@ -24,34 +27,10 @@ function getFilters(search: Record<string, unknown>): PurchasesFilterValues {
   }
 }
 
-function getDayStart(value: string) {
-  if (!value) return null
-  const date = new Date(`${value}T00:00:00`)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
-function getDayEnd(value: string) {
-  if (!value) return null
-  const date = new Date(`${value}T23:59:59.999`)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
-export function isWithinRange(dateValue: string | null, from: string, to: string) {
-  if (!from && !to) return true
-  if (!dateValue) return false
-
-  const date = new Date(dateValue)
-  const start = getDayStart(from)
-  const end = getDayEnd(to)
-
-  if (Number.isNaN(date.getTime())) return false
-  if (start && date < start) return false
-  if (end && date > end) return false
-
-  return true
-}
-
-export function filterPurchases(purchases: Purchase[], search: Record<string, unknown>) {
+export function filterPurchases(
+  purchases: Purchase[],
+  search: Record<string, unknown>
+) {
   const filters = getFilters(search)
   const text = filters.filter.trim().toLowerCase()
 
@@ -67,7 +46,10 @@ export function filterPurchases(purchases: Purchase[], search: Record<string, un
       if (!matchesText) return false
     }
 
-    if (filters.status.length > 0 && !filters.status.includes(purchase.status)) {
+    if (
+      filters.status.length > 0 &&
+      !filters.status.includes(purchase.status)
+    ) {
       return false
     }
 

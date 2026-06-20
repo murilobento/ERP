@@ -1,6 +1,12 @@
 import { Hono } from 'hono'
 import prisma from '../lib/prisma'
-import { getProductStockMap, getSupplyStockMap } from '../lib/stock'
+import {
+  getProductStockMap,
+  getSupplyStockMap,
+  movementParentEntity,
+  recordAdjustment,
+  recordAdjustmentReversal,
+} from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
 
 const stockRoutes = new Hono()
@@ -48,10 +54,11 @@ stockRoutes.get('/movements', async (c) => {
 
   for (const m of movements) {
     if (!m.referenceId) continue
-    if (m.type.startsWith('sale')) saleIds.add(m.referenceId)
-    else if (m.type.startsWith('purchase')) purchaseIds.add(m.referenceId)
-    else if (m.type.startsWith('production')) productionIds.add(m.referenceId)
-    else if (m.type.startsWith('adjustment')) adjustmentIds.add(m.referenceId)
+    const parent = movementParentEntity(m.type)
+    if (parent === 'sale') saleIds.add(m.referenceId)
+    else if (parent === 'purchase') purchaseIds.add(m.referenceId)
+    else if (parent === 'production') productionIds.add(m.referenceId)
+    else if (parent === 'adjustment') adjustmentIds.add(m.referenceId)
   }
 
   const [sales, purchases, productions, adjustments] = await Promise.all([
@@ -119,16 +126,17 @@ stockRoutes.get('/movements', async (c) => {
     let reference: Record<string, unknown> | null = null
 
     if (m.referenceId) {
-      if (m.type.startsWith('sale')) {
+      const parent = movementParentEntity(m.type)
+      if (parent === 'sale') {
         const sale = salesMap.get(m.referenceId)
         if (sale) reference = { type: 'sale' as const, data: sale }
-      } else if (m.type.startsWith('purchase')) {
+      } else if (parent === 'purchase') {
         const purchase = purchasesMap.get(m.referenceId)
         if (purchase) reference = { type: 'purchase' as const, data: purchase }
-      } else if (m.type.startsWith('production')) {
+      } else if (parent === 'production') {
         const production = productionsMap.get(m.referenceId)
         if (production) reference = { type: 'production' as const, data: production }
-      } else if (m.type.startsWith('adjustment')) {
+      } else if (parent === 'adjustment') {
         const adjustment = adjustmentsMap.get(m.referenceId)
         if (adjustment) reference = { type: 'adjustment' as const, data: adjustment }
       }
@@ -435,32 +443,26 @@ stockRoutes.post('/adjustments/:id/complete', async (c) => {
       },
     })
 
-    const itemId = existing.productId || existing.supplyId || ''
     const isProduct = existing.itemType === 'product'
+    const item = isProduct
+      ? {
+          id: existing.productId || '',
+          name: existing.product?.name || 'Produto',
+          unit: existing.product?.unit || 'un',
+        }
+      : {
+          id: existing.supplyId || '',
+          name: existing.supply?.name || 'Insumo',
+          unit: existing.supply?.unit || 'un',
+        }
 
-    const stockBefore = isProduct
-      ? (await getProductStockMap([itemId], tx)).get(itemId) ?? 0
-      : (await getSupplyStockMap([itemId], tx)).get(itemId) ?? 0
-
-    const itemName = isProduct
-      ? (existing.product?.name || 'Produto')
-      : (existing.supply?.name || 'Insumo')
-    const unit = isProduct
-      ? (existing.product?.unit || 'un')
-      : (existing.supply?.unit || 'un')
-
-    await tx.stockMovement.create({
-      data: {
-        productId: isProduct ? itemId : null,
-        supplyId: isProduct ? null : itemId,
-        authorId: userId,
-        quantity: existing.quantity,
-        stockBefore,
-        stockAfter: stockBefore + existing.quantity,
-        type: 'adjustment',
-        referenceId: id,
-        notes: `Acerto de estoque — ${itemName}: ${existing.quantity > 0 ? '+' : ''}${existing.quantity} ${unit} | Motivo: ${existing.reason}`,
-      },
+    await recordAdjustment(tx, {
+      adjustmentId: id,
+      authorId: userId,
+      itemType: isProduct ? 'product' : 'supply',
+      item,
+      quantity: existing.quantity,
+      reason: existing.reason,
     })
   })
 
@@ -546,33 +548,27 @@ stockRoutes.post('/adjustments/:id/reverse', async (c) => {
       },
     })
 
-    const itemId = existing.productId || existing.supplyId || ''
     const isProduct = existing.itemType === 'product'
-    const quantity = -existing.quantity
+    const item = isProduct
+      ? {
+          id: existing.productId || '',
+          name: existing.product?.name || 'Produto',
+          unit: existing.product?.unit || 'un',
+        }
+      : {
+          id: existing.supplyId || '',
+          name: existing.supply?.name || 'Insumo',
+          unit: existing.supply?.unit || 'un',
+        }
 
-    const stockBefore = isProduct
-      ? (await getProductStockMap([itemId], tx)).get(itemId) ?? 0
-      : (await getSupplyStockMap([itemId], tx)).get(itemId) ?? 0
-
-    const itemName = isProduct
-      ? (existing.product?.name || 'Produto')
-      : (existing.supply?.name || 'Insumo')
-    const unit = isProduct
-      ? (existing.product?.unit || 'un')
-      : (existing.supply?.unit || 'un')
-
-    await tx.stockMovement.create({
-      data: {
-        productId: isProduct ? itemId : null,
-        supplyId: isProduct ? null : itemId,
-        authorId: userId,
-        quantity,
-        stockBefore,
-        stockAfter: stockBefore + quantity,
-        type: 'adjustment_reversal',
-        referenceId: id,
-        notes: `Estorno do acerto — ${itemName}: ${quantity > 0 ? '+' : ''}${quantity} ${unit} | Motivo: ${reason.trim()} | Autor: ${authorName}`,
-      },
+    await recordAdjustmentReversal(tx, {
+      adjustmentId: id,
+      authorId: userId,
+      authorName,
+      itemType: isProduct ? 'product' : 'supply',
+      item,
+      quantity: existing.quantity,
+      reason: reason.trim(),
     })
   })
 

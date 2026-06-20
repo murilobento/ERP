@@ -1,13 +1,10 @@
 import { useState, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
-import {
-  ProductSupplyCombobox,
-  type ProductSupplySearchItem,
-} from '@/components/product-supply-combobox'
+import { handleServerError } from '@/lib/handle-server-error'
+import { queryKeys } from '@/lib/query-keys'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -27,6 +24,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  ProductSupplyCombobox,
+  type ProductSupplySearchItem,
+} from '@/components/product-supply-combobox'
 import { type Product, type CompositionItem } from '../data/schema'
 
 type CompositionForm = {
@@ -57,24 +58,36 @@ export function ProductsCompositionDialog({
     supplyId: '',
     quantity: 1,
   })
-  const [items, setItems] = useState<CompositionForm[]>(
-    () => currentRow.composition.map((c) => ({
+  const [items, setItems] = useState<CompositionForm[]>(() =>
+    currentRow.composition.map((c) => ({
       supplyId: c.supplyId,
       quantity: c.quantity,
     }))
   )
-  const [supplyCache, setSupplyCache] = useState<Record<string, CompositionItem['supply']>>(
-    () => Object.fromEntries(currentRow.composition.map((c) => [c.supplyId, c.supply]))
+  const [supplyCache, setSupplyCache] = useState<
+    Record<string, CompositionItem['supply']>
+  >(() =>
+    Object.fromEntries(
+      currentRow.composition.map((c) => [c.supplyId, c.supply])
+    )
   )
   const queryClient = useQueryClient()
 
-  const updateSupplyCache = useCallback((item: ProductSupplySearchItem | null) => {
-    if (!item) return
-    setSupplyCache((prev) => ({
-      ...prev,
-      [item.id]: { id: item.id, name: item.name, unit: item.unit || 'un', costPrice: item.costPrice ?? 0 },
-    }))
-  }, [])
+  const updateSupplyCache = useCallback(
+    (item: ProductSupplySearchItem | null) => {
+      if (!item) return
+      setSupplyCache((prev) => ({
+        ...prev,
+        [item.id]: {
+          id: item.id,
+          name: item.name,
+          unit: item.unit || 'un',
+          costPrice: item.costPrice ?? 0,
+        },
+      }))
+    },
+    []
+  )
 
   function addItem() {
     if (!draftItem.supplyId || draftItem.quantity <= 0) {
@@ -110,8 +123,10 @@ export function ProductsCompositionDialog({
     const validItems = items.filter((i) => i.supplyId && i.quantity > 0)
     setIsLoading(true)
     try {
-      await api.put(`/products/${currentRow.id}/composition`, { items: validItems })
-      queryClient.invalidateQueries({ queryKey: ['products'] })
+      await api.put(`/products/${currentRow.id}/composition`, {
+        items: validItems,
+      })
+      queryClient.invalidateQueries({ queryKey: queryKeys.products })
       toast.success('Composição atualizada com sucesso.')
       onOpenChange(false)
     } catch (error: unknown) {
@@ -297,7 +312,7 @@ export function ProductsCompositionDialog({
                             <div className='mt-1 flex items-center gap-2'>
                               <Input
                                 type='number'
-                                 min='1'
+                                min='1'
                                 step='1'
                                 aria-invalid={quantityInvalid}
                                 className='h-8 w-20'

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLayout } from '@/context/layout-provider'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import {
   Sidebar,
   SidebarContent,
@@ -27,7 +28,7 @@ export function AppSidebar() {
     sidebarData.modules[0]
   )
   const { data: company } = useQuery({
-    queryKey: ['company'],
+    queryKey: queryKeys.company,
     queryFn: async () => {
       const res = await api.get<CompanyResponse>('/company')
       return res.data.company

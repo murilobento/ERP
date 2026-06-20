@@ -3,6 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
 import { useDocumentTitle } from '@/hooks/use-document-title'
+import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { ProductsDialogs } from './components/products-dialogs'
 import { ProductsPrimaryButtons } from './components/products-primary-buttons'
@@ -18,7 +19,7 @@ export function Products() {
   const navigate = route.useNavigate()
 
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
+    queryKey: queryKeys.products,
     queryFn: async () => {
       const res = await api.get('/products')
       return res.data.products as Product[]

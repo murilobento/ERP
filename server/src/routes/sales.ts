@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import prisma from "../lib/prisma";
 import { generateInvoicePdf } from "../lib/pdf";
-import { getProductStockMap } from "../lib/stock";
+import { expandKitIntoSaleItems } from "../lib/pricing";
+import { recordSaleDelivery, recordSaleReversal, StockLedgerError } from "../lib/stock";
 import { authMiddleware } from "../middleware/auth";
 
 const saleRoutes = new Hono();
@@ -111,62 +112,10 @@ async function expandKitItems(kits: KitSaleInput[]) {
 			return { error: `Kit inativo: ${kit.name}` };
 		}
 
-		const kitTotalPrice = kit.items.reduce(
-			(sum, ki) => {
-				const costPrice = ki.product.composition.reduce(
-					(s, c) => s + c.quantity * c.supply.costPrice,
-					0
-				);
-				const salePrice = costPrice * (1 + ki.product.margin / 100);
-				return sum + salePrice * ki.quantity;
-			},
-			0,
-		);
-
-		const discount =
-			kit.discountType === "percentage"
-				? kitTotalPrice * (kit.discountValue / 100)
-				: kit.discountValue;
-		const kitFinalPrice = Math.max(0, kitTotalPrice - discount);
-
-		for (const ki of kit.items) {
-			const costPrice = ki.product.composition.reduce(
-				(s, c) => s + c.quantity * c.supply.costPrice,
-				0,
-			);
-			const salePrice = costPrice * (1 + ki.product.margin / 100);
-			const productContribution = salePrice * ki.quantity;
-			const proportion = kitTotalPrice > 0 ? productContribution / kitTotalPrice : 0;
-			const proportionalPrice = kitFinalPrice * proportion;
-			const unitPrice = ki.quantity > 0 ? proportionalPrice / ki.quantity : 0;
-
-			expandedItems.push({
-				productId: ki.productId,
-				quantity: ki.quantity * kitInput.quantity,
-				unitPrice: Math.round(unitPrice * 100) / 100,
-				kitId: kit.id,
-			});
-		}
+		expandedItems.push(...expandKitIntoSaleItems(kit, kitInput.quantity));
 	}
 
 	return { items: expandedItems };
-}
-
-async function ensureProductsAvailable(
-	items: { productId: string; quantity: number; product: { name: string } }[],
-) {
-	const stockByProduct = await getProductStockMap(
-		items.map((item) => item.productId),
-	);
-
-	for (const item of items) {
-		const available = stockByProduct.get(item.productId) ?? 0;
-		if (available < item.quantity) {
-			return `Estoque insuficiente para ${item.product.name}. Disponível: ${available}.`;
-		}
-	}
-
-	return null;
 }
 
 saleRoutes.get("/", async (c) => {
@@ -421,40 +370,30 @@ saleRoutes.post("/:id/deliver", async (c) => {
 		);
 	}
 
-	const stockError = await ensureProductsAvailable(existing.items);
-	if (stockError) {
-		return c.json({ error: stockError }, 400);
-	}
-
-	await prisma.$transaction(async (tx) => {
-		await tx.sale.update({
-			where: { id: saleId },
-			data: { status: "delivered", deliveredAt: new Date() },
-		});
-
-		const stockByProduct = await getProductStockMap(
-			existing.items.map((item) => item.productId),
-			tx,
-		);
-
-		for (const item of existing.items) {
-			const quantity = -item.quantity;
-			const stockBefore = stockByProduct.get(item.productId) ?? 0;
-
-			await tx.stockMovement.create({
-				data: {
-					productId: item.productId,
-					authorId: userId,
-					quantity,
-					stockBefore,
-					stockAfter: stockBefore + quantity,
-					type: "sale_delivery",
-					referenceId: saleId,
-					notes: `Venda para ${existing.customer} — entrega de ${item.quantity} ${item.product.unit} de ${item.product.name}`,
-				},
+	try {
+		await prisma.$transaction(async (tx) => {
+			await tx.sale.update({
+				where: { id: saleId },
+				data: { status: "delivered", deliveredAt: new Date() },
 			});
+
+			await recordSaleDelivery(tx, {
+				saleId,
+				customer: existing.customer,
+				authorId: userId,
+				items: existing.items.map((item) => ({
+					productId: item.productId,
+					quantity: item.quantity,
+					product: { name: item.product.name, unit: item.product.unit },
+				})),
+			});
+		});
+	} catch (err) {
+		if (err instanceof StockLedgerError) {
+			return c.json({ error: err.message }, 400);
 		}
-	});
+		throw err;
+	}
 
 	const sale = await prisma.sale.findUnique({
 		where: { id: saleId },
@@ -547,27 +486,17 @@ saleRoutes.post("/:id/reverse", async (c) => {
 			},
 		});
 
-		const stockByProduct = await getProductStockMap(
-			existing.items.map((item) => item.productId),
-			tx,
-		);
-
-		for (const item of existing.items) {
-			const stockBefore = stockByProduct.get(item.productId) ?? 0;
-
-			await tx.stockMovement.create({
-				data: {
-					productId: item.productId,
-					authorId: userId,
-					quantity: item.quantity,
-					stockBefore,
-					stockAfter: stockBefore + item.quantity,
-					type: "sale_reversal",
-					referenceId: saleId,
-					notes: `Estorno da venda para ${existing.customer} — devolução de ${item.quantity} ${item.product.unit} de ${item.product.name} | Motivo: ${reason.trim()}`,
-				},
-			});
-		}
+		await recordSaleReversal(tx, {
+			saleId,
+			customer: existing.customer,
+			authorId: userId,
+			reason: reason.trim(),
+			items: existing.items.map((item) => ({
+				productId: item.productId,
+				quantity: item.quantity,
+				product: { name: item.product.name, unit: item.product.unit },
+			})),
+		});
 	});
 
 	const sale = await prisma.sale.findUnique({

@@ -1,193 +1,49 @@
-import { Hono } from 'hono'
-import prisma from '../lib/prisma'
-import { authMiddleware } from '../middleware/auth'
+import { createContactRoutes } from '../lib/contact-routes'
 
-const clientRoutes = new Hono()
-
-clientRoutes.use('*', authMiddleware)
-
-const CLIENT_SELECT = {
+const CLIENT_SALES_SELECT = {
   id: true,
-  name: true,
-  phone: true,
-  zipCode: true,
-  street: true,
-  number: true,
-  complement: true,
-  neighborhood: true,
-  city: true,
-  state: true,
   status: true,
   createdAt: true,
-  updatedAt: true,
-}
-
-clientRoutes.get('/', async (c) => {
-  const clients = await prisma.client.findMany({
-    select: CLIENT_SELECT,
-    orderBy: { createdAt: 'desc' },
-  })
-  return c.json({ clients })
-})
-
-clientRoutes.get('/search', async (c) => {
-  const q = (c.req.query('q') || '').trim()
-  const status = c.req.query('status')
-  const requestedLimit = Number(c.req.query('limit') || 20)
-  const limit = Number.isFinite(requestedLimit)
-    ? Math.min(Math.max(requestedLimit, 1), 50)
-    : 20
-
-  if (!q) {
-    return c.json({ clients: [] })
-  }
-
-  const clients = await prisma.client.findMany({
-    where: {
-      name: { contains: q, mode: 'insensitive' },
-      ...(status && status !== 'all' ? { status } : {}),
-    },
+  deliveredAt: true,
+  deliveryDate: true,
+  paymentMethod: true,
+  notes: true,
+  items: {
     select: {
-      id: true,
-      name: true,
-      phone: true,
-      status: true,
-    },
-    orderBy: { name: 'asc' },
-    take: limit,
-  })
-
-  return c.json({ clients })
-})
-
-clientRoutes.post('/', async (c) => {
-  const body = await c.req.json()
-  const { name, phone, zipCode, street, number, complement, neighborhood, city, state, status } = body
-
-  if (!name || !phone) {
-    return c.json({ error: 'All required fields must be provided' }, 400)
-  }
-
-  const client = await prisma.client.create({
-    data: {
-      name,
-      phone,
-      zipCode: zipCode || '',
-      street: street || '',
-      number: number || '',
-      complement: complement || '',
-      neighborhood: neighborhood || '',
-      city: city || '',
-      state: state || '',
-      status: status || 'active',
-    },
-    select: CLIENT_SELECT,
-  })
-
-  return c.json({ client }, 201)
-})
-
-clientRoutes.patch('/:id', async (c) => {
-  const clientId = c.req.param('id')
-  const body = await c.req.json()
-  const { name, phone, zipCode, street, number, complement, neighborhood, city, state, status } = body
-
-  const existing = await prisma.client.findUnique({ where: { id: clientId } })
-  if (!existing) {
-    return c.json({ error: 'Client not found' }, 404)
-  }
-
-  const data: {
-    name?: string
-    phone?: string
-    zipCode?: string
-    street?: string
-    number?: string
-    complement?: string
-    neighborhood?: string
-    city?: string
-    state?: string
-    status?: string
-  } = {}
-  if (name) data.name = name
-  if (phone) data.phone = phone
-  if (zipCode) data.zipCode = zipCode
-  if (street) data.street = street
-  if (number) data.number = number
-  if (complement !== undefined) data.complement = complement
-  if (neighborhood) data.neighborhood = neighborhood
-  if (city) data.city = city
-  if (state) data.state = state
-  if (status) data.status = status
-
-  const client = await prisma.client.update({
-    where: { id: clientId },
-    data,
-    select: CLIENT_SELECT,
-  })
-
-  return c.json({ client })
-})
-
-clientRoutes.get('/:id', async (c) => {
-  const clientId = c.req.param('id')
-  const client = await prisma.client.findUnique({
-    where: { id: clientId },
-    select: {
-      ...CLIENT_SELECT,
-      sales: {
-        select: {
-          id: true,
-          status: true,
-          createdAt: true,
-          deliveredAt: true,
-          deliveryDate: true,
-          paymentMethod: true,
-          notes: true,
-          items: {
-            select: {
-              quantity: true,
-              unitPrice: true,
-              product: {
-                select: { id: true, name: true, unit: true },
-              },
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
+      quantity: true,
+      unitPrice: true,
+      product: {
+        select: { id: true, name: true, unit: true },
       },
     },
-  })
+  },
+}
 
-  if (!client) {
-    return c.json({ error: 'Cliente não encontrado.' }, 404)
-  }
-
-  return c.json({ client })
-})
-
-clientRoutes.patch('/:id/status', async (c) => {
-  const clientId = c.req.param('id')
-  const body = await c.req.json()
-  const { status } = body as { status: string }
-
-  if (status !== 'active' && status !== 'inactive') {
-    return c.json({ error: 'Status inválido.' }, 400)
-  }
-
-  const existing = await prisma.client.findUnique({ where: { id: clientId } })
-  if (!existing) {
-    return c.json({ error: 'Cliente não encontrado.' }, 404)
-  }
-
-  const client = await prisma.client.update({
-    where: { id: clientId },
-    data: { status },
-    select: CLIENT_SELECT,
-  })
-
-  return c.json({ client })
+const clientRoutes = createContactRoutes({
+  model: 'client',
+  entityName: 'Cliente',
+  responseKey: 'client',
+  pluralResponseKey: 'clients',
+  detailSelect: {
+    id: true,
+    name: true,
+    phone: true,
+    zipCode: true,
+    street: true,
+    number: true,
+    complement: true,
+    neighborhood: true,
+    city: true,
+    state: true,
+    status: true,
+    createdAt: true,
+    updatedAt: true,
+    sales: {
+      select: CLIENT_SALES_SELECT,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    },
+  },
 })
 
 export { clientRoutes }

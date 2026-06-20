@@ -1,13 +1,10 @@
-import { useState } from 'react'
 import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, MapPin } from 'lucide-react'
-import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import api from '@/lib/api'
 import { formatPhone, formatZipCode } from '@/lib/formatters'
-import { handleServerError } from '@/lib/handle-server-error'
 import { useCepLookup } from '@/hooks/use-cep-lookup'
 import { Button } from '@/components/ui/button'
 import {
@@ -60,8 +57,7 @@ export function ContactActionDialog({
   onOpenChange,
 }: ContactActionDialogProps) {
   const isEdit = !!currentRow
-  const [isLoading, setIsLoading] = useState(false)
-  const queryClient = useQueryClient()
+  const { run, isLoading } = useEntityMutation()
 
   const form = useForm<ContactForm>({
     resolver: zodResolver(formSchema),
@@ -95,23 +91,23 @@ export function ContactActionDialog({
   const { fetchCep, isLoadingCep } = useCepLookup(form)
 
   async function onSubmit(values: ContactForm) {
-    setIsLoading(true)
-    try {
-      if (isEdit) {
-        await api.patch(`/${config.endpoint}/${currentRow.id}`, values)
-        toast.success(`${config.entityLabel} atualizado com sucesso.`)
-      } else {
-        await api.post(`/${config.endpoint}`, values)
-        toast.success(`${config.entityLabel} criado com sucesso.`)
-      }
-      queryClient.invalidateQueries({ queryKey: [config.queryKey] })
-      form.reset()
-      onOpenChange(false)
-    } catch (error: unknown) {
-      handleServerError(error)
-    } finally {
-      setIsLoading(false)
-    }
+    await run({
+      mutation: async () => {
+        if (isEdit) {
+          await api.patch(`/${config.endpoint}/${currentRow.id}`, values)
+        } else {
+          await api.post(`/${config.endpoint}`, values)
+        }
+      },
+      invalidate: [config.queryKey],
+      successMessage: isEdit
+        ? `${config.entityLabel} atualizado com sucesso.`
+        : `${config.entityLabel} criado com sucesso.`,
+      onSuccess: () => {
+        form.reset()
+        onOpenChange(false)
+      },
+    })
   }
 
   const statusValue = useWatch({ control: form.control, name: 'status' })

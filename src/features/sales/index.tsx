@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 import { getRouteApi } from "@tanstack/react-router";
 import {
 	CheckCircle2,
@@ -42,7 +43,7 @@ export function Sales() {
 	const navigate = route.useNavigate();
 
 	const { data: sales = [] } = useQuery({
-		queryKey: ["sales"],
+		queryKey: queryKeys.sales,
 		queryFn: async () => {
 			const res = await api.get("/sales");
 			return res.data.sales as Sale[];
