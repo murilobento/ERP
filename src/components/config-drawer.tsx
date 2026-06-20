@@ -14,8 +14,17 @@ import { IconThemeSystem } from '@/assets/custom/icon-theme-system'
 import { cn } from '@/lib/utils'
 import { useDirection } from '@/context/direction-provider'
 import { type Collapsible, useLayout } from '@/context/layout-provider'
+import { usePalette } from '@/context/palette-provider'
 import { useTheme } from '@/context/theme-provider'
+import { palettes, paletteLabels } from '@/config/palettes'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Sheet,
   SheetContent,
@@ -32,12 +41,14 @@ export function ConfigDrawer() {
   const { resetDir } = useDirection()
   const { resetTheme } = useTheme()
   const { resetLayout } = useLayout()
+  const { resetPalette } = usePalette()
 
   const handleReset = () => {
     setOpen(true)
     resetDir()
     resetTheme()
     resetLayout()
+    resetPalette()
   }
 
   return (
@@ -61,6 +72,7 @@ export function ConfigDrawer() {
         </SheetHeader>
         <div className='space-y-6 overflow-y-auto px-4'>
           <ThemeConfig />
+          <PaletteConfig />
           <SidebarConfig />
           <LayoutConfig />
           <DirConfig />
@@ -211,6 +223,41 @@ function ThemeConfig() {
       </Radio>
       <div id='theme-description' className='sr-only'>
         Escolha entre preferência do sistema, modo claro ou modo escuro
+      </div>
+    </div>
+  )
+}
+
+function PaletteConfig() {
+  const { defaultPalette, palette, setPalette } = usePalette()
+  return (
+    <div>
+      <SectionTitle
+        title='Paleta'
+        showReset={palette !== defaultPalette}
+        onReset={() => setPalette(defaultPalette)}
+        resetAriaLabel='Restaurar paleta de cores para o padrão'
+      />
+      <Select
+        value={palette}
+        onValueChange={(value) => setPalette(value as (typeof palettes)[number])}
+      >
+        <SelectTrigger
+          className='w-full max-w-md'
+          aria-label='Selecionar paleta de cores'
+        >
+          <SelectValue placeholder='Selecione uma paleta' />
+        </SelectTrigger>
+        <SelectContent>
+          {palettes.map((name) => (
+            <SelectItem key={name} value={name}>
+              {paletteLabels[name]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <div id='palette-description' className='sr-only'>
+        Escolha uma paleta de cores para a interface
       </div>
     </div>
   )

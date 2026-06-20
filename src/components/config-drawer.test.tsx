@@ -5,6 +5,7 @@ import { userEvent } from 'vitest/browser'
 import { getCookie, setCookie } from '@/lib/cookies'
 import { DirectionProvider } from '@/context/direction-provider'
 import { LayoutProvider } from '@/context/layout-provider'
+import { PaletteProvider } from '@/context/palette-provider'
 import { ThemeProvider } from '@/context/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { ConfigDrawer } from './config-drawer'
@@ -17,11 +18,13 @@ async function renderConfigDrawer({
   return await render(
     <DirectionProvider>
       <ThemeProvider>
-        <LayoutProvider>
-          <SidebarProvider defaultOpen={sidebarDefaultOpen}>
-            <ConfigDrawer />
-          </SidebarProvider>
-        </LayoutProvider>
+        <PaletteProvider>
+          <LayoutProvider>
+            <SidebarProvider defaultOpen={sidebarDefaultOpen}>
+              <ConfigDrawer />
+            </SidebarProvider>
+          </LayoutProvider>
+        </PaletteProvider>
       </ThemeProvider>
     </DirectionProvider>
   )
@@ -44,6 +47,7 @@ describe('ConfigDrawer (integration)', () => {
 
     document.documentElement.classList.remove('light', 'dark')
     document.documentElement.removeAttribute('dir')
+    document.documentElement.removeAttribute('data-palette')
   })
 
   it('opens the drawer and renders the sections', async () => {
@@ -58,6 +62,7 @@ describe('ConfigDrawer (integration)', () => {
     await expect.element(drawer).toBeInTheDocument()
 
     await expect.element(drawer.getByText(/^Tema$/i)).toBeInTheDocument()
+    await expect.element(drawer.getByText(/^Paleta$/i)).toBeInTheDocument()
     await expect.element(drawer.getByText(/^Layout$/i)).toBeInTheDocument()
     await expect
       .element(drawer.getByText(/^Barra lateral$/i).first())
@@ -114,6 +119,72 @@ describe('ConfigDrawer (integration)', () => {
         const hasDark = root.classList.contains('dark')
         expect(hasLight !== hasDark).toBe(true)
       })
+    })
+  })
+
+  describe('palette preference', () => {
+    it('applies a non-default palette to <html data-palette> and cookie', async () => {
+      const screen = await renderConfigDrawer()
+      await openDrawer(screen)
+
+      await userEvent.click(
+        screen.getByRole('combobox', { name: /selecionar paleta de cores/i })
+      )
+      await userEvent.click(screen.getByRole('option', { name: /^Mocha$/i }))
+
+      await vi.waitFor(() =>
+        expect(document.documentElement.getAttribute('data-palette')).toBe(
+          'mocha'
+        )
+      )
+      expect(getCookie('palette')).toBe('mocha')
+    })
+
+    it('default palette does not set the data-palette attribute', async () => {
+      setCookie('palette', 'claude')
+
+      const screen = await renderConfigDrawer()
+      await openDrawer(screen)
+
+      await userEvent.click(
+        screen.getByRole('combobox', { name: /selecionar paleta de cores/i })
+      )
+      await userEvent.click(screen.getByRole('option', { name: /^Padrão$/i }))
+
+      await vi.waitFor(() =>
+        expect(getCookie('palette')).toBe('default')
+      )
+      await vi.waitFor(() =>
+        expect(document.documentElement.hasAttribute('data-palette')).toBe(
+          false
+        )
+      )
+    })
+
+    it('section reset restores default palette and removes the attribute', async () => {
+      setCookie('palette', 'candyland')
+
+      const screen = await renderConfigDrawer()
+      await openDrawer(screen)
+
+      await vi.waitFor(() =>
+        expect(document.documentElement.getAttribute('data-palette')).toBe(
+          'candyland'
+        )
+      )
+
+      await userEvent.click(
+        screen.getByRole('button', {
+          name: /restaurar paleta de cores para o padrão/i,
+        })
+      )
+
+      await vi.waitFor(() => expect(getCookie('palette')).toBe('default'))
+      await vi.waitFor(() =>
+        expect(document.documentElement.hasAttribute('data-palette')).toBe(
+          false
+        )
+      )
     })
   })
 
@@ -301,12 +372,22 @@ describe('ConfigDrawer (integration)', () => {
     await userEvent.click(
       screen.getByRole('radio', { name: /selecionar expandido/i })
     )
+    await userEvent.click(
+      screen.getByRole('combobox', { name: /selecionar paleta de cores/i })
+    )
+    await userEvent.click(screen.getByRole('option', { name: /^Claude$/i }))
 
     await vi.waitFor(() => expect(getCookie('vite-ui-theme')).toBe('dark'))
     await vi.waitFor(() => expect(getCookie('dir')).toBe('rtl'))
     await vi.waitFor(() => expect(getCookie('layout_variant')).toBe('floating'))
     await vi.waitFor(() =>
       expect(getCookie('layout_collapsible')).toBe('offcanvas')
+    )
+    await vi.waitFor(() => expect(getCookie('palette')).toBe('claude'))
+    await vi.waitFor(() =>
+      expect(document.documentElement.getAttribute('data-palette')).toBe(
+        'claude'
+      )
     )
 
     await userEvent.click(
@@ -322,6 +403,9 @@ describe('ConfigDrawer (integration)', () => {
     await vi.waitFor(() => expect(getCookie('layout_collapsible')).toBe('icon'))
     await vi.waitFor(() =>
       expect(document.documentElement.getAttribute('dir')).toBe('ltr')
+    )
+    await vi.waitFor(() =>
+      expect(document.documentElement.hasAttribute('data-palette')).toBe(false)
     )
   })
 })
