@@ -6,6 +6,7 @@ const user: AuthUser = {
   email: 'admin@example.com',
   firstName: 'Admin',
   lastName: 'Sistema',
+  role: 'admin',
   createdAt: '2026-01-01T00:00:00.000Z',
 }
 

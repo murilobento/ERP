@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import prisma from '../lib/prisma'
 import { hashPassword } from '../lib/auth'
 import { authMiddleware } from '../middleware/auth'
+import { requireRole, ROLES, type Role } from '../lib/rbac'
 
 const userRoutes = new Hono()
 
@@ -12,6 +13,7 @@ const USER_SELECT = {
   email: true,
   firstName: true,
   lastName: true,
+  role: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -36,7 +38,7 @@ function buildChanges(
   return changes
 }
 
-userRoutes.get('/', async (c) => {
+userRoutes.get('/', requireRole('admin'), async (c) => {
   const users = await prisma.user.findMany({
     select: USER_SELECT,
     orderBy: { createdAt: 'desc' },
@@ -44,10 +46,10 @@ userRoutes.get('/', async (c) => {
   return c.json({ users })
 })
 
-userRoutes.post('/', async (c) => {
+userRoutes.post('/', requireRole('admin'), async (c) => {
   const authorId = c.get('userId') as string
   const body = await c.req.json()
-  const { email, password, firstName, lastName } = body
+  const { email, password, firstName, lastName, role } = body
 
   if (!email || !password || !firstName || !lastName) {
     return c.json({ error: 'Todos os campos são obrigatórios.' }, 400)
@@ -57,6 +59,8 @@ userRoutes.post('/', async (c) => {
     return c.json({ error: 'A senha deve ter pelo menos 7 caracteres.' }, 400)
   }
 
+  const userRole: Role = role && ROLES.includes(role) ? role : 'operator'
+
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
     return c.json({ error: 'Email já está em uso.' }, 409)
@@ -64,7 +68,7 @@ userRoutes.post('/', async (c) => {
 
   const hashedPassword = await hashPassword(password)
   const user = await prisma.user.create({
-    data: { email, password: hashedPassword, firstName, lastName },
+    data: { email, password: hashedPassword, firstName, lastName, role: userRole },
     select: USER_SELECT,
   })
 
@@ -73,19 +77,19 @@ userRoutes.post('/', async (c) => {
       action: 'user_created',
       authorId,
       targetUserId: user.id,
-      changes: { email, firstName, lastName },
+      changes: { email, firstName, lastName, role: userRole },
     },
   })
 
   return c.json({ user }, 201)
 })
 
-userRoutes.patch('/:id', async (c) => {
+userRoutes.patch('/:id', requireRole('admin'), async (c) => {
   const authorId = c.get('userId') as string
   const userId = c.req.param('id')
 
   const body = await c.req.json()
-  const { email, firstName, lastName, password } = body
+  const { email, firstName, lastName, password, role } = body
 
   const existing = await prisma.user.findUnique({ where: { id: userId } })
   if (!existing) {
@@ -99,15 +103,21 @@ userRoutes.patch('/:id', async (c) => {
     }
   }
 
+  if (role && !ROLES.includes(role)) {
+    return c.json({ error: 'Role inválida.' }, 400)
+  }
+
   const data: {
     email?: string
     firstName?: string
     lastName?: string
     password?: string
+    role?: Role
   } = {}
   if (email) data.email = email
   if (firstName) data.firstName = firstName
   if (lastName) data.lastName = lastName
+  if (role && ROLES.includes(role)) data.role = role
   if (password) {
     if (password.length < 7) {
       return c.json({ error: 'A senha deve ter pelo menos 7 caracteres.' }, 400)
@@ -116,7 +126,7 @@ userRoutes.patch('/:id', async (c) => {
   }
 
   const changes = buildChanges(
-    { email: existing.email, firstName: existing.firstName, lastName: existing.lastName },
+    { email: existing.email, firstName: existing.firstName, lastName: existing.lastName, role: existing.role },
     data
   )
 
@@ -140,7 +150,7 @@ userRoutes.patch('/:id', async (c) => {
   return c.json({ user })
 })
 
-userRoutes.patch('/:id/status', async (c) => {
+userRoutes.patch('/:id/status', requireRole('admin'), async (c) => {
   const authorId = c.get('userId') as string
   const userId = c.req.param('id')
   const body = await c.req.json()

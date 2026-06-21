@@ -25,7 +25,7 @@ const authHeaders = {
 describe('category routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
   })
 
   it('rejects category creation without a name', async () => {

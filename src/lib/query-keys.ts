@@ -1,5 +1,11 @@
 import { type QueryKey } from '@tanstack/react-query'
 
+type QueryKeyFactory = (id: string) => QueryKey
+type QueryKeyEntry =
+  | QueryKey
+  | Record<string, QueryKey | QueryKeyFactory>
+  | QueryKeyFactory
+
 export const queryKeys = {
   users: ['users'] as const,
   clients: ['clients'] as const,
@@ -31,4 +37,4 @@ export const queryKeys = {
   purchase: (id: string): QueryKey => ['purchase', id],
   sale: (id: string): QueryKey => ['sale', id],
   client: (id: string): QueryKey => ['client', id],
-} satisfies Record<string, QueryKey | Record<string, QueryKey | ((id: string) => QueryKey)>>
+} satisfies Record<string, QueryKeyEntry>

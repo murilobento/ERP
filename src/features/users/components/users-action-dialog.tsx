@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
+import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,8 +24,17 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { PasswordInput } from '@/components/password-input'
 import { type User } from '../data/schema'
+
+const USER_ROLES = ['admin', 'manager', 'operator', 'viewer'] as const
 
 const formSchema = z
   .object({
@@ -33,6 +43,7 @@ const formSchema = z
     email: z.email({
       error: (iss) => (iss.input === '' ? 'E-mail é obrigatório.' : undefined),
     }),
+    role: z.enum(USER_ROLES),
     password: z.string().transform((pwd) => pwd.trim()),
     confirmPassword: z.string().transform((pwd) => pwd.trim()),
     isEdit: z.boolean(),
@@ -74,12 +85,15 @@ export function UsersActionDialog({
 }: UserActionDialogProps) {
   const isEdit = !!currentRow
   const { run, isLoading } = useEntityMutation()
+  const { auth } = useAuthStore()
+  const isAdmin = auth.user?.role === 'admin'
 
   const form = useForm<UserForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
           ...currentRow,
+          role: (currentRow.role as UserForm['role']) ?? 'operator',
           password: '',
           confirmPassword: '',
           isEdit,
@@ -88,6 +102,7 @@ export function UsersActionDialog({
           firstName: '',
           lastName: '',
           email: '',
+          role: 'operator',
           password: '',
           confirmPassword: '',
           isEdit,
@@ -105,6 +120,7 @@ export function UsersActionDialog({
             lastName: values.lastName,
             email: values.email,
           }
+          if (isAdmin) payload.role = values.role
           if (values.password) payload.password = values.password
           await api.patch(`/users/${currentRow.id}`, payload)
         } else {
@@ -113,6 +129,7 @@ export function UsersActionDialog({
             lastName: values.lastName,
             email: values.email,
             password: values.password,
+            role: isAdmin ? values.role : undefined,
           })
         }
       },
@@ -207,6 +224,38 @@ export function UsersActionDialog({
                   </FormItem>
                 )}
               />
+              {isAdmin && (
+                <FormField
+                  control={form.control}
+                  name='role'
+                  render={({ field }) => (
+                    <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                      <FormLabel className='col-span-2 text-end'>Role</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className='col-span-4'>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {USER_ROLES.map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {r === 'admin'
+                                ? 'Admin'
+                                : r === 'manager'
+                                  ? 'Gerente'
+                                  : r === 'operator'
+                                    ? 'Operador'
+                                    : 'Visualizador'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className='col-span-4 col-start-3' />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name='password'

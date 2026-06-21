@@ -74,10 +74,25 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
     ),
     cell: ({ row }) => {
       const stock = row.getValue('stock') as number
+      const unit = row.original.unit
+      const pkgQty = row.original.packageQuantity
+      const pkgUnit = row.original.packageUnit
+
+      const fullPkgs = pkgUnit && pkgQty > 0 ? Math.floor(stock / pkgQty) : 0
+      const remainder = pkgUnit && pkgQty > 0 ? stock % pkgQty : 0
+
       return (
-        <Badge variant={stock > 0 ? 'default' : 'secondary'}>
-          {stock}
-        </Badge>
+        <div className='flex flex-col gap-0.5'>
+          <Badge variant={stock > 0 ? 'default' : 'secondary'}>
+            {stock} {unit}
+          </Badge>
+          {fullPkgs > 0 && (
+            <span className='text-xs text-muted-foreground'>
+              {fullPkgs} {fullPkgs === 1 ? pkgUnit : `${pkgUnit}s`}
+              {remainder > 0 && ` + ${remainder} ${unit}`}
+            </span>
+          )}
+        </div>
       )
     },
   },

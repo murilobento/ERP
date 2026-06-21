@@ -69,7 +69,7 @@ const completedPurchase = {
 describe('purchase routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
     tx.stockMovement.groupBy.mockResolvedValue([
       { supplyId: 'supply-1', _sum: { quantity: 20 } },
     ])
@@ -159,6 +159,7 @@ describe('purchase routes', () => {
     prisma.user.findUnique.mockResolvedValue({
       id: 'user-1',
       status: 'active',
+      role: 'admin',
       firstName: 'Admin',
       lastName: 'Sistema',
     })

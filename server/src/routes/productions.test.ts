@@ -73,7 +73,7 @@ const production = {
 describe('production routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
     tx.stockMovement.groupBy.mockImplementation(async (args) => {
       if (args.by.includes('productId')) {
         return [{ productId: 'product-1', _sum: { quantity: 5 } }]

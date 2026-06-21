@@ -91,6 +91,7 @@ authRoutes.post('/sign-in', async (c) => {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      role: user.role,
       createdAt: user.createdAt,
     },
   })
@@ -154,6 +155,7 @@ authRoutes.get('/me', authMiddleware, async (c) => {
       email: true,
       firstName: true,
       lastName: true,
+      role: true,
       createdAt: true,
     },
   })

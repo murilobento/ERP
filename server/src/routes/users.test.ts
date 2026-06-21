@@ -27,7 +27,7 @@ const authHeaders = {
 describe('user routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
   })
 
   it('requires all fields and a minimum password length on create', async () => {
@@ -53,7 +53,7 @@ describe('user routes', () => {
   })
 
   it('rejects duplicate emails on create', async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-2', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-2', status: 'active', role: 'admin' })
 
     const response = await app.request('/api/users', {
       method: 'POST',
@@ -73,7 +73,7 @@ describe('user routes', () => {
 
   it('hashes user passwords and never selects password in the response', async () => {
     prisma.user.findUnique
-      .mockResolvedValueOnce({ id: 'user-1', status: 'active' })
+      .mockResolvedValueOnce({ id: 'user-1', status: 'active', role: 'admin' })
       .mockResolvedValueOnce(null)
     prisma.user.create.mockResolvedValue({
       id: 'user-2',
@@ -105,7 +105,7 @@ describe('user routes', () => {
   })
 
   it('toggles user status between active and inactive', async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-2', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-2', status: 'active', role: 'admin' })
     prisma.user.update.mockResolvedValue({
       id: 'user-2',
       status: 'inactive',

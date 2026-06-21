@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useLayout } from '@/context/layout-provider'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
+import { useAuthStore } from '@/stores/auth-store'
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +28,8 @@ export function AppSidebar() {
   const [activeModule, setActiveModule] = useState<Module>(
     sidebarData.modules[0]
   )
+  const { auth } = useAuthStore()
+  const userRole = auth.user?.role ?? 'viewer'
   const { data: company } = useQuery({
     queryKey: queryKeys.company,
     queryFn: async () => {
@@ -35,7 +38,14 @@ export function AppSidebar() {
     },
   })
 
-  const navGroups = sidebarData.navGroupsByModule[activeModule.name] ?? []
+  const navGroups = (sidebarData.navGroupsByModule[activeModule.name] ?? []).map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      if (!item.minRole) return true
+      if (userRole === 'admin') return true
+      return item.minRole === userRole
+    }),
+  }))
 
   return (
     <Sidebar collapsible={collapsible} variant={variant}>

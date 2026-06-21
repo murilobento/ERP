@@ -26,7 +26,7 @@ const authHeaders = {
 describe('client routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
   })
 
   it('caps client search limit and filters by status', async () => {

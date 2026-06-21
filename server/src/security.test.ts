@@ -8,7 +8,17 @@ const prisma = vi.hoisted(() => ({
   },
   user: {
     findMany: vi.fn(),
-    findUnique: vi.fn().mockResolvedValue({ id: 'user-1', status: 'active' }),
+    findUnique: vi.fn().mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' }),
+  },
+  stockAdjustment: {
+    findMany: vi.fn().mockResolvedValue([]),
+    findUnique: vi.fn(),
+    create: vi.fn(),
+  },
+  purchase: {
+    findMany: vi.fn().mockResolvedValue([]),
+    findUnique: vi.fn(),
+    create: vi.fn(),
   },
 }))
 
@@ -21,7 +31,7 @@ const app = createApp({ enableLogger: false })
 describe('api security boundaries', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
   })
 
   it('allows unauthenticated health checks', async () => {
@@ -52,7 +62,7 @@ describe('api security boundaries', () => {
   })
 
   it('blocks inactive users from accessing the api', async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'inactive' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'inactive', role: 'admin' })
 
     const response = await app.request('/api/clients', {
       headers: {
@@ -71,6 +81,7 @@ describe('api security boundaries', () => {
         email: 'admin@admin.com',
         firstName: 'Admin',
         lastName: 'Sistema',
+        role: 'admin',
         status: 'active',
         createdAt: new Date('2026-01-01T00:00:00.000Z'),
         updatedAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -90,5 +101,103 @@ describe('api security boundaries', () => {
       })
     )
     expect(JSON.stringify(await response.json())).not.toContain('password')
+  })
+})
+
+describe('rbac', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('allows admin to access user routes', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
+    prisma.user.findMany.mockResolvedValue([])
+
+    const response = await app.request('/api/users', {
+      headers: {
+        Cookie: `access_token=${signAccessToken('user-1')}`,
+      },
+    })
+
+    expect(response.status).toBe(200)
+  })
+
+  it('blocks non-admin users from user routes', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'operator' })
+
+    const response = await app.request('/api/users', {
+      headers: {
+        Cookie: `access_token=${signAccessToken('user-1')}`,
+      },
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({ error: 'Acesso negado.' })
+  })
+
+  it('allows manager to access stock adjustment write routes', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'manager' })
+    prisma.stockAdjustment.findMany.mockResolvedValue([])
+
+    const response = await app.request('/api/stock/adjustments', {
+      headers: {
+        Cookie: `access_token=${signAccessToken('user-1')}`,
+      },
+    })
+
+    expect(response.status).toBe(200)
+  })
+
+  it('blocks viewer from stock adjustment write routes', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'viewer' })
+
+    const response = await app.request('/api/stock/adjustments', {
+      method: 'POST',
+      headers: {
+        Cookie: `access_token=${signAccessToken('user-1')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemType: 'product',
+        itemId: 'item-1',
+        quantity: 10,
+        reason: 'Test',
+      }),
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({ error: 'Acesso negado.' })
+  })
+
+  it('allows operator to access purchase write routes', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'operator' })
+    prisma.purchase.findMany.mockResolvedValue([])
+
+    const response = await app.request('/api/purchases', {
+      headers: {
+        Cookie: `access_token=${signAccessToken('user-1')}`,
+      },
+    })
+
+    expect(response.status).toBe(200)
+  })
+
+  it('blocks viewer from purchase write routes', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'viewer' })
+
+    const response = await app.request('/api/purchases', {
+      method: 'POST',
+      headers: {
+        Cookie: `access_token=${signAccessToken('user-1')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        supplier: 'Test',
+        items: [],
+      }),
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({ error: 'Acesso negado.' })
   })
 })

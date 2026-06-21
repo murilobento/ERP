@@ -8,6 +8,7 @@ import {
   recordAdjustmentReversal,
 } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
+import { requireRole } from '../lib/rbac'
 
 const stockRoutes = new Hono()
 
@@ -234,7 +235,7 @@ stockRoutes.get('/adjustments/:id', async (c) => {
   return c.json({ adjustment })
 })
 
-stockRoutes.post('/adjustments', async (c) => {
+stockRoutes.post('/adjustments', requireRole('admin', 'manager'), async (c) => {
   const userId = c.get('userId') as string
   const body = await c.req.json()
   const { itemType, itemId, quantity, reason } = body as {
@@ -318,7 +319,7 @@ stockRoutes.post('/adjustments', async (c) => {
   return c.json({ adjustment }, 201)
 })
 
-stockRoutes.patch('/adjustments/:id', async (c) => {
+stockRoutes.patch('/adjustments/:id', requireRole('admin', 'manager'), async (c) => {
   const _userId = c.get('userId') as string
   const id = c.req.param('id')
   const body = await c.req.json()
@@ -413,7 +414,7 @@ stockRoutes.patch('/adjustments/:id', async (c) => {
   return c.json({ adjustment })
 })
 
-stockRoutes.post('/adjustments/:id/complete', async (c) => {
+stockRoutes.post('/adjustments/:id/complete', requireRole('admin', 'manager'), async (c) => {
   const userId = c.get('userId') as string
   const id = c.req.param('id')
 
@@ -505,7 +506,7 @@ stockRoutes.post('/adjustments/:id/complete', async (c) => {
   return c.json({ adjustment })
 })
 
-stockRoutes.post('/adjustments/:id/reverse', async (c) => {
+stockRoutes.post('/adjustments/:id/reverse', requireRole('admin', 'manager'), async (c) => {
   const userId = c.get('userId') as string
   const id = c.req.param('id')
   const body = await c.req.json()
@@ -611,7 +612,7 @@ stockRoutes.post('/adjustments/:id/reverse', async (c) => {
   return c.json({ adjustment })
 })
 
-stockRoutes.delete('/adjustments/:id', async (c) => {
+stockRoutes.delete('/adjustments/:id', requireRole('admin', 'manager'), async (c) => {
   const id = c.req.param('id')
 
   const existing = await prisma.stockAdjustment.findUnique({ where: { id } })

@@ -4,6 +4,7 @@ import { generateInvoicePdf } from "../lib/pdf";
 import { expandKitIntoSaleItems } from "../lib/pricing";
 import { recordSaleDelivery, recordSaleReversal, StockLedgerError } from "../lib/stock";
 import { authMiddleware } from "../middleware/auth";
+import { requireRole } from "../lib/rbac";
 
 const saleRoutes = new Hono();
 
@@ -131,7 +132,7 @@ saleRoutes.get("/", async (c) => {
 	return c.json({ sales });
 });
 
-saleRoutes.post("/", async (c) => {
+saleRoutes.post("/", requireRole("admin", "manager", "operator"), async (c) => {
 	const body = await c.req.json();
 	const { clientId, notes, deliveryDate, items: rawItems, kits: rawKits } = body as {
 		clientId: string;
@@ -221,7 +222,7 @@ saleRoutes.get("/:id", async (c) => {
 	return c.json({ sale });
 });
 
-saleRoutes.patch("/:id", async (c) => {
+saleRoutes.patch("/:id", requireRole("admin", "manager", "operator"), async (c) => {
 	const saleId = c.req.param("id");
 	const body = await c.req.json();
 	const { clientId, notes, deliveryDate, items: rawItems, kits: rawKits } = body as {
@@ -325,7 +326,7 @@ saleRoutes.patch("/:id", async (c) => {
 	return c.json({ sale });
 });
 
-saleRoutes.post("/:id/ready-for-delivery", async (c) => {
+saleRoutes.post("/:id/ready-for-delivery", requireRole("admin", "manager", "operator"), async (c) => {
 	const saleId = c.req.param("id");
 	const existing = await prisma.sale.findUnique({ where: { id: saleId } });
 
@@ -351,7 +352,7 @@ saleRoutes.post("/:id/ready-for-delivery", async (c) => {
 	return c.json({ sale });
 });
 
-saleRoutes.post("/:id/deliver", async (c) => {
+saleRoutes.post("/:id/deliver", requireRole("admin", "manager", "operator"), async (c) => {
 	const saleId = c.req.param("id");
 	const userId = c.get("userId") as string;
 
@@ -403,7 +404,7 @@ saleRoutes.post("/:id/deliver", async (c) => {
 	return c.json({ sale });
 });
 
-saleRoutes.post("/:id/complete", async (c) => {
+saleRoutes.post("/:id/complete", requireRole("admin", "manager", "operator"), async (c) => {
 	const saleId = c.req.param("id");
 	const body = await c.req.json();
 	const { paymentMethod, paidAt, paymentNotes } = body as {
@@ -445,7 +446,7 @@ saleRoutes.post("/:id/complete", async (c) => {
 	return c.json({ sale });
 });
 
-saleRoutes.post("/:id/reverse", async (c) => {
+saleRoutes.post("/:id/reverse", requireRole("admin", "manager", "operator"), async (c) => {
 	const saleId = c.req.param("id");
 	const userId = c.get("userId") as string;
 	const body = await c.req.json();

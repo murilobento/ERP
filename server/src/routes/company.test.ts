@@ -23,7 +23,7 @@ const authHeaders = {
 describe('company routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active' })
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
   })
 
   it('returns the singleton company record', async () => {

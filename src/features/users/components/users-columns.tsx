@@ -67,6 +67,32 @@ export const usersColumns: ColumnDef<User>[] = [
     ),
   },
   {
+    accessorKey: 'role',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Role' />
+    ),
+    cell: ({ row }) => {
+      const role = row.getValue('role') as string
+      const labels: Record<string, string> = {
+        admin: 'Admin',
+        manager: 'Gerente',
+        operator: 'Operador',
+        viewer: 'Visualizador',
+      }
+      return (
+        <Badge variant={role === 'admin' ? 'default' : 'secondary'}>
+          {labels[role] ?? role}
+        </Badge>
+      )
+    },
+    filterFn: (row, columnId, filterValue) => {
+      if (Array.isArray(filterValue)) {
+        return filterValue.includes(row.getValue(columnId))
+      }
+      return row.getValue(columnId) === filterValue
+    },
+  },
+  {
     accessorKey: 'status',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Status' />

@@ -45,9 +45,9 @@ export const sidebarData: SidebarData = {
       {
         title: 'Geral',
         items: [
-          { title: 'Empresa', url: '/company', icon: Building2 },
-          { title: 'Usuários', url: '/users', icon: Users },
-          { title: 'Logs de Auditoria', url: '/audit-logs', icon: ScrollText },
+          { title: 'Empresa', url: '/company', icon: Building2, minRole: 'admin' },
+          { title: 'Usuários', url: '/users', icon: Users, minRole: 'admin' },
+          { title: 'Logs de Auditoria', url: '/audit-logs', icon: ScrollText, minRole: 'admin' },
         ],
       },
     ],

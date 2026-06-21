@@ -8,6 +8,7 @@ import {
   StockLedgerError,
 } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
+import { requireRole } from '../lib/rbac'
 
 const productionRoutes = new Hono()
 
@@ -95,7 +96,7 @@ productionRoutes.get('/', async (c) => {
   return c.json({ productions })
 })
 
-productionRoutes.post('/', async (c) => {
+productionRoutes.post('/', requireRole('admin', 'manager', 'operator'), async (c) => {
   const body = await c.req.json()
   const { notes } = body as { notes?: string }
   const items = normalizeProductionItems(body)
@@ -222,7 +223,7 @@ productionRoutes.get('/:id', async (c) => {
   return c.json({ production, compositionNeeded: suppliesStockCheck })
 })
 
-productionRoutes.patch('/:id', async (c) => {
+productionRoutes.patch('/:id', requireRole('admin', 'manager', 'operator'), async (c) => {
   const productionId = c.req.param('id')
   const body = await c.req.json()
   const { notes } = body as { notes?: string }
@@ -284,7 +285,7 @@ productionRoutes.patch('/:id', async (c) => {
   return c.json({ production })
 })
 
-productionRoutes.post('/:id/start', async (c) => {
+productionRoutes.post('/:id/start', requireRole('admin', 'manager', 'operator'), async (c) => {
   const productionId = c.req.param('id')
 
   const existing = await prisma.production.findUnique({
@@ -307,7 +308,7 @@ productionRoutes.post('/:id/start', async (c) => {
   return c.json({ production })
 })
 
-productionRoutes.post('/:id/complete', async (c) => {
+productionRoutes.post('/:id/complete', requireRole('admin', 'manager', 'operator'), async (c) => {
   const productionId = c.req.param('id')
   const userId = c.get('userId') as string
 
@@ -388,7 +389,7 @@ productionRoutes.post('/:id/complete', async (c) => {
   return c.json({ production })
 })
 
-productionRoutes.post('/:id/cancel', async (c) => {
+productionRoutes.post('/:id/cancel', requireRole('admin', 'manager', 'operator'), async (c) => {
   const productionId = c.req.param('id')
 
   const existing = await prisma.production.findUnique({ where: { id: productionId } })
@@ -409,7 +410,7 @@ productionRoutes.post('/:id/cancel', async (c) => {
   return c.json({ production })
 })
 
-productionRoutes.post('/:id/reverse', async (c) => {
+productionRoutes.post('/:id/reverse', requireRole('admin', 'manager', 'operator'), async (c) => {
   const productionId = c.req.param('id')
   const userId = c.get('userId') as string
   const body = await c.req.json()

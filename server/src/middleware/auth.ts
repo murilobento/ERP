@@ -17,7 +17,7 @@ export async function authMiddleware(c: Context, next: Next) {
 
   const user = await prisma.user.findUnique({
     where: { id: payload.sub },
-    select: { id: true, status: true },
+    select: { id: true, status: true, role: true },
   })
 
   if (!user || user.status !== 'active') {
@@ -25,5 +25,6 @@ export async function authMiddleware(c: Context, next: Next) {
   }
 
   c.set('userId', payload.sub)
+  c.set('userRole', user.role)
   await next()
 }

@@ -21,6 +21,7 @@ const user = {
   email: 'admin@admin.com',
   firstName: 'Admin',
   lastName: 'Sistema',
+  role: 'admin',
   status: 'active',
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
 }
@@ -86,6 +87,7 @@ describe('auth routes', () => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        role: user.role,
         createdAt: user.createdAt.toISOString(),
       },
     })

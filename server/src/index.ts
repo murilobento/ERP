@@ -12,7 +12,7 @@ async function seedDefaultUser() {
   if (!existing) {
     const hashed = await hashPassword('admin123')
     await prisma.user.create({
-      data: { email: 'admin@admin.com', password: hashed, firstName: 'Admin', lastName: 'Sistema' },
+      data: { email: 'admin@admin.com', password: hashed, firstName: 'Admin', lastName: 'Sistema', role: 'admin' },
     })
     console.log('Default user created: admin@admin.com / admin123')
   }

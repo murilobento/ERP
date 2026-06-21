@@ -27,6 +27,7 @@ const user: User = {
   firstName: 'Murilo',
   lastName: 'Silva',
   email: 'murilo@example.com',
+  role: 'operator',
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   status: 'active',

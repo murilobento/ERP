@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import prisma from '../lib/prisma'
 import { recordPurchaseCompletion, recordPurchaseReversal } from '../lib/stock'
 import { authMiddleware } from '../middleware/auth'
+import { requireRole } from '../lib/rbac'
 
 const purchaseRoutes = new Hono()
 
@@ -76,7 +77,7 @@ purchaseRoutes.get('/', async (c) => {
   return c.json({ purchases })
 })
 
-purchaseRoutes.post('/', async (c) => {
+purchaseRoutes.post('/', requireRole('admin', 'manager', 'operator'), async (c) => {
   const body = await c.req.json()
   const { vendorId, notes, items } = body as {
     vendorId: string
@@ -155,7 +156,7 @@ purchaseRoutes.get('/:id', async (c) => {
   return c.json({ purchase })
 })
 
-purchaseRoutes.patch('/:id', async (c) => {
+purchaseRoutes.patch('/:id', requireRole('admin', 'manager', 'operator'), async (c) => {
   const purchaseId = c.req.param('id')
   const body = await c.req.json()
   const { vendorId, notes, items } = body as {
@@ -233,7 +234,7 @@ purchaseRoutes.patch('/:id', async (c) => {
   return c.json({ purchase })
 })
 
-purchaseRoutes.post('/:id/complete', async (c) => {
+purchaseRoutes.post('/:id/complete', requireRole('admin', 'manager', 'operator'), async (c) => {
   const purchaseId = c.req.param('id')
   const userId = c.get('userId') as string
 
@@ -298,7 +299,7 @@ purchaseRoutes.post('/:id/complete', async (c) => {
   return c.json({ purchase })
 })
 
-purchaseRoutes.post('/:id/reverse', async (c) => {
+purchaseRoutes.post('/:id/reverse', requireRole('admin', 'manager', 'operator'), async (c) => {
   const purchaseId = c.req.param('id')
   const userId = c.get('userId') as string
   const body = await c.req.json()
