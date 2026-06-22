@@ -1,11 +1,18 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
 import { type User } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
+
+const roleMap: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
+  admin: { label: 'Admin', variant: 'danger' },
+  manager: { label: 'Gerente', variant: 'warning' },
+  operator: { label: 'Operador', variant: 'blue' },
+  viewer: { label: 'Visualizador', variant: 'secondary' },
+}
 
 export const usersColumns: ColumnDef<User>[] = [
   {
@@ -73,15 +80,10 @@ export const usersColumns: ColumnDef<User>[] = [
     ),
     cell: ({ row }) => {
       const role = row.getValue('role') as string
-      const labels: Record<string, string> = {
-        admin: 'Admin',
-        manager: 'Gerente',
-        operator: 'Operador',
-        viewer: 'Visualizador',
-      }
+      const roleInfo = roleMap[role]
       return (
-        <Badge variant={role === 'admin' ? 'default' : 'secondary'}>
-          {labels[role] ?? role}
+        <Badge variant={roleInfo?.variant ?? 'secondary'}>
+          {roleInfo?.label ?? role}
         </Badge>
       )
     },

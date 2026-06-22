@@ -141,28 +141,28 @@ export function ContactActionDialog({
             Clique em salvar quando terminar.
           </DialogDescription>
         </DialogHeader>
-        <div className='h-[500px] w-[calc(100%+0.75rem)] overflow-y-auto py-1 pe-3'>
+        <div className='h-[420px] w-[calc(100%+0.75rem)] overflow-y-auto py-1 pe-3'>
           <Form {...form}>
             <form
               id={config.formId}
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 px-0.5'
+              className='space-y-2 px-0.5'
             >
               <FormField
                 control={form.control}
                 name='name'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>Nome</FormLabel>
                     <FormControl>
                       <Input
                         placeholder={config.namePlaceholder}
-                        className='col-span-4'
+                        className='col-span-3'
                         autoComplete='off'
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />
@@ -170,12 +170,12 @@ export function ContactActionDialog({
                 control={form.control}
                 name='phone'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>Telefone</FormLabel>
                     <FormControl>
                       <Input
                         placeholder='(11) 99999-9999'
-                        className='col-span-4'
+                        className='col-span-3'
                         autoComplete='off'
                         value={field.value}
                         onChange={(e) => {
@@ -184,7 +184,7 @@ export function ContactActionDialog({
                         }}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />
@@ -192,9 +192,9 @@ export function ContactActionDialog({
                 control={form.control}
                 name='zipCode'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>CEP</FormLabel>
-                    <div className='col-span-4 flex items-center gap-2'>
+                    <div className='col-span-3 flex items-center gap-2'>
                       <FormControl>
                         <Input
                           placeholder='00000-000'
@@ -225,7 +225,7 @@ export function ContactActionDialog({
                         <MapPin className='size-4' />
                       </Button>
                     </div>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />
@@ -233,17 +233,17 @@ export function ContactActionDialog({
                 control={form.control}
                 name='street'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>Rua</FormLabel>
                     <FormControl>
                       <Input
                         placeholder='Rua Exemplo'
-                        className='col-span-4'
+                        className='col-span-3'
                         autoComplete='off'
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />
@@ -251,17 +251,17 @@ export function ContactActionDialog({
                 control={form.control}
                 name='number'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>Número</FormLabel>
                     <FormControl>
                       <Input
                         placeholder='123'
-                        className='col-span-4'
+                        className='col-span-3'
                         autoComplete='off'
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />
@@ -269,17 +269,17 @@ export function ContactActionDialog({
                 control={form.control}
                 name='complement'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>Complemento</FormLabel>
                     <FormControl>
                       <Input
                         placeholder='Apto 4B'
-                        className='col-span-4'
+                        className='col-span-3'
                         autoComplete='off'
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />
@@ -287,17 +287,17 @@ export function ContactActionDialog({
                 control={form.control}
                 name='neighborhood'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>Bairro</FormLabel>
                     <FormControl>
                       <Input
                         placeholder='Centro'
-                        className='col-span-4'
+                        className='col-span-3'
                         autoComplete='off'
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />
@@ -305,17 +305,17 @@ export function ContactActionDialog({
                 control={form.control}
                 name='city'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>Cidade</FormLabel>
                     <FormControl>
                       <Input
                         placeholder='São Paulo'
-                        className='col-span-4'
+                        className='col-span-3'
                         autoComplete='off'
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />
@@ -323,17 +323,17 @@ export function ContactActionDialog({
                 control={form.control}
                 name='state'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
                     <FormLabel className='col-span-2 text-end'>Estado</FormLabel>
                     <FormControl>
                       <Input
                         placeholder='SP'
-                        className='col-span-4'
+                        className='col-span-3'
                         autoComplete='off'
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage className='col-span-3 col-start-3' />
                   </FormItem>
                 )}
               />

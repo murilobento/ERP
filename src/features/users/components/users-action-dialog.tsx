@@ -6,6 +6,7 @@ import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -35,6 +36,13 @@ import { PasswordInput } from '@/components/password-input'
 import { type User } from '../data/schema'
 
 const USER_ROLES = ['admin', 'manager', 'operator', 'viewer'] as const
+
+const roleMap: Record<string, { label: string; variant: 'danger' | 'warning' | 'blue' | 'secondary' }> = {
+  admin: { label: 'Admin', variant: 'danger' },
+  manager: { label: 'Gerente', variant: 'warning' },
+  operator: { label: 'Operador', variant: 'blue' },
+  viewer: { label: 'Visualizador', variant: 'secondary' },
+}
 
 const formSchema = z
   .object({
@@ -228,32 +236,40 @@ export function UsersActionDialog({
                 <FormField
                   control={form.control}
                   name='role'
-                  render={({ field }) => (
-                    <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                      <FormLabel className='col-span-2 text-end'>Role</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className='col-span-4'>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {USER_ROLES.map((r) => (
-                            <SelectItem key={r} value={r}>
-                              {r === 'admin'
-                                ? 'Admin'
-                                : r === 'manager'
-                                  ? 'Gerente'
-                                  : r === 'operator'
-                                    ? 'Operador'
-                                    : 'Visualizador'}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className='col-span-4 col-start-3' />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const roleInfo = roleMap[field.value]
+                    return (
+                      <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                        <FormLabel className='col-span-2 text-end'>Role</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className='col-span-4'>
+                              <SelectValue>
+                                {roleInfo && (
+                                  <Badge variant={roleInfo.variant} className='text-xs'>
+                                    {roleInfo.label}
+                                  </Badge>
+                                )}
+                              </SelectValue>
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {USER_ROLES.map((r) => {
+                              const info = roleMap[r]
+                              return (
+                                <SelectItem key={r} value={r}>
+                                  <Badge variant={info?.variant} className='text-xs'>
+                                    {info?.label ?? r}
+                                  </Badge>
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className='col-span-4 col-start-3' />
+                      </FormItem>
+                    )
+                  }}
                 />
               )}
               <FormField

@@ -24,6 +24,27 @@ const fieldLabels: Record<string, string> = {
   firstName: 'Nome',
   lastName: 'Sobrenome',
   password: 'Senha',
+  role: 'Role',
+  status: 'Status',
+}
+
+const roleValueLabels: Record<string, string> = {
+  admin: 'Admin',
+  manager: 'Gerente',
+  operator: 'Operador',
+  viewer: 'Visualizador',
+}
+
+const statusValueLabels: Record<string, string> = {
+  active: 'Ativo',
+  inactive: 'Inativo',
+}
+
+function translateValue(field: string, value: unknown): string {
+  const str = String(value)
+  if (field === 'role') return roleValueLabels[str] ?? str
+  if (field === 'status') return statusValueLabels[str] ?? str
+  return str
 }
 
 export const auditLogsColumns: ColumnDef<AuditLog>[] = [
@@ -99,26 +120,43 @@ export const auditLogsColumns: ColumnDef<AuditLog>[] = [
     ),
     cell: ({ row }) => {
       const changes = row.original.changes as
-        | Record<string, { old: unknown; new: unknown }>
+        | Record<string, { old: unknown; new: unknown } | unknown>
         | undefined
       if (!changes || Object.keys(changes).length === 0) {
         return <span className='text-muted-foreground'>—</span>
       }
       return (
         <div className='flex flex-col gap-0.5 text-sm'>
-          {Object.entries(changes).map(([field, change]) => (
-            <div key={field}>
-              <span className='font-medium'>
-                {fieldLabels[field] || field}
-              </span>
-              :{' '}
-              <span className='text-muted-foreground line-through'>
-                {String(change.old)}
-              </span>{' '}
-              →{' '}
-              <span className='font-medium'>{String(change.new)}</span>
-            </div>
-          ))}
+          {Object.entries(changes).map(([field, change]) => {
+            const isPair =
+              change !== null &&
+              typeof change === 'object' &&
+              'old' in change &&
+              'new' in change
+            const oldValue = isPair ? (change as { old: unknown }).old : undefined
+            const newValue = isPair ? (change as { new: unknown }).new : change
+            return (
+              <div key={field}>
+                <span className='font-medium'>
+                  {fieldLabels[field] || field}
+                </span>
+                :{isPair ? (
+                  <>
+                    {' '}
+                    <span className='text-muted-foreground line-through'>
+                      {translateValue(field, oldValue)}
+                    </span>{' '}
+                    →{' '}
+                    <span className='font-medium'>
+                      {translateValue(field, newValue)}
+                    </span>
+                  </>
+                ) : (
+                  ' ' + translateValue(field, newValue)
+                )}
+              </div>
+            )
+          })}
         </div>
       )
     },
