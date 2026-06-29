@@ -89,7 +89,7 @@ describe('production routes', () => {
   it('rejects completing productions that are not in production', async () => {
     prisma.production.findUnique.mockResolvedValue({
       ...production,
-      status: 'draft',
+      status: 'completed',
     })
 
     const response = await app.request('/api/productions/production-1/complete', {

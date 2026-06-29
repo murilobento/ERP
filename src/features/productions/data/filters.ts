@@ -5,7 +5,6 @@ export type ProductionStatus = Production['status']
 
 export const productionStatusMap: Record<ProductionStatus, { label: string }> =
   {
-    draft: { label: 'Rascunho' },
     in_production: { label: 'Em Produção' },
     completed: { label: 'Concluída' },
     cancelled: { label: 'Cancelada' },

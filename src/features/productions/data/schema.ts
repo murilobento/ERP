@@ -13,7 +13,7 @@ export type Production = {
   id: string
   productId: string
   quantity: number
-  status: 'draft' | 'in_production' | 'completed' | 'cancelled'
+  status: 'in_production' | 'completed' | 'cancelled'
   notes: string
   reversalReason: string
   reversedBy: string | null

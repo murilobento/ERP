@@ -121,7 +121,7 @@ productionRoutes.post('/', requireRole('admin', 'manager', 'operator'), async (c
       productId: firstItem.productId,
       quantity: firstItem.quantity,
       notes: notes || '',
-      status: 'draft',
+      status: 'in_production',
       items: {
         createMany: { data: items },
       },
@@ -234,8 +234,8 @@ productionRoutes.patch('/:id', requireRole('admin', 'manager', 'operator'), asyn
     return c.json({ error: 'Produção não encontrada.' }, 404)
   }
 
-  if (existing.status !== 'draft') {
-    return c.json({ error: 'Apenas produções em rascunho podem ser editadas.' }, 400)
+  if (existing.status !== 'in_production') {
+    return c.json({ error: 'Apenas produções em andamento podem ser editadas.' }, 400)
   }
 
   const validationError = items.length > 0 ? validateProductionItems(items) : null
@@ -279,29 +279,6 @@ productionRoutes.patch('/:id', requireRole('admin', 'manager', 'operator'), asyn
 
   const production = await prisma.production.findUnique({
     where: { id: productionId },
-    select: PRODUCTION_SELECT,
-  })
-
-  return c.json({ production })
-})
-
-productionRoutes.post('/:id/start', requireRole('admin', 'manager', 'operator'), async (c) => {
-  const productionId = c.req.param('id')
-
-  const existing = await prisma.production.findUnique({
-    where: { id: productionId },
-  })
-  if (!existing) {
-    return c.json({ error: 'Produção não encontrada.' }, 404)
-  }
-
-  if (existing.status !== 'draft') {
-    return c.json({ error: 'Apenas produções em rascunho podem ser iniciadas.' }, 400)
-  }
-
-  const production = await prisma.production.update({
-    where: { id: productionId },
-    data: { status: 'in_production' },
     select: PRODUCTION_SELECT,
   })
 

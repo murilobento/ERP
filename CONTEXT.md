@@ -50,9 +50,10 @@ Use este vocabulário ao falar do código — não os nomes de arquivo/handler.
   de produto; estorno devolve.
 - **Purchase** — compra de insumo. `pending` → `completed`. Conclusão incrementa
   estoque de insumo e recalcula `Supply.costPrice`; estorno reverte ambos.
-- **Production** — transformação de insumos em produtos. `draft` →
-  `in_production` → `completed`. Conclusão emite saída de produto e consome
-  insumos (composição); estorno reverte.
+- **Production** — transformação de insumos em produtos. `in_production` →
+  `completed`. Criação já nasce em `in_production` (sem rascunho). Conclusão
+  emite saída de produto e consome insumos (composição); estorno reverte e
+  volta ao status default (`in_production`). Pode também ser `cancelled`.
 - **StockAdjustment** — acerto manual de saldo. `pending` → `completed`
   (registrado) → `reversed`. Pode ser positivo ou negativo.
 

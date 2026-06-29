@@ -7,7 +7,6 @@ import { saleStatusMap } from '@/features/sales/data/schema'
 import { purchaseStatusMap } from '@/features/purchases/data/schema'
 
 const productionStatusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'success' }> = {
-  draft: { label: 'Rascunho', variant: 'secondary' },
   in_production: { label: 'Em Produção', variant: 'default' },
   completed: { label: 'Concluída', variant: 'success' },
   cancelled: { label: 'Cancelada', variant: 'destructive' },

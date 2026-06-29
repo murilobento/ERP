@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { type Table } from '@tanstack/react-table'
-import { CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
@@ -13,18 +13,13 @@ import {
 import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-table'
 import { type Production } from '../data/schema'
 
-type ProductionBulkAction = 'start' | 'complete' | 'cancel'
+type ProductionBulkAction = 'complete' | 'cancel'
 
 type DataTableBulkActionsProps = {
   table: Table<Production>
 }
 
 const actionConfig = {
-  start: {
-    label: 'Iniciar',
-    title: 'Iniciar produções em rascunho selecionadas',
-    success: 'Produções iniciadas.',
-  },
   complete: {
     label: 'Concluir',
     title: 'Concluir produções em andamento selecionadas',
@@ -47,12 +42,11 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const { run } = useEntityMutation()
 
   const eligibleRows = {
-    start: selectedRows.filter((row) => row.original.status === 'draft'),
     complete: selectedRows.filter(
       (row) => row.original.status === 'in_production'
     ),
-    cancel: selectedRows.filter((row) =>
-      ['draft', 'in_production'].includes(row.original.status)
+    cancel: selectedRows.filter(
+      (row) => row.original.status === 'in_production'
     ),
   }
 
@@ -93,26 +87,6 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         entityName='produção'
         entityNamePlural='produções'
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size='icon'
-              variant='outline'
-              onClick={() => setConfirmAction('start')}
-              disabled={eligibleRows.start.length === 0}
-              className='size-8'
-              aria-label={actionConfig.start.title}
-              title={actionConfig.start.title}
-            >
-              <Clock />
-              <span className='sr-only'>{actionConfig.start.title}</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{actionConfig.start.title}</p>
-          </TooltipContent>
-        </Tooltip>
-
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

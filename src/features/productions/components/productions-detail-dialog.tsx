@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Loader2, CheckCircle2, Clock, XCircle, RotateCcw } from 'lucide-react'
+import { Loader2, CheckCircle2, XCircle, RotateCcw } from 'lucide-react'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { queryKeys } from '@/lib/query-keys'
@@ -32,7 +32,6 @@ import {
 import { useProductions } from './productions-provider'
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'success' }> = {
-  draft: { label: 'Rascunho', variant: 'secondary' },
   in_production: { label: 'Em Produção', variant: 'default' },
   completed: { label: 'Concluída', variant: 'success' },
   cancelled: { label: 'Cancelada', variant: 'destructive' },
@@ -83,7 +82,7 @@ export function ProductionsDetailDialog() {
     ? getProductionItems(productionForDisplay)
     : []
   const compositionNeeded = detail?.compositionNeeded || []
-  const status = production?.status || currentRow?.status || 'draft'
+  const status = production?.status || currentRow?.status || 'in_production'
   const statusConfig = statusMap[status] || { label: status, variant: 'secondary' as const }
 
   function syncProduction(updatedProduction: Production) {
@@ -116,10 +115,9 @@ export function ProductionsDetailDialog() {
     setCurrentRow(updatedProduction)
   }
 
-  async function handleAction(action: 'start' | 'complete' | 'cancel') {
+  async function handleAction(action: 'complete' | 'cancel') {
     if (!currentRow) return
     const messages: Record<string, string> = {
-      start: 'Produção iniciada.',
       complete: 'Produção concluída. Estoque atualizado.',
       cancel: 'Produção cancelada.',
     }
@@ -344,12 +342,6 @@ export function ProductionsDetailDialog() {
               )}
 
               <DialogFooter className='gap-2'>
-                {status === 'draft' && (
-                  <Button onClick={() => handleAction('start')} disabled={isLoading}>
-                    {isLoading ? <Loader2 className='animate-spin' /> : <Clock size={16} className='me-1' />}
-                    Iniciar Produção
-                  </Button>
-                )}
                 {status === 'in_production' && (
                   <>
                     <Button onClick={() => setConfirmAction('complete')} disabled={isLoading}>

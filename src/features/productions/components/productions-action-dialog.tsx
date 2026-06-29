@@ -112,7 +112,7 @@ export function ProductionsActionDialog({
         <DialogHeader className='text-start'>
           <DialogTitle>Nova Produção</DialogTitle>
           <DialogDescription>
-            Crie uma nova ordem de produção. Ela será criada como rascunho.
+            Crie uma nova ordem de produção. Ela será criada em produção.
           </DialogDescription>
         </DialogHeader>
 

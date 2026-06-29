@@ -90,12 +90,6 @@ describe.skipIf(!hasTestDatabase)('business flow integration', () => {
     const production = (await productionResponse.json()).production
 
     expect(
-      await app.request(`/api/productions/${production.id}/start`, {
-        method: 'POST',
-        headers,
-      })
-    ).toHaveProperty('status', 200)
-    expect(
       await app.request(`/api/productions/${production.id}/complete`, {
         method: 'POST',
         headers,

@@ -19,11 +19,11 @@ model User {
   updatedAt DateTime @updatedAt
 
   stockMovements       StockMovement[]
-  stockAdjustments     StockAdjustment[]   @relation("StockAdjustmentAuthor")
-  completedAdjustments StockAdjustment[]   @relation("StockAdjustmentCompletedBy")
-  reversedAdjustments  StockAdjustment[]   @relation("StockAdjustmentReversedBy")
-  authoredAuditLogs    AuditLog[]          @relation("AuthorAuditLogs")
-  targetAuditLogs      AuditLog[]          @relation("TargetAuditLogs")
+  stockAdjustments     StockAdjustment[] @relation("StockAdjustmentAuthor")
+  completedAdjustments StockAdjustment[] @relation("StockAdjustmentCompletedBy")
+  reversedAdjustments  StockAdjustment[] @relation("StockAdjustmentReversedBy")
+  authoredAuditLogs    AuditLog[]        @relation("AuthorAuditLogs")
+  targetAuditLogs      AuditLog[]        @relation("TargetAuditLogs")
 }
 
 model Company {
@@ -108,14 +108,14 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  category        Category           @relation(fields: [categoryId], references: [id])
-  composition     ProductComposition[]
-  productions     Production[]
-  productionItems ProductionItem[]
-  stockMovements  StockMovement[]
+  category         Category             @relation(fields: [categoryId], references: [id])
+  composition      ProductComposition[]
+  productions      Production[]
+  productionItems  ProductionItem[]
+  stockMovements   StockMovement[]
   saleItems        SaleItem[]
   stockAdjustments StockAdjustment[]
-  kitItems        KitItem[]
+  kitItems         KitItem[]
 }
 
 model Supply {
@@ -152,7 +152,7 @@ model Production {
   id             String    @id @default(cuid())
   productId      String
   quantity       Float
-  status         String    @default("draft")
+  status         String    @default("in_production")
   notes          String    @default("")
   reversalReason String    @default("")
   reversedBy     String?
@@ -302,20 +302,20 @@ model StockAdjustment {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  product     Product?  @relation(fields: [productId], references: [id])
-  supply      Supply?   @relation(fields: [supplyId], references: [id])
-  author      User      @relation("StockAdjustmentAuthor", fields: [authorId], references: [id])
-  completedBy User?     @relation("StockAdjustmentCompletedBy", fields: [completedById], references: [id])
-  reversedBy  User?     @relation("StockAdjustmentReversedBy", fields: [reversedById], references: [id])
+  product     Product? @relation(fields: [productId], references: [id])
+  supply      Supply?  @relation(fields: [supplyId], references: [id])
+  author      User     @relation("StockAdjustmentAuthor", fields: [authorId], references: [id])
+  completedBy User?    @relation("StockAdjustmentCompletedBy", fields: [completedById], references: [id])
+  reversedBy  User?    @relation("StockAdjustmentReversedBy", fields: [reversedById], references: [id])
 }
 
 model AuditLog {
-  id             String   @id @default(cuid())
-  action         String
-  authorId       String
-  targetUserId   String
-  changes        Json     @default("{}")
-  createdAt      DateTime @default(now())
+  id           String   @id @default(cuid())
+  action       String
+  authorId     String
+  targetUserId String
+  changes      Json     @default("{}")
+  createdAt    DateTime @default(now())
 
   author     User @relation("AuthorAuditLogs", fields: [authorId], references: [id])
   targetUser User @relation("TargetAuditLogs", fields: [targetUserId], references: [id])

@@ -13,7 +13,6 @@ const statusMap: Record<
     variant: 'default' | 'secondary' | 'destructive' | 'success'
   }
 > = {
-  draft: { label: 'Rascunho', variant: 'secondary' },
   in_production: { label: 'Em Produção', variant: 'default' },
   completed: { label: 'Concluída', variant: 'success' },
   cancelled: { label: 'Cancelada', variant: 'destructive' },
