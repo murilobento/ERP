@@ -8,7 +8,7 @@ import { type User } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
 
 const roleMap: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
-  admin: { label: 'Admin', variant: 'danger' },
+  admin: { label: 'Administrador', variant: 'danger' },
   manager: { label: 'Gerente', variant: 'warning' },
   operator: { label: 'Operador', variant: 'blue' },
   viewer: { label: 'Visualizador', variant: 'secondary' },
@@ -76,7 +76,7 @@ export const usersColumns: ColumnDef<User>[] = [
   {
     accessorKey: 'role',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Role' />
+      <DataTableColumnHeader column={column} title='Função' />
     ),
     cell: ({ row }) => {
       const role = row.getValue('role') as string

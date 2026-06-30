@@ -104,7 +104,7 @@ userRoutes.patch('/:id', requireRole('admin'), async (c) => {
   }
 
   if (role && !ROLES.includes(role)) {
-    return c.json({ error: 'Role inválida.' }, 400)
+    return c.json({ error: 'Função inválida.' }, 400)
   }
 
   const data: {
@@ -163,6 +163,10 @@ userRoutes.patch('/:id/status', requireRole('admin'), async (c) => {
   const existing = await prisma.user.findUnique({ where: { id: userId } })
   if (!existing) {
     return c.json({ error: 'Usuário não encontrado.' }, 404)
+  }
+
+  if (status === 'inactive' && userId === authorId) {
+    return c.json({ error: 'Você não pode desativar o próprio usuário.' }, 400)
   }
 
   const user = await prisma.user.update({

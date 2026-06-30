@@ -136,4 +136,17 @@ describe('user routes', () => {
 
     expect(response.status).toBe(400)
   })
+
+  it('prevents an admin from deactivating their own user', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-1', status: 'active', role: 'admin' })
+
+    const response = await app.request('/api/users/user-1/status', {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({ status: 'inactive' }),
+    })
+
+    expect(response.status).toBe(400)
+    expect(prisma.user.update).not.toHaveBeenCalled()
+  })
 })

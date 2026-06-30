@@ -24,12 +24,12 @@ const fieldLabels: Record<string, string> = {
   firstName: 'Nome',
   lastName: 'Sobrenome',
   password: 'Senha',
-  role: 'Role',
+  role: 'Função',
   status: 'Status',
 }
 
 const roleValueLabels: Record<string, string> = {
-  admin: 'Admin',
+  admin: 'Administrador',
   manager: 'Gerente',
   operator: 'Operador',
   viewer: 'Visualizador',

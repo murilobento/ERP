@@ -38,7 +38,7 @@ import { type User } from '../data/schema'
 const USER_ROLES = ['admin', 'manager', 'operator', 'viewer'] as const
 
 const roleMap: Record<string, { label: string; variant: 'danger' | 'warning' | 'blue' | 'secondary' }> = {
-  admin: { label: 'Admin', variant: 'danger' },
+  admin: { label: 'Administrador', variant: 'danger' },
   manager: { label: 'Gerente', variant: 'warning' },
   operator: { label: 'Operador', variant: 'blue' },
   viewer: { label: 'Visualizador', variant: 'secondary' },
@@ -240,7 +240,7 @@ export function UsersActionDialog({
                     const roleInfo = roleMap[field.value]
                     return (
                       <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                        <FormLabel className='col-span-2 text-end'>Role</FormLabel>
+                        <FormLabel className='col-span-2 text-end'>Função</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className='col-span-4'>
