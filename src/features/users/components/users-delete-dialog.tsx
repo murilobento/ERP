@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,7 +28,7 @@ export function UsersDeleteDialog({
     await run({
       mutation: () => api.delete(`/users/${currentRow.id}`),
       invalidate: [queryKeys.users],
-      successMessage: 'Usuário excluída com sucesso.',
+      successMessage: 'Usuário excluído com sucesso.',
       onSuccess: () => onOpenChange(false),
     })
   }
@@ -41,7 +41,10 @@ export function UsersDeleteDialog({
       disabled={value.trim() !== currentRow.email}
       title={
         <span className='text-destructive'>
-          <AlertTriangle className='me-1 inline-block stroke-destructive' size={18} />{' '}
+          <AlertTriangle
+            className='me-1 inline-block stroke-destructive'
+            size={18}
+          />{' '}
           Excluir Usuário
         </span>
       }
@@ -69,7 +72,9 @@ export function UsersDeleteDialog({
           </Label>
           <Alert variant='destructive'>
             <AlertTitle>Atenção!</AlertTitle>
-            <AlertDescription>Esta operação não pode ser desfeita.</AlertDescription>
+            <AlertDescription>
+              Esta operação não pode ser desfeita.
+            </AlertDescription>
           </Alert>
         </form>
       }

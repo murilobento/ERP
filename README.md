@@ -91,14 +91,37 @@ Go to the project directory
 Install dependencies
 
 ```bash
-  pnpm install
+  bun install
 ```
 
 Start the server
 
 ```bash
-  pnpm run dev
+  bun run dev
 ```
+
+## Deploy on Vercel
+
+The Vite SPA is deployed as static output and the Hono API runs through
+`api/[[...route]].ts` as a Node.js function. Use Neon for PostgreSQL and
+configure these Vercel environment variables:
+
+- `DATABASE_URL`: pooled Neon connection string
+- `DIRECT_URL`: direct Neon connection string for migrations
+- `JWT_SECRET`: strong production secret
+- `CORS_ORIGIN`: production application URL
+- `PUPPETEER_SKIP_DOWNLOAD`: `true` during the Vercel build
+
+Run the `Deploy Database Migrations` GitHub Actions workflow after adding
+`DATABASE_URL` and `DIRECT_URL` repository secrets. Create the first admin
+locally with production database variables and a strong password:
+
+```bash
+SEED_ADMIN_EMAIL=admin@example.com SEED_ADMIN_PASSWORD='strong-password' bun run seed:admin
+```
+
+The Hobby plan limits functions to 10 seconds. Invoice PDF generation uses
+serverless Chromium and should be smoke-tested after deployment.
 
 ## Sponsoring this project ❤️
 

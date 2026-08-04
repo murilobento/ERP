@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Pooled URL goes in DATABASE_URL (e.g. Neon/Supabase pooler).
+  // Direct (non-pooled) URL is used by migrate/introspect.
+  directUrl = env("DIRECT_URL")
 }
 
 model User {

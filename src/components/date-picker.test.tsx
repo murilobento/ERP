@@ -21,11 +21,6 @@ function dayButtons() {
   )
 }
 
-function todayDataDay() {
-  const today = new Date()
-  return `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`
-}
-
 describe('DatePicker', () => {
   it('opens the calendar when the trigger is clicked', async () => {
     await renderPicker()
@@ -41,7 +36,7 @@ describe('DatePicker', () => {
 
     await userEvent.click(document.body.querySelector('button')!)
     const day = dayButtons().find(
-      (b) => b.getAttribute('data-day') === todayDataDay()
+      (b) => b.parentElement?.getAttribute('data-today') === 'true'
     )
     expect(day).toBeTruthy()
     await userEvent.click(day!)

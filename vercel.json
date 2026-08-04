@@ -1,0 +1,16 @@
+{
+  "buildCommand": "prisma generate && tsc -b && vite build",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/[[...route]].ts": {
+      "maxDuration": 10
+    }
+  }
+}
