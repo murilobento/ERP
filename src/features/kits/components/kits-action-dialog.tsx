@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -23,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -35,10 +35,7 @@ import {
   ProductSupplyCombobox,
   type ProductSupplySearchItem,
 } from '@/components/product-supply-combobox'
-import {
-  formatCurrency,
-  type Kit,
-} from '../data/schema'
+import { formatCurrency, type Kit } from '../data/schema'
 
 type ItemForm = {
   productId: string
@@ -60,8 +57,12 @@ export function KitsActionDialog({
   const { run, isLoading } = useEntityMutation()
   const [localFinalPrice, setLocalFinalPrice] = useState<string | null>(null)
   const [name, setName] = useState(isEdit ? currentRow!.name : '')
-  const [description, setDescription] = useState(isEdit ? currentRow!.description : '')
-  const [statusValue, setStatusValue] = useState(isEdit ? currentRow!.status : 'active')
+  const [description, setDescription] = useState(
+    isEdit ? currentRow!.description : ''
+  )
+  const [statusValue, setStatusValue] = useState(
+    isEdit ? currentRow!.status : 'active'
+  )
   const [discountType, setDiscountType] = useState<string>(
     isEdit ? currentRow!.discountType : 'fixed'
   )
@@ -92,10 +93,12 @@ export function KitsActionDialog({
               name: i.product.name,
               unit: i.product.unit,
               status: i.product.status,
-              salePrice: i.product.composition.reduce(
-                (sum, c) => sum + c.quantity * c.supply.costPrice,
-                0
-              ) * (1 + i.product.margin / 100),
+              salePrice:
+                i.product.composition.reduce(
+                  (sum, c) => sum + c.quantity * c.supply.costPrice,
+                  0
+                ) *
+                (1 + i.product.margin / 100),
             } as ProductSupplySearchItem,
           ])
         )
@@ -215,7 +218,9 @@ export function KitsActionDialog({
             </div>
           </div>
           <DialogDescription>
-            {isEdit ? 'Atualize os dados do kit.' : 'Crie um novo kit com produtos.'}
+            {isEdit
+              ? 'Atualize os dados do kit.'
+              : 'Crie um novo kit com produtos.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -243,7 +248,9 @@ export function KitsActionDialog({
           </div>
 
           <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
-            <Label className='sm:col-span-2 sm:text-end'>Tipo de desconto</Label>
+            <Label className='sm:col-span-2 sm:text-end'>
+              Tipo de desconto
+            </Label>
             <Select value={discountType} onValueChange={setDiscountType}>
               <SelectTrigger className='min-w-0 sm:col-span-4'>
                 <SelectValue />
@@ -512,7 +519,8 @@ export function KitsActionDialog({
                         }
                         const discount = kitTotalPrice - val
                         if (discountType === 'percentage') {
-                          const pct = Math.round((discount / kitTotalPrice) * 10000) / 100
+                          const pct =
+                            Math.round((discount / kitTotalPrice) * 10000) / 100
                           setDiscountValue(pct)
                         } else {
                           setDiscountValue(Math.round(discount * 100) / 100)

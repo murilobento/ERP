@@ -50,12 +50,7 @@ export function AnalyticsChart({
     <ResponsiveContainer width='100%' height={220}>
       <AreaChart data={chartData}>
         <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
-        <XAxis
-          dataKey='name'
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-        />
+        <XAxis dataKey='name' fontSize={12} tickLine={false} axisLine={false} />
         <YAxis
           fontSize={12}
           tickLine={false}
@@ -63,7 +58,12 @@ export function AnalyticsChart({
           tickFormatter={formatTick}
         />
         <Tooltip
-          formatter={((value: number | string) => [formatCurrency(Number(value)), 'Lucro']) as never}
+          formatter={
+            ((value: number | string) => [
+              formatCurrency(Number(value)),
+              'Lucro',
+            ]) as never
+          }
         />
         <Area
           type='monotone'

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Loader2, CheckCircle2, XCircle, RotateCcw } from 'lucide-react'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
+import { Loader2, CheckCircle2, XCircle, RotateCcw } from 'lucide-react'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -31,7 +31,13 @@ import {
 } from '../data/schema'
 import { useProductions } from './productions-provider'
 
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'success' }> = {
+const statusMap: Record<
+  string,
+  {
+    label: string
+    variant: 'default' | 'secondary' | 'destructive' | 'success'
+  }
+> = {
   in_production: { label: 'Em Produção', variant: 'default' },
   completed: { label: 'Concluída', variant: 'success' },
   cancelled: { label: 'Cancelada', variant: 'destructive' },
@@ -62,7 +68,9 @@ function getProductionItems(production: Production | ProductionDetail) {
 export function ProductionsDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = useProductions()
   const { run, isLoading } = useEntityMutation()
-  const [confirmAction, setConfirmAction] = useState<'complete' | 'cancel' | 'reverse' | null>(null)
+  const [confirmAction, setConfirmAction] = useState<
+    'complete' | 'cancel' | 'reverse' | null
+  >(null)
   const [reverseReason, setReverseReason] = useState('')
   const queryClient = useQueryClient()
 
@@ -83,7 +91,10 @@ export function ProductionsDetailDialog() {
     : []
   const compositionNeeded = detail?.compositionNeeded || []
   const status = production?.status || currentRow?.status || 'in_production'
-  const statusConfig = statusMap[status] || { label: status, variant: 'secondary' as const }
+  const statusConfig = statusMap[status] || {
+    label: status,
+    variant: 'secondary' as const,
+  }
 
   function syncProduction(updatedProduction: Production) {
     queryClient.setQueryData<Production[]>(queryKeys.productions, (old) =>
@@ -189,7 +200,8 @@ export function ProductionsDetailDialog() {
             <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
           </div>
           <DialogDescription>
-            {productionItems.length} {productionItems.length === 1 ? 'item' : 'itens'} na ordem
+            {productionItems.length}{' '}
+            {productionItems.length === 1 ? 'item' : 'itens'} na ordem
           </DialogDescription>
         </DialogHeader>
 
@@ -197,15 +209,31 @@ export function ProductionsDetailDialog() {
           {confirmAction === 'complete' && (
             <>
               <div className='rounded-md border border-green-600/50 bg-green-600/10 px-4 py-3 text-sm'>
-                <p className='font-medium text-green-600 dark:text-green-400'>Confirmar conclusão da produção?</p>
-                <p className='mt-1 text-muted-foreground'>O estoque do produto será atualizado e os insumos serão descontados. Esta ação não pode ser desfeita.</p>
+                <p className='font-medium text-green-600 dark:text-green-400'>
+                  Confirmar conclusão da produção?
+                </p>
+                <p className='mt-1 text-muted-foreground'>
+                  O estoque do produto será atualizado e os insumos serão
+                  descontados. Esta ação não pode ser desfeita.
+                </p>
               </div>
               <DialogFooter className='gap-2'>
-                <Button variant='outline' onClick={() => setConfirmAction(null)} disabled={isLoading}>
+                <Button
+                  variant='outline'
+                  onClick={() => setConfirmAction(null)}
+                  disabled={isLoading}
+                >
                   Voltar
                 </Button>
-                <Button onClick={() => handleAction('complete')} disabled={isLoading}>
-                  {isLoading ? <Loader2 className='animate-spin' /> : <CheckCircle2 size={16} className='me-1' />}
+                <Button
+                  onClick={() => handleAction('complete')}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className='animate-spin' />
+                  ) : (
+                    <CheckCircle2 size={16} className='me-1' />
+                  )}
                   Confirmar Conclusão
                 </Button>
               </DialogFooter>
@@ -215,15 +243,31 @@ export function ProductionsDetailDialog() {
           {confirmAction === 'cancel' && (
             <>
               <div className='rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm'>
-                <p className='font-medium text-destructive'>Confirmar cancelamento da produção?</p>
-                <p className='mt-1 text-muted-foreground'>Esta ação não pode ser desfeita.</p>
+                <p className='font-medium text-destructive'>
+                  Confirmar cancelamento da produção?
+                </p>
+                <p className='mt-1 text-muted-foreground'>
+                  Esta ação não pode ser desfeita.
+                </p>
               </div>
               <DialogFooter className='gap-2'>
-                <Button variant='outline' onClick={() => setConfirmAction(null)} disabled={isLoading}>
+                <Button
+                  variant='outline'
+                  onClick={() => setConfirmAction(null)}
+                  disabled={isLoading}
+                >
                   Voltar
                 </Button>
-                <Button variant='destructive' onClick={() => handleAction('cancel')} disabled={isLoading}>
-                  {isLoading ? <Loader2 className='animate-spin' /> : <XCircle size={16} className='me-1' />}
+                <Button
+                  variant='destructive'
+                  onClick={() => handleAction('cancel')}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className='animate-spin' />
+                  ) : (
+                    <XCircle size={16} className='me-1' />
+                  )}
                   Confirmar Cancelamento
                 </Button>
               </DialogFooter>
@@ -233,11 +277,18 @@ export function ProductionsDetailDialog() {
           {confirmAction === 'reverse' && (
             <>
               <div className='rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm'>
-                <p className='font-medium text-destructive'>Confirmar estorno da produção?</p>
-                <p className='mt-1 text-muted-foreground'>O estoque do produto será revertido e os insumos serão devolvidos. A produção voltará para "Em Produção".</p>
+                <p className='font-medium text-destructive'>
+                  Confirmar estorno da produção?
+                </p>
+                <p className='mt-1 text-muted-foreground'>
+                  O estoque do produto será revertido e os insumos serão
+                  devolvidos. A produção voltará para "Em Produção".
+                </p>
               </div>
               <div className='space-y-2 rounded-md border border-destructive/50 p-3'>
-                <Label className='text-sm font-medium text-destructive'>Motivo do Estorno *</Label>
+                <Label className='text-sm font-medium text-destructive'>
+                  Motivo do Estorno *
+                </Label>
                 <Input
                   placeholder='Informe o motivo do estorno...'
                   value={reverseReason}
@@ -246,11 +297,26 @@ export function ProductionsDetailDialog() {
                 />
               </div>
               <DialogFooter className='gap-2'>
-                <Button variant='outline' onClick={() => { setConfirmAction(null); setReverseReason('') }} disabled={isLoading}>
+                <Button
+                  variant='outline'
+                  onClick={() => {
+                    setConfirmAction(null)
+                    setReverseReason('')
+                  }}
+                  disabled={isLoading}
+                >
                   Voltar
                 </Button>
-                <Button variant='destructive' onClick={handleReverse} disabled={isLoading || !reverseReason.trim()}>
-                  {isLoading ? <Loader2 className='animate-spin' /> : <RotateCcw size={16} className='me-1' />}
+                <Button
+                  variant='destructive'
+                  onClick={handleReverse}
+                  disabled={isLoading || !reverseReason.trim()}
+                >
+                  {isLoading ? (
+                    <Loader2 className='animate-spin' />
+                  ) : (
+                    <RotateCcw size={16} className='me-1' />
+                  )}
                   Confirmar Estorno
                 </Button>
               </DialogFooter>
@@ -289,7 +355,9 @@ export function ProductionsDetailDialog() {
 
               {compositionNeeded.length > 0 && (
                 <div>
-                  <h4 className='mb-2 text-sm font-medium'>Insumos Necessários</h4>
+                  <h4 className='mb-2 text-sm font-medium'>
+                    Insumos Necessários
+                  </h4>
                   <div className='space-y-1'>
                     {compositionNeeded.map((item) => (
                       <div
@@ -301,7 +369,11 @@ export function ProductionsDetailDialog() {
                           <span className='text-muted-foreground'>
                             {item.needed} {item.unit}
                           </span>
-                          <Badge variant={item.sufficient ? 'default' : 'destructive'}>
+                          <Badge
+                            variant={
+                              item.sufficient ? 'default' : 'destructive'
+                            }
+                          >
                             {item.available} disp.
                           </Badge>
                         </div>
@@ -331,12 +403,20 @@ export function ProductionsDetailDialog() {
 
               {(production?.reversedAt || currentRow?.reversedAt) && (
                 <div className='rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2'>
-                  <h4 className='mb-1 text-sm font-medium text-destructive'>Estorno</h4>
+                  <h4 className='mb-1 text-sm font-medium text-destructive'>
+                    Estorno
+                  </h4>
                   <p className='text-sm text-muted-foreground'>
-                    {new Date(production?.reversedAt || currentRow?.reversedAt || '').toLocaleString()}
+                    {new Date(
+                      production?.reversedAt || currentRow?.reversedAt || ''
+                    ).toLocaleString()}
                   </p>
-                  {(production?.reversalReason || currentRow?.reversalReason) && (
-                    <p className='mt-1 text-sm'>Motivo: {production?.reversalReason || currentRow?.reversalReason}</p>
+                  {(production?.reversalReason ||
+                    currentRow?.reversalReason) && (
+                    <p className='mt-1 text-sm'>
+                      Motivo:{' '}
+                      {production?.reversalReason || currentRow?.reversalReason}
+                    </p>
                   )}
                 </div>
               )}
@@ -344,19 +424,37 @@ export function ProductionsDetailDialog() {
               <DialogFooter className='gap-2'>
                 {status === 'in_production' && (
                   <>
-                    <Button onClick={() => setConfirmAction('complete')} disabled={isLoading}>
-                      {isLoading ? <Loader2 className='animate-spin' /> : <CheckCircle2 size={16} className='me-1' />}
+                    <Button
+                      onClick={() => setConfirmAction('complete')}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className='animate-spin' />
+                      ) : (
+                        <CheckCircle2 size={16} className='me-1' />
+                      )}
                       Concluir
                     </Button>
-                    <Button variant='destructive' onClick={() => setConfirmAction('cancel')} disabled={isLoading}>
-                      {isLoading ? <Loader2 className='animate-spin' /> : <XCircle size={16} className='me-1' />}
+                    <Button
+                      variant='destructive'
+                      onClick={() => setConfirmAction('cancel')}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className='animate-spin' />
+                      ) : (
+                        <XCircle size={16} className='me-1' />
+                      )}
                       Cancelar
                     </Button>
                   </>
                 )}
                 {status === 'completed' && (
                   <>
-                    <Button variant='destructive' onClick={() => setConfirmAction('reverse')}>
+                    <Button
+                      variant='destructive'
+                      onClick={() => setConfirmAction('reverse')}
+                    >
                       <RotateCcw size={16} className='me-1' />
                       Estornar
                     </Button>

@@ -14,9 +14,7 @@ export function RecentSales({
 }) {
   if (sales.length === 0) {
     return (
-      <p className='text-sm text-muted-foreground'>
-        Nenhuma venda registrada.
-      </p>
+      <p className='text-sm text-muted-foreground'>Nenhuma venda registrada.</p>
     )
   }
 
@@ -29,7 +27,8 @@ export function RecentSales({
         <span className='text-right'>Data</span>
       </div>
       {sales.map((sale) => {
-        const statusInfo = saleStatusMap[sale.status as keyof typeof saleStatusMap]
+        const statusInfo =
+          saleStatusMap[sale.status as keyof typeof saleStatusMap]
         const date = new Date(sale.createdAt)
         const dateStr = date.toLocaleDateString('pt-BR', {
           day: '2-digit',

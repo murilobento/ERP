@@ -29,7 +29,9 @@ export function createEntityProvider<T, DialogType extends string>(
   function useEntity() {
     const context = React.useContext(Context)
     if (!context) {
-      throw new Error(`use${contextName} has to be used within <${contextName}Context>`)
+      throw new Error(
+        `use${contextName} has to be used within <${contextName}Context>`
+      )
     }
     return context
   }

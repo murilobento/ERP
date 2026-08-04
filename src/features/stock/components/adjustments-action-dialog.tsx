@@ -3,13 +3,9 @@ import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
-import {
-  ProductSupplyCombobox,
-  type ProductSupplySearchItem,
-} from '@/components/product-supply-combobox'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -37,16 +33,18 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  ProductSupplyCombobox,
+  type ProductSupplySearchItem,
+} from '@/components/product-supply-combobox'
 import { useAdjustments } from './adjustments-provider'
 
 const adjustmentSchema = z.object({
   itemType: z.enum(['product', 'supply']),
   itemId: z.string().min(1, 'Item é obrigatório.'),
-  quantity: z
-    .number()
-    .refine((value) => value !== 0, {
-      message: 'Quantidade deve ser diferente de zero.',
-    }),
+  quantity: z.number().refine((value) => value !== 0, {
+    message: 'Quantidade deve ser diferente de zero.',
+  }),
   reason: z.string().min(1, 'Motivo é obrigatório.'),
 })
 
@@ -180,7 +178,9 @@ export function AdjustmentsActionDialog({
                       value={field.value}
                       onValueChange={field.onChange}
                       onItemChange={setSelectedItem}
-                      selectedItem={selectedItem?.id === itemId ? selectedItem : null}
+                      selectedItem={
+                        selectedItem?.id === itemId ? selectedItem : null
+                      }
                       status='all'
                       includeStock
                       placeholder='Selecione o item'
@@ -232,8 +232,15 @@ export function AdjustmentsActionDialog({
               </div>
               <div>
                 <Label className='text-muted-foreground'>Movimento</Label>
-                <p className={quantity >= 0 ? 'font-medium text-green-600' : 'font-medium text-red-600'}>
-                  {quantity > 0 ? '+' : ''}{quantity || 0}
+                <p
+                  className={
+                    quantity >= 0
+                      ? 'font-medium text-green-600'
+                      : 'font-medium text-red-600'
+                  }
+                >
+                  {quantity > 0 ? '+' : ''}
+                  {quantity || 0}
                 </p>
               </div>
             </div>

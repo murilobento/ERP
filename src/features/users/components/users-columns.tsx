@@ -1,13 +1,16 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
 import { type User } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
 
-const roleMap: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
+const roleMap: Record<
+  string,
+  { label: string; variant: BadgeProps['variant'] }
+> = {
   admin: { label: 'Administrador', variant: 'danger' },
   manager: { label: 'Gerente', variant: 'warning' },
   operator: { label: 'Operador', variant: 'blue' },

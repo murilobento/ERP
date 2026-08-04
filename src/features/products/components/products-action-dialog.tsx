@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
+import { Loader2 } from 'lucide-react'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -25,7 +25,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -34,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { type Product } from '../data/schema'
 
 type CategoryOption = {
@@ -130,7 +130,9 @@ export function ProductsActionDialog({
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
-            <DialogTitle>{isEdit ? 'Editar Produto' : 'Novo Produto'}</DialogTitle>
+            <DialogTitle>
+              {isEdit ? 'Editar Produto' : 'Novo Produto'}
+            </DialogTitle>
             <div className='flex items-center gap-2'>
               <Switch
                 checked={statusValue === 'active'}
@@ -144,7 +146,9 @@ export function ProductsActionDialog({
             </div>
           </div>
           <DialogDescription>
-            {isEdit ? 'Atualize o produto aqui. ' : 'Crie um novo produto aqui. '}
+            {isEdit
+              ? 'Atualize o produto aqui. '
+              : 'Crie um novo produto aqui. '}
             Clique em salvar quando terminar.
           </DialogDescription>
         </DialogHeader>
@@ -161,7 +165,12 @@ export function ProductsActionDialog({
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                   <FormLabel className='col-span-2 text-end'>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder='Bolo de Chocolate' className='col-span-4' autoComplete='off' {...field} />
+                    <Input
+                      placeholder='Bolo de Chocolate'
+                      className='col-span-4'
+                      autoComplete='off'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
@@ -172,7 +181,9 @@ export function ProductsActionDialog({
               name='categoryId'
               render={({ field }) => (
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Categoria</FormLabel>
+                  <FormLabel className='col-span-2 text-end'>
+                    Categoria
+                  </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className='col-span-4'>
@@ -198,7 +209,12 @@ export function ProductsActionDialog({
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                   <FormLabel className='col-span-2 text-end'>Unidade</FormLabel>
                   <FormControl>
-                    <Input placeholder='un, kg, lt, m...' className='col-span-4' autoComplete='off' {...field} />
+                    <Input
+                      placeholder='un, kg, lt, m...'
+                      className='col-span-4'
+                      autoComplete='off'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
@@ -209,7 +225,9 @@ export function ProductsActionDialog({
               name='margin'
               render={({ field }) => (
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Margem (%)</FormLabel>
+                  <FormLabel className='col-span-2 text-end'>
+                    Margem (%)
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type='number'
@@ -243,7 +261,9 @@ export function ProductsActionDialog({
                   <p className='font-medium'>{marginValue ?? 0}%</p>
                 </div>
                 <div>
-                  <Label className='text-muted-foreground'>Preço de venda</Label>
+                  <Label className='text-muted-foreground'>
+                    Preço de venda
+                  </Label>
                   {costPrice > 0 ? (
                     <div className='flex items-center gap-1'>
                       <span className='text-sm text-muted-foreground'>R$</span>
@@ -258,13 +278,19 @@ export function ProductsActionDialog({
                           setLocalSalePrice(e.target.value)
                           const val = parseFloat(e.target.value)
                           if (!isNaN(val) && val >= 0) {
-                            const newMargin = Math.round(((val / costPrice) - 1) * 10000) / 100
-                            form.setValue('margin', newMargin >= 0 ? newMargin : 0)
+                            const newMargin =
+                              Math.round((val / costPrice - 1) * 10000) / 100
+                            form.setValue(
+                              'margin',
+                              newMargin >= 0 ? newMargin : 0
+                            )
                           }
                         }}
                         onBlur={() => setLocalSalePrice(null)}
                       />
-                      <span className='text-sm text-muted-foreground'>/{currentRow.unit}</span>
+                      <span className='text-sm text-muted-foreground'>
+                        /{currentRow.unit}
+                      </span>
                     </div>
                   ) : (
                     <p className='font-medium'>—</p>

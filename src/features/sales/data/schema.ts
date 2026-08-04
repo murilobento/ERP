@@ -1,8 +1,5 @@
 export type SaleStatus =
-  | 'in_preparation'
-  | 'ready_for_delivery'
-  | 'delivered'
-  | 'completed'
+  'in_preparation' | 'ready_for_delivery' | 'delivered' | 'completed'
 
 export type SaleItem = {
   id: string

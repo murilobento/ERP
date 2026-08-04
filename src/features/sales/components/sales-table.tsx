@@ -2,8 +2,8 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type Sale } from '../data/schema'
-import { useSales } from './sales-provider'
 import { salesColumns as columns } from './sales-columns'
+import { useSales } from './sales-provider'
 
 type SalesTableProps = {
   data: Sale[]

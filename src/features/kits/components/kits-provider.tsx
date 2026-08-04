@@ -3,8 +3,10 @@ import { type Kit } from '../data/schema'
 
 type KitsDialogType = 'add' | 'edit' | 'delete' | 'view'
 
-const { Provider: KitsProvider, useEntity: useKits } =
-  createEntityProvider<Kit, KitsDialogType>('Kits')
+const { Provider: KitsProvider, useEntity: useKits } = createEntityProvider<
+  Kit,
+  KitsDialogType
+>('Kits')
 
 // eslint-disable-next-line react-refresh/only-export-components
 export { KitsProvider, useKits }

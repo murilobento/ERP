@@ -1,7 +1,9 @@
 import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 
-function getErrorResponseData(error: unknown): { title?: string; error?: string } | undefined {
+function getErrorResponseData(
+  error: unknown
+): { title?: string; error?: string } | undefined {
   if (
     error &&
     typeof error === 'object' &&
@@ -29,8 +31,7 @@ export function getServerError(error: unknown): string {
 
   if (error instanceof AxiosError) {
     const data = error.response?.data as
-      | { title?: string; error?: string }
-      | undefined
+      { title?: string; error?: string } | undefined
     const title = data?.title
     const errorMsg = data?.error
     if (typeof title === 'string' && title.length > 0) {

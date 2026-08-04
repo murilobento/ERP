@@ -1,9 +1,5 @@
 export type DatePreset =
-  | 'today'
-  | 'tomorrow'
-  | 'yesterday'
-  | 'this_month'
-  | 'last_month'
+  'today' | 'tomorrow' | 'yesterday' | 'this_month' | 'last_month'
 
 export type DatePresetOption = {
   value: DatePreset

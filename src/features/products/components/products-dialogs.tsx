@@ -1,6 +1,6 @@
 import { ProductsActionDialog } from './products-action-dialog'
-import { ProductsDeleteDialog } from './products-delete-dialog'
 import { ProductsCompositionDialog } from './products-composition-dialog'
+import { ProductsDeleteDialog } from './products-delete-dialog'
 import { ProductsDetailDialog } from './products-detail-dialog'
 import { useProducts } from './products-provider'
 

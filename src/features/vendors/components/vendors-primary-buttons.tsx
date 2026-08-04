@@ -1,5 +1,5 @@
-import { ContactPrimaryButtons } from '@/features/shared/contact-primary-buttons'
 import { queryKeys } from '@/lib/query-keys'
+import { ContactPrimaryButtons } from '@/features/shared/contact-primary-buttons'
 import { useVendors } from './vendors-provider'
 
 const vendorConfig = {
@@ -14,5 +14,7 @@ const vendorConfig = {
 
 export function VendorsPrimaryButtons() {
   const { setOpen } = useVendors()
-  return <ContactPrimaryButtons config={vendorConfig} onAdd={() => setOpen('add')} />
+  return (
+    <ContactPrimaryButtons config={vendorConfig} onAdd={() => setOpen('add')} />
+  )
 }

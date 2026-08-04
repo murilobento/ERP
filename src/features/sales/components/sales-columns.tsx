@@ -3,6 +3,11 @@ import { PackageCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 import { DataTableColumnHeader } from '@/components/data-table'
 import {
   formatCurrency,
@@ -11,11 +16,6 @@ import {
   type Sale,
 } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card'
 
 export const salesColumns: ColumnDef<Sale>[] = [
   {
@@ -74,7 +74,7 @@ export const salesColumns: ColumnDef<Sale>[] = [
       return (
         <HoverCard>
           <HoverCardTrigger asChild>
-            <span className='cursor-default ps-2 underline decoration-dashed underline-offset-4 text-primary'>
+            <span className='cursor-default ps-2 text-primary underline decoration-dashed underline-offset-4'>
               {count} {count === 1 ? 'item' : 'itens'}
             </span>
           </HoverCardTrigger>
@@ -82,7 +82,13 @@ export const salesColumns: ColumnDef<Sale>[] = [
             <div className='space-y-1.5'>
               {(() => {
                 const standalone = items.filter((i) => !i.kitId)
-                const byKit = new Map<string, { kit: { name: string } | null | undefined; items: typeof items }>()
+                const byKit = new Map<
+                  string,
+                  {
+                    kit: { name: string } | null | undefined
+                    items: typeof items
+                  }
+                >()
                 for (const item of items) {
                   if (!item.kitId) continue
                   if (!byKit.has(item.kitId)) {
@@ -131,7 +137,7 @@ export const salesColumns: ColumnDef<Sale>[] = [
                   </>
                 )
               })()}
-              <div className='mt-1.5 border-t pt-1.5 flex items-center justify-between text-sm font-semibold'>
+              <div className='mt-1.5 flex items-center justify-between border-t pt-1.5 text-sm font-semibold'>
                 <span>Total</span>
                 <span>{formatCurrency(total)}</span>
               </div>

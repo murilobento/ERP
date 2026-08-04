@@ -1,22 +1,25 @@
 import { type NavigateFn } from '@/hooks/use-table-url-state'
 import {
-  type ProductionStatus,
-  getProductionsFilters,
-  productionStatusOptions,
-} from '../data/filters'
-import { getDateRangeLabel } from '@/features/shared/filter-date-utils'
-import {
   FilterShell,
   FilterSection,
   FilterDateSection,
 } from '@/components/filter-shell'
+import { getDateRangeLabel } from '@/features/shared/filter-date-utils'
+import {
+  type ProductionStatus,
+  getProductionsFilters,
+  productionStatusOptions,
+} from '../data/filters'
 
 type ProductionsFiltersProps = {
   search: Record<string, unknown>
   navigate: NavigateFn
 }
 
-export function ProductionsFilters({ search, navigate }: ProductionsFiltersProps) {
+export function ProductionsFilters({
+  search,
+  navigate,
+}: ProductionsFiltersProps) {
   const filters = getProductionsFilters(search)
   const hasRemovableFilters =
     !!filters.filter ||
@@ -38,7 +41,9 @@ export function ProductionsFilters({ search, navigate }: ProductionsFiltersProps
       : undefined,
   ].filter((item): item is string => Boolean(item))
 
-  function updateFilter(patch: Partial<ReturnType<typeof getProductionsFilters>>) {
+  function updateFilter(
+    patch: Partial<ReturnType<typeof getProductionsFilters>>
+  ) {
     const next = { ...filters, ...patch }
     navigate({
       search: (prev) => ({

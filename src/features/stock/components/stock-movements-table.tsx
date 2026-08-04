@@ -10,7 +10,11 @@ type DataTableProps = {
   navigate: NavigateFn
 }
 
-export function StockMovementsTable({ data, search, navigate }: DataTableProps) {
+export function StockMovementsTable({
+  data,
+  search,
+  navigate,
+}: DataTableProps) {
   const { table } = useDataTable({
     data,
     columns,

@@ -1,11 +1,14 @@
 import { type NavigateFn } from '@/hooks/use-table-url-state'
-import { purchaseStatusMap, type PurchaseStatus } from '../data/schema'
-import { datePresetOptions, getDateRangeLabel } from '@/features/shared/filter-date-utils'
 import {
   FilterShell,
   FilterSection,
   FilterDateSection,
 } from '@/components/filter-shell'
+import {
+  datePresetOptions,
+  getDateRangeLabel,
+} from '@/features/shared/filter-date-utils'
+import { purchaseStatusMap, type PurchaseStatus } from '../data/schema'
 
 type PurchasesFiltersProps = {
   search: Record<string, unknown>
@@ -19,10 +22,12 @@ type PurchasesFilterValues = {
   completedTo: string
 }
 
-const statusOptions = Object.entries(purchaseStatusMap).map(([value, config]) => ({
-  value: value as PurchaseStatus,
-  label: config.label,
-}))
+const statusOptions = Object.entries(purchaseStatusMap).map(
+  ([value, config]) => ({
+    value: value as PurchaseStatus,
+    label: config.label,
+  })
+)
 
 function getFilters(search: Record<string, unknown>): PurchasesFilterValues {
   return {

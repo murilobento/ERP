@@ -52,12 +52,18 @@ const PACKAGE_UNIT_OPTIONS = [
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
-  unit: z.enum(['un', 'g', 'ml'], {
-    error: 'Selecione uma unidade válida.',
+  unit: z.string().refine((value) => ['un', 'g', 'ml'].includes(value), {
+    message: 'Selecione uma unidade válida.',
   }),
-  packageUnit: z.enum(PACKAGE_UNIT_OPTIONS, {
-    error: 'Selecione uma embalagem válida.',
-  }),
+  packageUnit: z
+    .string()
+    .refine(
+      (value) =>
+        PACKAGE_UNIT_OPTIONS.includes(
+          value as (typeof PACKAGE_UNIT_OPTIONS)[number]
+        ),
+      { message: 'Selecione uma embalagem válida.' }
+    ),
   packageQuantity: z
     .number()
     .min(0.01, 'Qtd por embalagem deve ser maior que zero.'),

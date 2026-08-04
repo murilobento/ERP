@@ -36,18 +36,26 @@ export const sidebarData: SidebarData = {
     Financeiro: [
       {
         title: 'Geral',
-        items: [
-          { title: 'Painel Financeiro', url: '/', icon: BarChart3 },
-        ],
+        items: [{ title: 'Painel Financeiro', url: '/', icon: BarChart3 }],
       },
     ],
     Administrativo: [
       {
         title: 'Geral',
         items: [
-          { title: 'Empresa', url: '/company', icon: Building2, minRole: 'admin' },
+          {
+            title: 'Empresa',
+            url: '/company',
+            icon: Building2,
+            minRole: 'admin',
+          },
           { title: 'Usuários', url: '/users', icon: Users, minRole: 'admin' },
-          { title: 'Logs de Auditoria', url: '/audit-logs', icon: ScrollText, minRole: 'admin' },
+          {
+            title: 'Logs de Auditoria',
+            url: '/audit-logs',
+            icon: ScrollText,
+            minRole: 'admin',
+          },
         ],
       },
     ],
@@ -70,7 +78,11 @@ export const sidebarData: SidebarData = {
           { title: 'Compras', url: '/purchases', icon: Truck },
           { title: 'Insumos', url: '/supplies', icon: FlaskConical },
           { title: 'Kits', url: '/kits', icon: PackageCheck },
-          { title: 'Movimentações', url: '/stock/movements', icon: ArrowRightLeft },
+          {
+            title: 'Movimentações',
+            url: '/stock/movements',
+            icon: ArrowRightLeft,
+          },
           { title: 'Produções', url: '/productions', icon: Factory },
           { title: 'Produtos', url: '/products', icon: PackageOpen },
         ],

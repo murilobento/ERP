@@ -1,19 +1,19 @@
 import { useMemo, useState } from 'react'
-import { toast } from 'sonner'
 import { InfoIcon, PackageCheck } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import {
   formatCurrency,
   getSaleTotal,
@@ -21,8 +21,8 @@ import {
   type Sale,
   type SaleStatus,
 } from '../data/schema'
-import { useSales } from './sales-provider'
 import { PreparationSummaryDialog } from './preparation-summary-dialog'
+import { useSales } from './sales-provider'
 
 const statusOrder: SaleStatus[] = [
   'in_preparation',
@@ -196,12 +196,23 @@ export function SalesKanban({ data, preparationSales }: SalesKanbanProps) {
                           <HoverCardContent className='w-auto min-w-72 p-3'>
                             <div className='space-y-1.5'>
                               {(() => {
-                                const standalone = sale.items.filter((i) => !i.kitId)
-                                const byKit = new Map<string, { kit: { name: string } | null | undefined; items: typeof sale.items }>()
+                                const standalone = sale.items.filter(
+                                  (i) => !i.kitId
+                                )
+                                const byKit = new Map<
+                                  string,
+                                  {
+                                    kit: { name: string } | null | undefined
+                                    items: typeof sale.items
+                                  }
+                                >()
                                 for (const item of sale.items) {
                                   if (!item.kitId) continue
                                   if (!byKit.has(item.kitId)) {
-                                    byKit.set(item.kitId, { kit: item.kit, items: [] })
+                                    byKit.set(item.kitId, {
+                                      kit: item.kit,
+                                      items: [],
+                                    })
                                   }
                                   byKit.get(item.kitId)!.items.push(item)
                                 }
@@ -221,39 +232,47 @@ export function SalesKanban({ data, preparationSales }: SalesKanbanProps) {
                                         </span>
                                       </div>
                                     ))}
-                                    {Array.from(byKit.entries()).map(([kitId, group]) => (
-                                      <div key={kitId} className='space-y-1'>
-                                        <div className='flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400'>
-                                          <PackageCheck size={12} />
-                                          Kit: {group.kit?.name || 'Kit'}
-                                        </div>
-                                        {group.items.map((item, i) => (
-                                          <div
-                                            key={i}
-                                            className='flex items-center justify-between pl-3 text-sm'
-                                          >
-                                            <span className='text-muted-foreground'>
-                                              {item.product.name}
-                                            </span>
-                                            <span className='font-medium'>
-                                              {item.quantity} {item.product.unit} ×{' '}
-                                              {formatCurrency(item.unitPrice)}
-                                            </span>
+                                    {Array.from(byKit.entries()).map(
+                                      ([kitId, group]) => (
+                                        <div key={kitId} className='space-y-1'>
+                                          <div className='flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400'>
+                                            <PackageCheck size={12} />
+                                            Kit: {group.kit?.name || 'Kit'}
                                           </div>
-                                        ))}
-                                      </div>
-                                    ))}
+                                          {group.items.map((item, i) => (
+                                            <div
+                                              key={i}
+                                              className='flex items-center justify-between pl-3 text-sm'
+                                            >
+                                              <span className='text-muted-foreground'>
+                                                {item.product.name}
+                                              </span>
+                                              <span className='font-medium'>
+                                                {item.quantity}{' '}
+                                                {item.product.unit} ×{' '}
+                                                {formatCurrency(item.unitPrice)}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )
+                                    )}
                                   </>
                                 )
                               })()}
-                              <div className='mt-1.5 border-t pt-1.5 flex items-center justify-between text-sm font-semibold'>
+                              <div className='mt-1.5 flex items-center justify-between border-t pt-1.5 text-sm font-semibold'>
                                 <span>Total</span>
-                                <span>{formatCurrency(getSaleTotal(sale))}</span>
+                                <span>
+                                  {formatCurrency(getSaleTotal(sale))}
+                                </span>
                               </div>
                             </div>
                           </HoverCardContent>
                         </HoverCard>
-                        <Badge variant='outline' className='text-[11px] px-1.5 py-0'>
+                        <Badge
+                          variant='outline'
+                          className='px-1.5 py-0 text-[11px]'
+                        >
                           Entrega {formatDeliveryDate(sale.deliveryDate)}
                         </Badge>
                       </div>

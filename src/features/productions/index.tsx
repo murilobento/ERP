@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { Main } from '@/components/layout/main'
-import { PageHeader } from '@/components/page-header'
-import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
+import { useDocumentTitle } from '@/hooks/use-document-title'
+import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/page-header'
 import { ProductionsDialogs } from './components/productions-dialogs'
 import { ProductionsFilters } from './components/productions-filters'
 import { ProductionsPrimaryButtons } from './components/productions-primary-buttons'
@@ -51,7 +51,11 @@ export function Productions() {
 
         <ProductionsFilters search={search} navigate={navigate} />
 
-        <ProductionsTable data={filteredProductions} search={search} navigate={navigate} />
+        <ProductionsTable
+          data={filteredProductions}
+          search={search}
+          navigate={navigate}
+        />
       </Main>
 
       <ProductionsDialogs />

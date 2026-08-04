@@ -1,12 +1,16 @@
 import { z } from 'zod'
-import { type Company } from './schema'
 import {
   formatCnpj as _formatCnpj,
   formatPhone as _formatPhone,
   formatZipCode as _formatZipCode,
 } from '@/lib/formatters'
+import { type Company } from './schema'
 
-export { _formatCnpj as formatCnpj, _formatPhone as formatPhone, _formatZipCode as formatZipCode }
+export {
+  _formatCnpj as formatCnpj,
+  _formatPhone as formatPhone,
+  _formatZipCode as formatZipCode,
+}
 
 const optionalUrl = z
   .string()

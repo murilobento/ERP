@@ -2,9 +2,9 @@ import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,8 +23,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { type Category } from '../data/schema'
 
 const formSchema = z.object({
@@ -94,7 +94,9 @@ export function CategoriesActionDialog({
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
-            <DialogTitle>{isEdit ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+            <DialogTitle>
+              {isEdit ? 'Editar Categoria' : 'Nova Categoria'}
+            </DialogTitle>
             <div className='flex items-center gap-2'>
               <Switch
                 checked={statusValue === 'active'}
@@ -108,7 +110,9 @@ export function CategoriesActionDialog({
             </div>
           </div>
           <DialogDescription>
-            {isEdit ? 'Atualize a categoria aqui. ' : 'Crie uma nova categoria aqui. '}
+            {isEdit
+              ? 'Atualize a categoria aqui. '
+              : 'Crie uma nova categoria aqui. '}
             Clique em salvar quando terminar.
           </DialogDescription>
         </DialogHeader>
@@ -125,7 +129,12 @@ export function CategoriesActionDialog({
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                   <FormLabel className='col-span-2 text-end'>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder='Bolos' className='col-span-4' autoComplete='off' {...field} />
+                    <Input
+                      placeholder='Bolos'
+                      className='col-span-4'
+                      autoComplete='off'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>

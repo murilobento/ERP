@@ -2,9 +2,9 @@ import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, MapPin } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
 import api from '@/lib/api'
 import { formatPhone, formatZipCode } from '@/lib/formatters'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { useCepLookup } from '@/hooks/use-cep-lookup'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,8 +24,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { type Contact, type ContactConfig } from './contact-types'
 
 const formSchema = z.object({
@@ -123,7 +123,11 @@ export function ContactActionDialog({
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
-            <DialogTitle>{isEdit ? `Editar ${config.entityLabel}` : `Novo ${config.entityLabel}`}</DialogTitle>
+            <DialogTitle>
+              {isEdit
+                ? `Editar ${config.entityLabel}`
+                : `Novo ${config.entityLabel}`}
+            </DialogTitle>
             <div className='flex items-center gap-2'>
               <Switch
                 checked={statusValue === 'active'}
@@ -137,7 +141,9 @@ export function ContactActionDialog({
             </div>
           </div>
           <DialogDescription>
-            {isEdit ? `Atualize o ${config.entityLabelLower} aqui. ` : `Crie um novo ${config.entityLabelLower} aqui. `}
+            {isEdit
+              ? `Atualize o ${config.entityLabelLower} aqui. `
+              : `Crie um novo ${config.entityLabelLower} aqui. `}
             Clique em salvar quando terminar.
           </DialogDescription>
         </DialogHeader>
@@ -171,7 +177,9 @@ export function ContactActionDialog({
                 name='phone'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
-                    <FormLabel className='col-span-2 text-end'>Telefone</FormLabel>
+                    <FormLabel className='col-span-2 text-end'>
+                      Telefone
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder='(11) 99999-9999'
@@ -252,7 +260,9 @@ export function ContactActionDialog({
                 name='number'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
-                    <FormLabel className='col-span-2 text-end'>Número</FormLabel>
+                    <FormLabel className='col-span-2 text-end'>
+                      Número
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder='123'
@@ -270,7 +280,9 @@ export function ContactActionDialog({
                 name='complement'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
-                    <FormLabel className='col-span-2 text-end'>Complemento</FormLabel>
+                    <FormLabel className='col-span-2 text-end'>
+                      Complemento
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder='Apto 4B'
@@ -288,7 +300,9 @@ export function ContactActionDialog({
                 name='neighborhood'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
-                    <FormLabel className='col-span-2 text-end'>Bairro</FormLabel>
+                    <FormLabel className='col-span-2 text-end'>
+                      Bairro
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder='Centro'
@@ -306,7 +320,9 @@ export function ContactActionDialog({
                 name='city'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
-                    <FormLabel className='col-span-2 text-end'>Cidade</FormLabel>
+                    <FormLabel className='col-span-2 text-end'>
+                      Cidade
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder='São Paulo'
@@ -324,7 +340,9 @@ export function ContactActionDialog({
                 name='state'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-5 items-center space-y-0 gap-x-2 gap-y-0.5'>
-                    <FormLabel className='col-span-2 text-end'>Estado</FormLabel>
+                    <FormLabel className='col-span-2 text-end'>
+                      Estado
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder='SP'

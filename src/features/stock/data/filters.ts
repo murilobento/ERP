@@ -53,8 +53,7 @@ export function getMovementsFilters(
     filter: typeof search.filter === 'string' ? search.filter : '',
     itemType: Array.isArray(search.itemType)
       ? (search.itemType.filter((v) => v === 'product' || v === 'supply') as (
-          | 'product'
-          | 'supply'
+          'product' | 'supply'
         )[])
       : [],
     movementTypes: Array.isArray(search.movementTypes)
@@ -115,8 +114,7 @@ export function getAdjustmentsFilters(
       : [],
     itemType: Array.isArray(search.itemType)
       ? (search.itemType.filter((v) => v === 'product' || v === 'supply') as (
-          | 'product'
-          | 'supply'
+          'product' | 'supply'
         )[])
       : [],
     dateFrom: typeof search.dateFrom === 'string' ? search.dateFrom : '',

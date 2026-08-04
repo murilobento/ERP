@@ -1,5 +1,5 @@
-import { createContactRowActions } from '@/features/shared/contact-row-actions'
 import { queryKeys } from '@/lib/query-keys'
+import { createContactRowActions } from '@/features/shared/contact-row-actions'
 import { useClients } from './clients-provider'
 
 const clientConfig = {
@@ -12,4 +12,8 @@ const clientConfig = {
   entityPlural: 'clientes',
 } as const
 
-export const DataTableRowActions = createContactRowActions(clientConfig, useClients, true)
+export const DataTableRowActions = createContactRowActions(
+  clientConfig,
+  useClients,
+  true
+)

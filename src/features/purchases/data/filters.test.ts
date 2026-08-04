@@ -143,11 +143,17 @@ describe('purchase data filters', () => {
   it('shows all purchases when no date filter is set', () => {
     const purchases = [
       makePurchase({ id: 'p-1', status: 'pending', completedAt: null }),
-      makePurchase({ id: 'p-2', status: 'completed', completedAt: '2026-01-10T12:00:00.000Z' }),
+      makePurchase({
+        id: 'p-2',
+        status: 'completed',
+        completedAt: '2026-01-10T12:00:00.000Z',
+      }),
     ]
 
     expect(
-      filterPurchases(purchases, { completedFrom: '', completedTo: '' }).map((p) => p.id)
+      filterPurchases(purchases, { completedFrom: '', completedTo: '' }).map(
+        (p) => p.id
+      )
     ).toEqual(['p-1', 'p-2'])
   })
 })

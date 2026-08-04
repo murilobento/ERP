@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
 import { UserPen, Power } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
+import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
-import { ConfirmDialog } from '@/components/confirm-dialog'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,7 +14,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import api from '@/lib/api'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { type User } from '../data/schema'
 import { useUsers } from './users-provider'
 

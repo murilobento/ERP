@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Loader2, Pen } from 'lucide-react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,7 +12,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 import {
   Table,
   TableBody,
@@ -20,11 +25,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card'
 import {
   type Client,
   type ClientDetail,
@@ -51,7 +51,9 @@ export function ClientsDetailDialog({
   const { data: detail, isLoading } = useQuery({
     queryKey: queryKeys.client(currentRowId!),
     queryFn: async () => {
-      const res = await api.get<{ client: ClientDetail }>(`/clients/${currentRowId}`)
+      const res = await api.get<{ client: ClientDetail }>(
+        `/clients/${currentRowId}`
+      )
       return res.data.client
     },
     enabled: open && !!currentRowId,
@@ -88,13 +90,13 @@ export function ClientsDetailDialog({
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
             <DialogTitle>{client.name}</DialogTitle>
-            <Badge variant={client.status === 'active' ? 'default' : 'secondary'}>
+            <Badge
+              variant={client.status === 'active' ? 'default' : 'secondary'}
+            >
               {client.status === 'active' ? 'Ativo' : 'Inativo'}
             </Badge>
           </div>
-          <DialogDescription>
-            Telefone: {client.phone}
-          </DialogDescription>
+          <DialogDescription>Telefone: {client.phone}</DialogDescription>
         </DialogHeader>
 
         <div className='space-y-4'>
@@ -169,14 +171,17 @@ export function ClientsDetailDialog({
                             </TableCell>
                             <TableCell className='text-nowrap'>
                               {sale.deliveryDate
-                                ? new Date(sale.deliveryDate).toLocaleDateString()
+                                ? new Date(
+                                    sale.deliveryDate
+                                  ).toLocaleDateString()
                                 : '—'}
                             </TableCell>
                             <TableCell>
                               <HoverCard>
                                 <HoverCardTrigger asChild>
-                                  <span className='cursor-default underline decoration-dashed underline-offset-4 text-primary'>
-                                    {sale.items.length} {sale.items.length === 1 ? 'item' : 'itens'}
+                                  <span className='cursor-default text-primary underline decoration-dashed underline-offset-4'>
+                                    {sale.items.length}{' '}
+                                    {sale.items.length === 1 ? 'item' : 'itens'}
                                   </span>
                                 </HoverCardTrigger>
                                 <HoverCardContent className='w-auto min-w-72 p-3'>
@@ -195,7 +200,7 @@ export function ClientsDetailDialog({
                                         </span>
                                       </div>
                                     ))}
-                                    <div className='mt-1.5 border-t pt-1.5 flex items-center justify-between text-sm font-semibold'>
+                                    <div className='mt-1.5 flex items-center justify-between border-t pt-1.5 text-sm font-semibold'>
                                       <span>Total</span>
                                       <span>{formatCurrency(total)}</span>
                                     </div>
@@ -238,7 +243,8 @@ export function ClientsDetailDialog({
                             {new Date(sale.createdAt).toLocaleDateString()}
                           </span>
                           <span>
-                            {sale.items.length} {sale.items.length === 1 ? 'item' : 'itens'}
+                            {sale.items.length}{' '}
+                            {sale.items.length === 1 ? 'item' : 'itens'}
                           </span>
                         </div>
                         {sale.items.length > 0 && (

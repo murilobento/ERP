@@ -2,10 +2,10 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
-import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
+import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,7 +37,10 @@ import { type User } from '../data/schema'
 
 const USER_ROLES = ['admin', 'manager', 'operator', 'viewer'] as const
 
-const roleMap: Record<string, { label: string; variant: 'danger' | 'warning' | 'blue' | 'secondary' }> = {
+const roleMap: Record<
+  string,
+  { label: string; variant: 'danger' | 'warning' | 'blue' | 'secondary' }
+> = {
   admin: { label: 'Administrador', variant: 'danger' },
   manager: { label: 'Gerente', variant: 'warning' },
   operator: { label: 'Operador', variant: 'blue' },
@@ -75,7 +78,7 @@ const formSchema = z
       if (isEdit && !password) return true
       return password === confirmPassword
     },
-    { message: "As senhas não coincidem.", path: ['confirmPassword'] }
+    { message: 'As senhas não coincidem.', path: ['confirmPassword'] }
   )
 
 type UserForm = z.infer<typeof formSchema>
@@ -162,9 +165,13 @@ export function UsersActionDialog({
     >
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
-          <DialogTitle>{isEdit ? 'Editar Usuário' : 'Novo Usuário'}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? 'Editar Usuário' : 'Novo Usuário'}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Atualize o usuário aqui. ' : 'Crie um novo usuário aqui. '}
+            {isEdit
+              ? 'Atualize o usuário aqui. '
+              : 'Crie um novo usuário aqui. '}
             Clique em salvar quando terminar.
           </DialogDescription>
         </DialogHeader>
@@ -180,9 +187,7 @@ export function UsersActionDialog({
                 name='firstName'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Nome
-                    </FormLabel>
+                    <FormLabel className='col-span-2 text-end'>Nome</FormLabel>
                     <FormControl>
                       <Input
                         placeholder='John'
@@ -220,7 +225,9 @@ export function UsersActionDialog({
                 name='email'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>E-mail</FormLabel>
+                    <FormLabel className='col-span-2 text-end'>
+                      E-mail
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder='john.doe@gmail.com'
@@ -240,13 +247,21 @@ export function UsersActionDialog({
                     const roleInfo = roleMap[field.value]
                     return (
                       <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                        <FormLabel className='col-span-2 text-end'>Função</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <FormLabel className='col-span-2 text-end'>
+                          Função
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className='col-span-4'>
                               <SelectValue>
                                 {roleInfo && (
-                                  <Badge variant={roleInfo.variant} className='text-xs'>
+                                  <Badge
+                                    variant={roleInfo.variant}
+                                    className='text-xs'
+                                  >
                                     {roleInfo.label}
                                   </Badge>
                                 )}
@@ -258,7 +273,10 @@ export function UsersActionDialog({
                               const info = roleMap[r]
                               return (
                                 <SelectItem key={r} value={r}>
-                                  <Badge variant={info?.variant} className='text-xs'>
+                                  <Badge
+                                    variant={info?.variant}
+                                    className='text-xs'
+                                  >
                                     {info?.label ?? r}
                                   </Badge>
                                 </SelectItem>
@@ -277,9 +295,7 @@ export function UsersActionDialog({
                 name='password'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Senha
-                    </FormLabel>
+                    <FormLabel className='col-span-2 text-end'>Senha</FormLabel>
                     <FormControl>
                       <PasswordInput
                         placeholder='e.g., S3cur3P@ssw0rd'

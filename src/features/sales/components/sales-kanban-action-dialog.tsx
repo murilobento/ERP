@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
-import { DatePicker } from '@/components/date-picker'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -24,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DatePicker } from '@/components/date-picker'
 import {
   paymentMethodMap,
   saleStatusMap,
@@ -84,7 +84,8 @@ const transitionMap: Partial<
     in_preparation: {
       path: 'reverse',
       title: 'Estornar venda?',
-      description: 'A venda voltará para em preparo e os produtos serão devolvidos ao estoque.',
+      description:
+        'A venda voltará para em preparo e os produtos serão devolvidos ao estoque.',
       button: 'Confirmar Estorno',
       kind: 'reverse',
     },

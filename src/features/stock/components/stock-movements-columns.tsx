@@ -86,7 +86,7 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
       return (
         <HoverCard>
           <HoverCardTrigger asChild>
-            <span className='cursor-default ps-2 underline decoration-dashed underline-offset-4 text-primary'>
+            <span className='cursor-default ps-2 text-primary underline decoration-dashed underline-offset-4'>
               {label}
             </span>
           </HoverCardTrigger>
@@ -121,7 +121,8 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
       const q = row.getValue('quantity') as number
       return (
         <span className={q >= 0 ? 'text-green-600' : 'text-red-600'}>
-          {q > 0 ? '+' : ''}{formatStock(q, m.product?.unit || m.supply?.unit)}
+          {q > 0 ? '+' : ''}
+          {formatStock(q, m.product?.unit || m.supply?.unit)}
         </span>
       )
     },

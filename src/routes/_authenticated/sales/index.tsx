@@ -19,7 +19,10 @@ const salesSearchSchema = z.object({
   pageSize: z.number().optional().catch(10),
   filter: z.string().optional().catch(''),
   status: z
-    .preprocess((value) => (typeof value === 'string' ? [value] : value), z.array(saleStatusSchema))
+    .preprocess(
+      (value) => (typeof value === 'string' ? [value] : value),
+      z.array(saleStatusSchema)
+    )
     .optional()
     .catch([]),
   payment: z.enum(['confirmed', 'pending']).optional().catch(undefined),

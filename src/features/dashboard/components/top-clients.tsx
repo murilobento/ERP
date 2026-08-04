@@ -20,7 +20,10 @@ export function TopClients({
       {clients.map((client, index) => {
         const width = `${Math.round((client.total / max) * 100)}%`
         return (
-          <li key={client.name + index} className='flex items-center justify-between gap-3'>
+          <li
+            key={client.name + index}
+            className='flex items-center justify-between gap-3'
+          >
             <div className='min-w-0 flex-1'>
               <div className='mb-0.5 flex items-center gap-2'>
                 <span className='flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground'>

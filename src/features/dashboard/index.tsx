@@ -1,12 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query-keys'
-import {
-  Clock,
-  DollarSign,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react'
 import { lazy, Suspense } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Clock, DollarSign, TrendingDown, TrendingUp } from 'lucide-react'
+import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import {
   Card,
   CardContent,
@@ -17,8 +14,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/page-header'
-import { useDocumentTitle } from '@/hooks/use-document-title'
-import api from '@/lib/api'
 import { formatCurrency } from '@/features/sales/data/schema'
 import { RecentSales } from './components/recent-sales'
 import { TopClients } from './components/top-clients'
@@ -35,7 +30,12 @@ const Overview = lazy(() =>
 )
 
 function ChartFallback({ height }: { height: string }) {
-  return <div className='w-full animate-pulse rounded-md bg-muted' style={{ height }} />
+  return (
+    <div
+      className='w-full animate-pulse rounded-md bg-muted'
+      style={{ height }}
+    />
+  )
 }
 
 export type MetricsResponse = {
@@ -77,7 +77,9 @@ export function Dashboard() {
 
       <Main>
         <div className='mb-2 flex items-center justify-between space-y-2'>
-          <h1 className='text-2xl font-bold tracking-tight'>Painel Financeiro</h1>
+          <h1 className='text-2xl font-bold tracking-tight'>
+            Painel Financeiro
+          </h1>
         </div>
         <Tabs
           orientation='vertical'

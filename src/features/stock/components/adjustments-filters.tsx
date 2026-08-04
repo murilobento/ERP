@@ -1,12 +1,12 @@
 import { type NavigateFn } from '@/hooks/use-table-url-state'
-import { adjustmentStatusOptions, getAdjustmentsFilters } from '../data/filters'
-import { type StockAdjustmentStatus } from '../data/schema'
-import { getDateRangeLabel } from '@/features/shared/filter-date-utils'
 import {
   FilterShell,
   FilterSection,
   FilterDateSection,
 } from '@/components/filter-shell'
+import { getDateRangeLabel } from '@/features/shared/filter-date-utils'
+import { adjustmentStatusOptions, getAdjustmentsFilters } from '../data/filters'
+import { type StockAdjustmentStatus } from '../data/schema'
 
 type AdjustmentsFiltersProps = {
   search: Record<string, unknown>
@@ -20,7 +20,10 @@ const itemTypeOptions: { value: ItemType; label: string }[] = [
   { value: 'supply', label: 'Insumo' },
 ]
 
-export function AdjustmentsFilters({ search, navigate }: AdjustmentsFiltersProps) {
+export function AdjustmentsFilters({
+  search,
+  navigate,
+}: AdjustmentsFiltersProps) {
   const filters = getAdjustmentsFilters(search)
   const hasRemovableFilters =
     !!filters.filter ||
@@ -47,7 +50,9 @@ export function AdjustmentsFilters({ search, navigate }: AdjustmentsFiltersProps
       : undefined,
   ].filter((item): item is string => Boolean(item))
 
-  function updateFilter(patch: Partial<ReturnType<typeof getAdjustmentsFilters>>) {
+  function updateFilter(
+    patch: Partial<ReturnType<typeof getAdjustmentsFilters>>
+  ) {
     const next = { ...filters, ...patch }
     navigate({
       search: (prev) => ({

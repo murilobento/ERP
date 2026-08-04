@@ -177,12 +177,16 @@ function renderDialog(
 }
 
 function draftQuantityInput() {
-  const inputs = document.querySelectorAll<HTMLInputElement>('input[type="number"]')
+  const inputs = document.querySelectorAll<HTMLInputElement>(
+    'input[type="number"]'
+  )
   return inputs[0]
 }
 
 function draftPriceInput() {
-  const inputs = document.querySelectorAll<HTMLInputElement>('input[type="number"]')
+  const inputs = document.querySelectorAll<HTMLInputElement>(
+    'input[type="number"]'
+  )
   return inputs[1]
 }
 
@@ -193,17 +197,27 @@ function textInput(placeholder: string) {
 }
 
 async function selectClientAndDate() {
-  await userEvent.click(document.body.querySelector('[data-testid="client-combobox"]')!)
-  await userEvent.click(document.body.querySelector('[data-testid="date-picker"]')!)
+  await userEvent.click(
+    document.body.querySelector('[data-testid="client-combobox"]')!
+  )
+  await userEvent.click(
+    document.body.querySelector('[data-testid="date-picker"]')!
+  )
 }
 
 async function addSaleItem(quantity = '2', unitPrice = '30') {
-  await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
+  await userEvent.click(
+    document.body.querySelector('[data-testid="product-combobox"]')!
+  )
   await userEvent.clear(draftQuantityInput())
   await userEvent.type(draftQuantityInput(), quantity)
   await userEvent.clear(draftPriceInput())
   await userEvent.type(draftPriceInput(), unitPrice)
-  await userEvent.click(Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Adicionar')!)
+  await userEvent.click(
+    Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Adicionar'
+    )!
+  )
 }
 
 describe('SalesActionDialog', () => {
@@ -239,14 +253,18 @@ describe('SalesActionDialog', () => {
     await selectClientAndDate()
     await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))
 
-    expect(toastError).toHaveBeenCalledWith('Adicione pelo menos um item ou kit.')
+    expect(toastError).toHaveBeenCalledWith(
+      'Adicione pelo menos um item ou kit.'
+    )
     expect(apiPost).not.toHaveBeenCalled()
   })
 
   it('blocks negative unit prices before adding items', async () => {
     const { getByText } = await renderDialog()
 
-    await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
+    await userEvent.click(
+      document.body.querySelector('[data-testid="product-combobox"]')!
+    )
     await userEvent.clear(draftPriceInput())
     await userEvent.type(draftPriceInput(), '-1')
     await userEvent.click(getByText('Adicionar'))
@@ -260,7 +278,9 @@ describe('SalesActionDialog', () => {
   it('auto-fills the unit price with the suggested sale price on selection', async () => {
     await renderDialog()
 
-    await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
+    await userEvent.click(
+      document.body.querySelector('[data-testid="product-combobox"]')!
+    )
 
     expect(draftPriceInput().value).toBe('42.5')
   })
@@ -270,7 +290,9 @@ describe('SalesActionDialog', () => {
     try {
       await renderDialog()
 
-      await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
+      await userEvent.click(
+        document.body.querySelector('[data-testid="product-combobox"]')!
+      )
 
       expect(draftPriceInput().value).toBe('16.47')
     } finally {
@@ -282,13 +304,19 @@ describe('SalesActionDialog', () => {
     const { getByRole } = await renderDialog()
 
     await selectClientAndDate()
-    await userEvent.click(document.body.querySelector('[data-testid="product-combobox"]')!)
+    await userEvent.click(
+      document.body.querySelector('[data-testid="product-combobox"]')!
+    )
     expect(draftPriceInput().value).toBe('42.5')
     await userEvent.clear(draftQuantityInput())
     await userEvent.type(draftQuantityInput(), '3')
     await userEvent.clear(draftPriceInput())
     await userEvent.type(draftPriceInput(), '99.9')
-    await userEvent.click(Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Adicionar')!)
+    await userEvent.click(
+      Array.from(document.querySelectorAll('button')).find(
+        (b) => b.textContent?.trim() === 'Adicionar'
+      )!
+    )
     await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))
 
     await vi.waitFor(() => expect(apiPost).toHaveBeenCalledOnce())
@@ -369,7 +397,9 @@ describe('SalesActionDialog', () => {
     await selectClientAndDate()
     await addSaleItem('2', '30')
 
-    const allNumberInputs = document.querySelectorAll<HTMLInputElement>('input[type="number"]')
+    const allNumberInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="number"]'
+    )
     const rowQuantityInput = allNumberInputs[allNumberInputs.length - 1]
     expect(rowQuantityInput.value).toBe('2')
     expect(getByText('R$ 60,00')).toBeTruthy()
@@ -395,7 +425,9 @@ describe('SalesActionDialog', () => {
     await selectClientAndDate()
     await addSaleItem('2', '30')
 
-    const allNumberInputs = document.querySelectorAll<HTMLInputElement>('input[type="number"]')
+    const allNumberInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="number"]'
+    )
     const rowQuantityInput = allNumberInputs[allNumberInputs.length - 1]
     await userEvent.clear(rowQuantityInput)
 

@@ -47,13 +47,11 @@ export function KitCombobox({
   }
 
   const fetchFn = (search: string) =>
-    api
-      .get('/kits/search', { params: { q: search, limit: 20 } })
-      .then((r) => {
-        const kits = r.data.kits as KitSearchItem[]
-        itemsRef.current = kits
-        return kits
-      })
+    api.get('/kits/search', { params: { q: search, limit: 20 } }).then((r) => {
+      const kits = r.data.kits as KitSearchItem[]
+      itemsRef.current = kits
+      return kits
+    })
 
   return (
     <AsyncSearchCombobox<KitSearchItem>

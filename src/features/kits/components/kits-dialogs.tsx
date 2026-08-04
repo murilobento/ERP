@@ -1,7 +1,7 @@
-import { useKits } from './kits-provider'
 import { KitsActionDialog } from './kits-action-dialog'
 import { KitsDeleteDialog } from './kits-delete-dialog'
 import { KitsDetailDialog } from './kits-detail-dialog'
+import { useKits } from './kits-provider'
 
 export function KitsDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useKits()

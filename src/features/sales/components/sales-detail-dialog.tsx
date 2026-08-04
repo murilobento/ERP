@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import {
   Dialog,
   DialogContent,
@@ -10,22 +10,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  formatCurrency,
-  getSaleTotal,
-  type Sale,
-} from '../data/schema'
-import {
-  SalesDetailView,
-  SalesStatusBadge,
-  type SalesDetailConfirmAction,
-} from './sales-detail-view'
-import { SaleEditForm } from './sale-edit-form'
+import { formatCurrency, getSaleTotal, type Sale } from '../data/schema'
 import {
   SaleConfirmAction,
   SaleCompletePanel,
   SaleReversePanel,
 } from './sale-confirm-panels'
+import { SaleEditForm } from './sale-edit-form'
+import {
+  SalesDetailView,
+  SalesStatusBadge,
+  type SalesDetailConfirmAction,
+} from './sales-detail-view'
 import { useSales } from './sales-provider'
 
 type SaleResponse = {

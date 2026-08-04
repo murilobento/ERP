@@ -1,7 +1,7 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { type Kit, formatCurrency } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
@@ -72,9 +72,7 @@ export const kitsColumns: ColumnDef<Kit>[] = [
     ),
     cell: ({ row }) => {
       const totalPrice = row.getValue('totalPrice') as number
-      return (
-        <span>{totalPrice > 0 ? formatCurrency(totalPrice) : '—'}</span>
-      )
+      return <span>{totalPrice > 0 ? formatCurrency(totalPrice) : '—'}</span>
     },
   },
   {
@@ -90,7 +88,11 @@ export const kitsColumns: ColumnDef<Kit>[] = [
       if (kit.discountType === 'percentage') {
         return <span className='text-red-500'>-{kit.discountValue}%</span>
       }
-      return <span className='text-red-500'>-{formatCurrency(kit.discountValue)}</span>
+      return (
+        <span className='text-red-500'>
+          -{formatCurrency(kit.discountValue)}
+        </span>
+      )
     },
   },
   {

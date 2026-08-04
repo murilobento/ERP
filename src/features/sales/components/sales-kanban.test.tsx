@@ -125,7 +125,12 @@ describe('SalesKanban', () => {
           quantity: 2,
           unitPrice: 25,
           kitId: null,
-          product: { id: 'product-1', name: 'Bolo de Chocolate', unit: 'un', status: 'active' },
+          product: {
+            id: 'product-1',
+            name: 'Bolo de Chocolate',
+            unit: 'un',
+            status: 'active',
+          },
         },
       ],
     })
@@ -138,7 +143,12 @@ describe('SalesKanban', () => {
           quantity: 3,
           unitPrice: 25,
           kitId: null,
-          product: { id: 'product-1', name: 'Bolo de Chocolate', unit: 'un', status: 'active' },
+          product: {
+            id: 'product-1',
+            name: 'Bolo de Chocolate',
+            unit: 'un',
+            status: 'active',
+          },
         },
         {
           id: 'item-3',
@@ -146,7 +156,12 @@ describe('SalesKanban', () => {
           quantity: 1,
           unitPrice: 40,
           kitId: null,
-          product: { id: 'product-2', name: 'Torta de Limão', unit: 'un', status: 'active' },
+          product: {
+            id: 'product-2',
+            name: 'Torta de Limão',
+            unit: 'un',
+            status: 'active',
+          },
         },
       ],
     })
@@ -181,7 +196,12 @@ describe('SalesKanban', () => {
           quantity: 1,
           unitPrice: 25,
           kitId: null,
-          product: { id: 'product-1', name: 'Bolo de Chocolate', unit: 'un', status: 'active' },
+          product: {
+            id: 'product-1',
+            name: 'Bolo de Chocolate',
+            unit: 'un',
+            status: 'active',
+          },
         },
       ],
     })

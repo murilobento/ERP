@@ -1,5 +1,5 @@
-import { ContactActionDialog } from '@/features/shared/contact-action-dialog'
 import { queryKeys } from '@/lib/query-keys'
+import { ContactActionDialog } from '@/features/shared/contact-action-dialog'
 import { type Client } from '../data/schema'
 
 const clientConfig = {

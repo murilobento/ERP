@@ -1,11 +1,11 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
-import { type Contact } from './contact-types'
 import { type ContactRowActionsProps } from './contact-row-actions'
+import { type Contact } from './contact-types'
 
 export function createContactColumns(
   DataTableRowActions: React.ComponentType<ContactRowActionsProps>
@@ -44,9 +44,7 @@ export function createContactColumns(
         <DataTableColumnHeader column={column} title='Nome' />
       ),
       cell: ({ row }) => (
-        <LongText className='max-w-36 ps-3'>
-          {row.getValue('name')}
-        </LongText>
+        <LongText className='max-w-36 ps-3'>{row.getValue('name')}</LongText>
       ),
       meta: {
         className: cn(
@@ -76,14 +74,16 @@ export function createContactColumns(
           .join(', '),
       cell: ({ row }) => {
         const { street, number, neighborhood, city, state } = row.original
-        const parts = [street, number && `nº ${number}`, neighborhood, city, state]
+        const parts = [
+          street,
+          number && `nº ${number}`,
+          neighborhood,
+          city,
+          state,
+        ]
           .filter(Boolean)
           .join(', ')
-        return (
-          <LongText className='max-w-64 ps-2'>
-            {parts}
-          </LongText>
-        )
+        return <LongText className='max-w-64 ps-2'>{parts}</LongText>
       },
     },
     {

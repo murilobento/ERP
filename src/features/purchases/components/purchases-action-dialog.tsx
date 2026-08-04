@@ -1,17 +1,9 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
-import {
-  ProductSupplyCombobox,
-  type ProductSupplySearchItem,
-} from '@/components/product-supply-combobox'
-import {
-  VendorCombobox,
-  type VendorSearchItem,
-} from '@/components/vendor-combobox'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -31,6 +23,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  ProductSupplyCombobox,
+  type ProductSupplySearchItem,
+} from '@/components/product-supply-combobox'
+import {
+  VendorCombobox,
+  type VendorSearchItem,
+} from '@/components/vendor-combobox'
 import { usePurchases } from './purchases-provider'
 
 type ItemForm = {
@@ -50,9 +50,15 @@ export function PurchasesActionDialog({
 }: PurchasesActionDialogProps) {
   const { run, isLoading } = useEntityMutation()
   const [vendorId, setVendorId] = useState('')
-  const [selectedVendor, setSelectedVendor] = useState<VendorSearchItem | null>(null)
+  const [selectedVendor, setSelectedVendor] = useState<VendorSearchItem | null>(
+    null
+  )
   const [notes, setNotes] = useState('')
-  const [draftItem, setDraftItem] = useState<ItemForm>({ supplyId: '', packages: 1, packageCost: 0 })
+  const [draftItem, setDraftItem] = useState<ItemForm>({
+    supplyId: '',
+    packages: 1,
+    packageCost: 0,
+  })
   const [items, setItems] = useState<ItemForm[]>([])
   const [selectedSupplies, setSelectedSupplies] = useState<
     Record<string, ProductSupplySearchItem>
@@ -159,7 +165,9 @@ export function PurchasesActionDialog({
         <DialogHeader className='text-start'>
           <DialogTitle>{isEdit ? 'Editar Compra' : 'Nova Compra'}</DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Atualize os dados da compra.' : 'Registre uma nova compra de insumos.'}
+            {isEdit
+              ? 'Atualize os dados da compra.'
+              : 'Registre uma nova compra de insumos.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -204,7 +212,9 @@ export function PurchasesActionDialog({
                 />
               </div>
               <div className='min-w-0'>
-                <Label className='text-xs text-muted-foreground'>Quantidade</Label>
+                <Label className='text-xs text-muted-foreground'>
+                  Quantidade
+                </Label>
                 <Input
                   type='number'
                   min='1'
@@ -219,7 +229,9 @@ export function PurchasesActionDialog({
                 />
               </div>
               <div className='min-w-0'>
-                <Label className='text-xs text-muted-foreground'>Preço emb. (R$)</Label>
+                <Label className='text-xs text-muted-foreground'>
+                  Preço emb. (R$)
+                </Label>
                 <Input
                   type='number'
                   min='0'
@@ -258,7 +270,10 @@ export function PurchasesActionDialog({
                   <TableBody>
                     {items.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className='h-16 text-center text-muted-foreground'>
+                        <TableCell
+                          colSpan={5}
+                          className='h-16 text-center text-muted-foreground'
+                        >
                           Nenhum item adicionado.
                         </TableCell>
                       </TableRow>

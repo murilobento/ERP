@@ -1,9 +1,13 @@
 import { useCallback, useState } from 'react'
+import {
+  type UseFormReturn,
+  type FieldValues,
+  type Path,
+} from 'react-hook-form'
 import { toast } from 'sonner'
-import { type UseFormReturn, type FieldValues, type Path } from 'react-hook-form'
 
 export function useCepLookup<TFieldValues extends FieldValues = FieldValues>(
-  form: UseFormReturn<TFieldValues>,
+  form: UseFormReturn<TFieldValues>
 ) {
   const [isLoadingCep, setIsLoadingCep] = useState(false)
 
@@ -32,7 +36,7 @@ export function useCepLookup<TFieldValues extends FieldValues = FieldValues>(
         setIsLoadingCep(false)
       }
     },
-    [form],
+    [form]
   )
 
   return { fetchCep, isLoadingCep }

@@ -1,15 +1,15 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { DataTableColumnHeader } from '@/components/data-table'
-import { type Product } from '../data/schema'
-import { DataTableRowActions } from './data-table-row-actions'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import { DataTableColumnHeader } from '@/components/data-table'
+import { type Product } from '../data/schema'
+import { DataTableRowActions } from './data-table-row-actions'
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -79,9 +79,7 @@ export const productsColumns: ColumnDef<Product>[] = [
     accessorFn: (row) => row.category?.name || '',
     cell: ({ row }) => {
       const category = row.original.category
-      return (
-        <span className='ps-2'>{category?.name || '—'}</span>
-      )
+      return <span className='ps-2'>{category?.name || '—'}</span>
     },
   },
   {
@@ -92,9 +90,7 @@ export const productsColumns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       const stock = row.getValue('stock') as number
       return (
-        <Badge variant={stock > 0 ? 'default' : 'secondary'}>
-          {stock}
-        </Badge>
+        <Badge variant={stock > 0 ? 'default' : 'secondary'}>{stock}</Badge>
       )
     },
   },
@@ -107,7 +103,11 @@ export const productsColumns: ColumnDef<Product>[] = [
       const costPrice = row.getValue('costPrice') as number
       const unit = row.original.unit
       if (!costPrice) return <span className='text-muted-foreground'>—</span>
-      return <span>R$ {costPrice.toFixed(2)}/{unit}</span>
+      return (
+        <span>
+          R$ {costPrice.toFixed(2)}/{unit}
+        </span>
+      )
     },
   },
   {
@@ -129,7 +129,11 @@ export const productsColumns: ColumnDef<Product>[] = [
       const salePrice = row.getValue('salePrice') as number
       const unit = row.original.unit
       if (!salePrice) return <span className='text-muted-foreground'>—</span>
-      return <span>R$ {salePrice.toFixed(2)}/{unit}</span>
+      return (
+        <span>
+          R$ {salePrice.toFixed(2)}/{unit}
+        </span>
+      )
     },
   },
   {
@@ -148,7 +152,7 @@ export const productsColumns: ColumnDef<Product>[] = [
       return (
         <HoverCard>
           <HoverCardTrigger asChild>
-            <span className='cursor-default ps-2 underline decoration-dashed underline-offset-4 text-primary'>
+            <span className='cursor-default ps-2 text-primary underline decoration-dashed underline-offset-4'>
               {count} {count === 1 ? 'insumo' : 'insumos'}
             </span>
           </HoverCardTrigger>
@@ -168,7 +172,7 @@ export const productsColumns: ColumnDef<Product>[] = [
                   </span>
                 </div>
               ))}
-              <div className='mt-1.5 border-t pt-1.5 flex items-center justify-between text-sm font-semibold'>
+              <div className='mt-1.5 flex items-center justify-between border-t pt-1.5 text-sm font-semibold'>
                 <span>Total</span>
                 <span>{formatCurrency(totalCost)}</span>
               </div>

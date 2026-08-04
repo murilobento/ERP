@@ -1,4 +1,5 @@
 import { Pen } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -8,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -51,7 +51,9 @@ export function KitsDetailDialog({
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
             <DialogTitle>{currentRow.name}</DialogTitle>
-            <Badge variant={currentRow.status === 'active' ? 'default' : 'secondary'}>
+            <Badge
+              variant={currentRow.status === 'active' ? 'default' : 'secondary'}
+            >
               {currentRow.status === 'active' ? 'Ativo' : 'Inativo'}
             </Badge>
           </div>
@@ -105,7 +107,8 @@ export function KitsDetailDialog({
                       (sum, c) => sum + c.quantity * c.supply.costPrice,
                       0
                     )
-                    const salePrice = costPrice * (1 + item.product.margin / 100)
+                    const salePrice =
+                      costPrice * (1 + item.product.margin / 100)
                     const total = salePrice * item.quantity
                     return (
                       <TableRow key={item.id}>

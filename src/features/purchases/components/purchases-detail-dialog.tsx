@@ -1,14 +1,10 @@
 import { useState } from 'react'
-import {
-  CheckCircle2,
-  Loader2,
-  Pen,
-  RotateCcw,
-} from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
+import { CheckCircle2, Loader2, Pen, RotateCcw } from 'lucide-react'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,12 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { type Purchase, purchaseStatusMap } from '../data/schema'
-import { usePurchases } from './purchases-provider'
 import { PurchaseEditForm } from './purchase-edit-form'
+import { usePurchases } from './purchases-provider'
 
 type PurchaseResponse = {
   purchase: Purchase
@@ -52,13 +47,17 @@ export function PurchasesDetailDialog() {
   if (!currentRow) return null
 
   const purchase = detail ?? currentRow
-  const statusConfig = purchaseStatusMap[purchase.status] || { label: purchase.status, variant: 'secondary' as const }
+  const statusConfig = purchaseStatusMap[purchase.status] || {
+    label: purchase.status,
+    variant: 'secondary' as const,
+  }
   const canEdit = purchase.status === 'pending'
 
   function syncPurchase(updatedPurchase: Purchase) {
-    queryClient.setQueryData<Purchase[]>(
-      queryKeys.purchases,
-      (old) => old?.map((item) => (item.id === updatedPurchase.id ? updatedPurchase : item))
+    queryClient.setQueryData<Purchase[]>(queryKeys.purchases, (old) =>
+      old?.map((item) =>
+        item.id === updatedPurchase.id ? updatedPurchase : item
+      )
     )
     queryClient.setQueryData<Purchase>(
       queryKeys.purchase(updatedPurchase.id),
@@ -176,15 +175,28 @@ export function PurchasesDetailDialog() {
           {!isEditing && confirmComplete && (
             <>
               <div className='rounded-md border border-green-600/50 bg-green-600/10 px-4 py-3 text-sm'>
-                <p className='font-medium text-green-600 dark:text-green-400'>Confirmar conclusão da compra?</p>
-                <p className='mt-1 text-muted-foreground'>O estoque dos insumos será atualizado. Esta ação não pode ser desfeita.</p>
+                <p className='font-medium text-green-600 dark:text-green-400'>
+                  Confirmar conclusão da compra?
+                </p>
+                <p className='mt-1 text-muted-foreground'>
+                  O estoque dos insumos será atualizado. Esta ação não pode ser
+                  desfeita.
+                </p>
               </div>
               <DialogFooter className='gap-2'>
-                <Button variant='outline' onClick={() => setConfirmComplete(false)} disabled={isLoading}>
+                <Button
+                  variant='outline'
+                  onClick={() => setConfirmComplete(false)}
+                  disabled={isLoading}
+                >
                   Voltar
                 </Button>
                 <Button onClick={handleComplete} disabled={isLoading}>
-                  {isLoading ? <Loader2 className='animate-spin' /> : <CheckCircle2 size={16} className='me-1' />}
+                  {isLoading ? (
+                    <Loader2 className='animate-spin' />
+                  ) : (
+                    <CheckCircle2 size={16} className='me-1' />
+                  )}
                   Confirmar Conclusão
                 </Button>
               </DialogFooter>
@@ -194,11 +206,17 @@ export function PurchasesDetailDialog() {
           {!isEditing && showReverse && (
             <>
               <div className='rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm'>
-                <p className='font-medium text-destructive'>Confirmar estorno da compra?</p>
-                <p className='mt-1 text-muted-foreground'>O estoque será revertido e a compra voltará para pendente.</p>
+                <p className='font-medium text-destructive'>
+                  Confirmar estorno da compra?
+                </p>
+                <p className='mt-1 text-muted-foreground'>
+                  O estoque será revertido e a compra voltará para pendente.
+                </p>
               </div>
               <div className='space-y-2 rounded-md border border-destructive/50 p-3'>
-                <Label className='text-sm font-medium text-destructive'>Motivo do Estorno *</Label>
+                <Label className='text-sm font-medium text-destructive'>
+                  Motivo do Estorno *
+                </Label>
                 <Input
                   placeholder='Informe o motivo do estorno...'
                   value={reverseReason}
@@ -207,11 +225,26 @@ export function PurchasesDetailDialog() {
                 />
               </div>
               <DialogFooter className='gap-2'>
-                <Button variant='outline' onClick={() => { setShowReverse(false); setReverseReason('') }} disabled={isLoading}>
+                <Button
+                  variant='outline'
+                  onClick={() => {
+                    setShowReverse(false)
+                    setReverseReason('')
+                  }}
+                  disabled={isLoading}
+                >
                   Cancelar
                 </Button>
-                <Button variant='destructive' onClick={handleReverse} disabled={isLoading || !reverseReason.trim()}>
-                  {isLoading ? <Loader2 className='animate-spin' /> : <RotateCcw size={16} className='me-1' />}
+                <Button
+                  variant='destructive'
+                  onClick={handleReverse}
+                  disabled={isLoading || !reverseReason.trim()}
+                >
+                  {isLoading ? (
+                    <Loader2 className='animate-spin' />
+                  ) : (
+                    <RotateCcw size={16} className='me-1' />
+                  )}
                   Confirmar Estorno
                 </Button>
               </DialogFooter>
@@ -233,7 +266,8 @@ export function PurchasesDetailDialog() {
                         {item.packageCost > 0 && (
                           <>
                             <span className='text-muted-foreground'>
-                              R$ {item.packageCost.toFixed(2)}/{item.supply.packageUnit || 'emb.'}
+                              R$ {item.packageCost.toFixed(2)}/
+                              {item.supply.packageUnit || 'emb.'}
                             </span>
                             <span className='text-muted-foreground'>·</span>
                           </>
@@ -242,7 +276,9 @@ export function PurchasesDetailDialog() {
                           {item.packages} {item.supply.packageUnit || 'emb.'}(s)
                         </span>
                         <span className='text-muted-foreground'>=</span>
-                        <strong>{item.quantity} {item.supply.unit}</strong>
+                        <strong>
+                          {item.quantity} {item.supply.unit}
+                        </strong>
                       </div>
                     </div>
                   ))}
@@ -252,18 +288,24 @@ export function PurchasesDetailDialog() {
               {purchase.notes && (
                 <div>
                   <h4 className='mb-1 text-sm font-medium'>Observação</h4>
-                  <p className='text-sm text-muted-foreground'>{purchase.notes}</p>
+                  <p className='text-sm text-muted-foreground'>
+                    {purchase.notes}
+                  </p>
                 </div>
               )}
 
               {purchase.reversedAt && (
                 <div className='rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2'>
-                  <h4 className='mb-1 text-sm font-medium text-destructive'>Estorno</h4>
+                  <h4 className='mb-1 text-sm font-medium text-destructive'>
+                    Estorno
+                  </h4>
                   <p className='text-sm text-muted-foreground'>
                     {new Date(purchase.reversedAt).toLocaleString()}
                   </p>
                   {purchase.reversalReason && (
-                    <p className='mt-1 text-sm'>Motivo: {purchase.reversalReason}</p>
+                    <p className='mt-1 text-sm'>
+                      Motivo: {purchase.reversalReason}
+                    </p>
                   )}
                 </div>
               )}
@@ -286,15 +328,25 @@ export function PurchasesDetailDialog() {
 
               <DialogFooter className='gap-2'>
                 {canEdit && (
-                  <Button onClick={() => setIsEditing(true)} disabled={isLoading}>
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    disabled={isLoading}
+                  >
                     <Pen size={16} className='me-1' />
                     Editar
                   </Button>
                 )}
                 {purchase.status === 'pending' && (
                   <>
-                    <Button onClick={() => setConfirmComplete(true)} disabled={isLoading}>
-                      {isLoading ? <Loader2 className='animate-spin' /> : <CheckCircle2 size={16} className='me-1' />}
+                    <Button
+                      onClick={() => setConfirmComplete(true)}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className='animate-spin' />
+                      ) : (
+                        <CheckCircle2 size={16} className='me-1' />
+                      )}
                       Concluir
                     </Button>
                     <Button variant='outline' onClick={() => setOpen(null)}>
@@ -304,7 +356,10 @@ export function PurchasesDetailDialog() {
                 )}
                 {purchase.status === 'completed' && (
                   <>
-                    <Button variant='destructive' onClick={() => setShowReverse(true)}>
+                    <Button
+                      variant='destructive'
+                      onClick={() => setShowReverse(true)}
+                    >
                       <RotateCcw size={16} className='me-1' />
                       Estornar
                     </Button>

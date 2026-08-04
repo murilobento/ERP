@@ -1,5 +1,5 @@
-import { Building2, ImageIcon, Loader2, MapPin } from 'lucide-react'
 import { type UseFormReturn } from 'react-hook-form'
+import { Building2, ImageIcon, Loader2, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -135,7 +135,11 @@ export function CompanyBasicDataForm({ form }: CompanyFormSectionProps) {
             <FormItem className='md:col-span-4'>
               <FormLabel>URL da logo</FormLabel>
               <FormControl>
-                <Input placeholder='https://...' autoComplete='off' {...field} />
+                <Input
+                  placeholder='https://...'
+                  autoComplete='off'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -211,7 +215,11 @@ export function CompanyAddressForm({
             <FormItem className='md:col-span-6'>
               <FormLabel>Rua</FormLabel>
               <FormControl>
-                <Input placeholder='Rua Exemplo' autoComplete='off' {...field} />
+                <Input
+                  placeholder='Rua Exemplo'
+                  autoComplete='off'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

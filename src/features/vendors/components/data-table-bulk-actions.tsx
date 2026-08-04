@@ -1,6 +1,6 @@
 import { type Table } from '@tanstack/react-table'
-import { ContactBulkActions } from '@/features/shared/contact-bulk-actions'
 import { queryKeys } from '@/lib/query-keys'
+import { ContactBulkActions } from '@/features/shared/contact-bulk-actions'
 import { type Vendor } from '../data/schema'
 
 const vendorConfig = {

@@ -1,12 +1,18 @@
 import { Badge } from '@/components/ui/badge'
+import { purchaseStatusMap } from '@/features/purchases/data/schema'
+import { saleStatusMap } from '@/features/sales/data/schema'
 import {
   type StockMovementReference,
   stockAdjustmentStatusMap,
 } from '../data/schema'
-import { saleStatusMap } from '@/features/sales/data/schema'
-import { purchaseStatusMap } from '@/features/purchases/data/schema'
 
-const productionStatusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'success' }> = {
+const productionStatusMap: Record<
+  string,
+  {
+    label: string
+    variant: 'default' | 'secondary' | 'destructive' | 'success'
+  }
+> = {
   in_production: { label: 'Em Produção', variant: 'default' },
   completed: { label: 'Concluída', variant: 'success' },
   cancelled: { label: 'Cancelada', variant: 'destructive' },
@@ -17,7 +23,11 @@ function formatDate(value: string | null | undefined) {
   return new Date(value).toLocaleString()
 }
 
-export function ReferenceHoverContent({ reference }: { reference: StockMovementReference }) {
+export function ReferenceHoverContent({
+  reference,
+}: {
+  reference: StockMovementReference
+}) {
   switch (reference.type) {
     case 'sale': {
       const d = reference.data
@@ -34,11 +44,18 @@ export function ReferenceHoverContent({ reference }: { reference: StockMovementR
           </div>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-muted-foreground'>Status</span>
-            <Badge variant={saleStatusMap[d.status as keyof typeof saleStatusMap]?.variant ?? 'secondary'} className='text-xs'>
-              {saleStatusMap[d.status as keyof typeof saleStatusMap]?.label ?? d.status}
+            <Badge
+              variant={
+                saleStatusMap[d.status as keyof typeof saleStatusMap]
+                  ?.variant ?? 'secondary'
+              }
+              className='text-xs'
+            >
+              {saleStatusMap[d.status as keyof typeof saleStatusMap]?.label ??
+                d.status}
             </Badge>
           </div>
-          <div className='mt-1.5 border-t pt-1.5 space-y-1'>
+          <div className='mt-1.5 space-y-1 border-t pt-1.5'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Criada em</span>
               <span>{formatDate(d.createdAt)}</span>
@@ -80,11 +97,18 @@ export function ReferenceHoverContent({ reference }: { reference: StockMovementR
           </div>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-muted-foreground'>Status</span>
-            <Badge variant={purchaseStatusMap[d.status as keyof typeof purchaseStatusMap]?.variant ?? 'secondary'} className='text-xs'>
-              {purchaseStatusMap[d.status as keyof typeof purchaseStatusMap]?.label ?? d.status}
+            <Badge
+              variant={
+                purchaseStatusMap[d.status as keyof typeof purchaseStatusMap]
+                  ?.variant ?? 'secondary'
+              }
+              className='text-xs'
+            >
+              {purchaseStatusMap[d.status as keyof typeof purchaseStatusMap]
+                ?.label ?? d.status}
             </Badge>
           </div>
-          <div className='mt-1.5 border-t pt-1.5 space-y-1'>
+          <div className='mt-1.5 space-y-1 border-t pt-1.5'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Criada em</span>
               <span>{formatDate(d.createdAt)}</span>
@@ -114,15 +138,20 @@ export function ReferenceHoverContent({ reference }: { reference: StockMovementR
           </div>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-muted-foreground'>Quantidade</span>
-            <span className='font-medium'>{d.quantity} {d.product.unit}</span>
+            <span className='font-medium'>
+              {d.quantity} {d.product.unit}
+            </span>
           </div>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-muted-foreground'>Status</span>
-            <Badge variant={productionStatusMap[d.status]?.variant ?? 'secondary'} className='text-xs'>
+            <Badge
+              variant={productionStatusMap[d.status]?.variant ?? 'secondary'}
+              className='text-xs'
+            >
               {productionStatusMap[d.status]?.label ?? d.status}
             </Badge>
           </div>
-          <div className='mt-1.5 border-t pt-1.5 space-y-1'>
+          <div className='mt-1.5 space-y-1 border-t pt-1.5'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Criada em</span>
               <span>{formatDate(d.createdAt)}</span>
@@ -152,11 +181,20 @@ export function ReferenceHoverContent({ reference }: { reference: StockMovementR
           </div>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-muted-foreground'>Status</span>
-            <Badge variant={stockAdjustmentStatusMap[d.status as keyof typeof stockAdjustmentStatusMap]?.variant ?? 'secondary'} className='text-xs'>
-              {stockAdjustmentStatusMap[d.status as keyof typeof stockAdjustmentStatusMap]?.label ?? d.status}
+            <Badge
+              variant={
+                stockAdjustmentStatusMap[
+                  d.status as keyof typeof stockAdjustmentStatusMap
+                ]?.variant ?? 'secondary'
+              }
+              className='text-xs'
+            >
+              {stockAdjustmentStatusMap[
+                d.status as keyof typeof stockAdjustmentStatusMap
+              ]?.label ?? d.status}
             </Badge>
           </div>
-          <div className='mt-1.5 border-t pt-1.5 space-y-1'>
+          <div className='mt-1.5 space-y-1 border-t pt-1.5'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Criado em</span>
               <span>{formatDate(d.createdAt)}</span>

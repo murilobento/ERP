@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
 import { Eye, UserPen, Power } from 'lucide-react'
+import api from '@/lib/api'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,14 +13,21 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import api from '@/lib/api'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { type Contact, type ContactConfig } from './contact-types'
 
 export type ContactRowActionsProps = {
   row: Row<Contact>
 }
 
-export function createContactRowActions<DialogType extends string>(config: ContactConfig, useEntity: () => { setOpen: (value: DialogType | null) => void; setCurrentRow: (row: Contact | null) => void }, hasView = false) {
+export function createContactRowActions<DialogType extends string>(
+  config: ContactConfig,
+  useEntity: () => {
+    setOpen: (value: DialogType | null) => void
+    setCurrentRow: (row: Contact | null) => void
+  },
+  hasView = false
+) {
   function ContactRowActions({ row }: ContactRowActionsProps) {
     const { setOpen, setCurrentRow } = useEntity()
     const { run, isLoading } = useEntityMutation()
@@ -97,7 +104,11 @@ export function createContactRowActions<DialogType extends string>(config: Conta
         <ConfirmDialog
           open={showConfirm}
           onOpenChange={setShowConfirm}
-          title={isActive ? `Desativar ${config.entityLabelLower}` : `Ativar ${config.entityLabelLower}`}
+          title={
+            isActive
+              ? `Desativar ${config.entityLabelLower}`
+              : `Ativar ${config.entityLabelLower}`
+          }
           desc={`Tem certeza que deseja ${isActive ? 'desativar' : 'ativar'} este ${config.entityLabelLower}?`}
           destructive={isActive}
           isLoading={isLoading}

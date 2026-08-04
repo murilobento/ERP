@@ -2,9 +2,9 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type Purchase } from '../data/schema'
-import { usePurchases } from './purchases-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { purchasesColumns as columns } from './purchases-columns'
+import { usePurchases } from './purchases-provider'
 
 type DataTableProps = {
   data: Purchase[]

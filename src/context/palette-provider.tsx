@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 import { type Palette, palettes, paletteLabels } from '@/config/palettes'
+import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 const PALETTE_COOKIE_NAME = 'palette'
 const PALETTE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
@@ -59,9 +59,7 @@ export function PaletteProvider({ children }: PaletteProviderProps) {
     resetPalette,
   }
 
-  return (
-    <PaletteContext value={contextValue}>{children}</PaletteContext>
-  )
+  return <PaletteContext value={contextValue}>{children}</PaletteContext>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

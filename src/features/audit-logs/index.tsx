@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { Main } from '@/components/layout/main'
-import { PageHeader } from '@/components/page-header'
-import { useDocumentTitle } from '@/hooks/use-document-title'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
+import { useDocumentTitle } from '@/hooks/use-document-title'
+import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/page-header'
 import { AuditLogsTable } from './components/audit-logs-table'
 import { type AuditLog } from './data/schema'
 

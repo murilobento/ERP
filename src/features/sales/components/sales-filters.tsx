@@ -21,7 +21,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/date-picker'
-import { saleStatusMap, type SaleStatus } from '../data/schema'
 import {
   type DatePreset,
   datePresetOptions,
@@ -31,6 +30,7 @@ import {
   getDateRangeLabel,
   isPresetActive,
 } from '@/features/shared/filter-date-utils'
+import { saleStatusMap, type SaleStatus } from '../data/schema'
 
 type SalesFiltersProps = {
   search: Record<string, unknown>

@@ -4,10 +4,7 @@ import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 
-type PasswordInputProps = Omit<
-  React.ComponentProps<typeof Input>,
-  'type'
->
+type PasswordInputProps = Omit<React.ComponentProps<typeof Input>, 'type'>
 
 export function PasswordInput({
   className,

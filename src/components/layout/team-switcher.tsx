@@ -1,12 +1,12 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Command } from 'lucide-react'
-import { useState } from 'react'
-import { type Company } from '@/features/company/data/schema'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { type Company } from '@/features/company/data/schema'
 
 type TeamSwitcherProps = {
   company?: Company | null
@@ -35,7 +35,9 @@ export function TeamSwitcher({ company }: TeamSwitcherProps) {
                 <Command className='size-4' />
               </div>
             )}
-            <span className='truncate text-sm font-semibold'>{companyName}</span>
+            <span className='truncate text-sm font-semibold'>
+              {companyName}
+            </span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>

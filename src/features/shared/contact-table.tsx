@@ -1,7 +1,7 @@
+import { type ColumnDef, type Table } from '@tanstack/react-table'
 import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
-import { type ColumnDef, type Table } from '@tanstack/react-table'
 import { type Contact } from './contact-types'
 
 type ContactTableProps = {

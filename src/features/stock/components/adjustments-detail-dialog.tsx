@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
+import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { type StockAdjustment, stockAdjustmentStatusMap } from '../data/schema'
@@ -34,7 +34,9 @@ export function AdjustmentsDetailDialog() {
   const { data: detail } = useQuery({
     queryKey: queryKeys.stock.adjustment(currentRowId ?? ''),
     queryFn: async () => {
-      const res = await api.get<AdjustmentResponse>(`/stock/adjustments/${currentRowId}`)
+      const res = await api.get<AdjustmentResponse>(
+        `/stock/adjustments/${currentRowId}`
+      )
       return res.data.adjustment
     },
     enabled: open === 'view' && !!currentRowId,
@@ -91,7 +93,12 @@ export function AdjustmentsDetailDialog() {
   const statusConfig = status ? stockAdjustmentStatusMap[status] : null
 
   return (
-    <Dialog open={open === 'view'} onOpenChange={(state) => { if (!state) handleClose() }}>
+    <Dialog
+      open={open === 'view'}
+      onOpenChange={(state) => {
+        if (!state) handleClose()
+      }}
+    >
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
           <DialogTitle>Detalhes do Acerto</DialogTitle>
@@ -115,15 +122,20 @@ export function AdjustmentsDetailDialog() {
               </div>
               <div>
                 <Label className='text-muted-foreground'>Quantidade</Label>
-                <p className={`font-medium ${adjustment.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {adjustment.quantity > 0 ? '+' : ''}{adjustment.quantity} {itemUnit}
+                <p
+                  className={`font-medium ${adjustment.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                >
+                  {adjustment.quantity > 0 ? '+' : ''}
+                  {adjustment.quantity} {itemUnit}
                 </p>
               </div>
               <div>
                 <Label className='text-muted-foreground'>Status</Label>
                 <div className='mt-0.5'>
                   {statusConfig && (
-                    <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+                    <Badge variant={statusConfig.variant}>
+                      {statusConfig.label}
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -148,13 +160,17 @@ export function AdjustmentsDetailDialog() {
               {adjustment.completedAt && (
                 <>
                   <div>
-                    <Label className='text-muted-foreground'>Concluído em</Label>
+                    <Label className='text-muted-foreground'>
+                      Concluído em
+                    </Label>
                     <p className='font-medium'>
                       {new Date(adjustment.completedAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <Label className='text-muted-foreground'>Concluído por</Label>
+                    <Label className='text-muted-foreground'>
+                      Concluído por
+                    </Label>
                     <p className='font-medium'>
                       {adjustment.completedBy
                         ? `${adjustment.completedBy.firstName} ${adjustment.completedBy.lastName}`
@@ -166,13 +182,17 @@ export function AdjustmentsDetailDialog() {
               {adjustment.reversedAt && (
                 <>
                   <div>
-                    <Label className='text-muted-foreground'>Estornado em</Label>
+                    <Label className='text-muted-foreground'>
+                      Estornado em
+                    </Label>
                     <p className='font-medium'>
                       {new Date(adjustment.reversedAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <Label className='text-muted-foreground'>Estornado por</Label>
+                    <Label className='text-muted-foreground'>
+                      Estornado por
+                    </Label>
                     <p className='font-medium'>
                       {adjustment.reversedBy
                         ? `${adjustment.reversedBy.firstName} ${adjustment.reversedBy.lastName}`
@@ -180,8 +200,12 @@ export function AdjustmentsDetailDialog() {
                     </p>
                   </div>
                   <div className='col-span-2'>
-                    <Label className='text-muted-foreground'>Motivo do estorno</Label>
-                    <p className='font-medium'>{adjustment.reversalReason || '—'}</p>
+                    <Label className='text-muted-foreground'>
+                      Motivo do estorno
+                    </Label>
+                    <p className='font-medium'>
+                      {adjustment.reversalReason || '—'}
+                    </p>
                   </div>
                 </>
               )}
@@ -200,7 +224,7 @@ export function AdjustmentsDetailDialog() {
             )}
 
             {adjustment.status === 'pending' && confirmComplete && (
-              <div className='rounded-md border bg-muted/40 p-3 space-y-3'>
+              <div className='space-y-3 rounded-md border bg-muted/40 p-3'>
                 <p className='text-sm font-medium'>
                   Confirmar conclusão do acerto? O estoque será atualizado.
                 </p>
@@ -234,7 +258,7 @@ export function AdjustmentsDetailDialog() {
             )}
 
             {adjustment.status === 'completed' && showReverse && (
-              <div className='rounded-md border bg-destructive/10 p-3 space-y-3'>
+              <div className='space-y-3 rounded-md border bg-destructive/10 p-3'>
                 <Label htmlFor='reverse-reason'>Motivo do estorno</Label>
                 <Input
                   id='reverse-reason'

@@ -7,8 +7,8 @@ export function UnauthorisedError() {
       title='Acesso Não Autorizado'
       description={
         <>
-          Por favor, faça login com as credenciais apropriadas <br /> para acessar
-          este recurso.
+          Por favor, faça login com as credenciais apropriadas <br /> para
+          acessar este recurso.
         </>
       }
       actions={<DefaultErrorActions />}

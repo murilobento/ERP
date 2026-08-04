@@ -1,5 +1,5 @@
-import { ClientsDetailDialog } from './clients-detail-dialog'
 import { ClientsActionDialog } from './clients-action-dialog'
+import { ClientsDetailDialog } from './clients-detail-dialog'
 import { useClients } from './clients-provider'
 
 export function ClientsDialogs() {

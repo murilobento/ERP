@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { type Table } from '@tanstack/react-table'
 import { Power } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
-import { ConfirmDialog } from '@/components/confirm-dialog'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-table'
 import { type User } from '../data/schema'
 
@@ -62,7 +62,10 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{label.charAt(0).toUpperCase() + label.slice(1)} usuários selecionados</p>
+            <p>
+              {label.charAt(0).toUpperCase() + label.slice(1)} usuários
+              selecionados
+            </p>
           </TooltipContent>
         </Tooltip>
       </BulkActionsToolbar>

@@ -2,9 +2,7 @@ import { type QueryKey } from '@tanstack/react-query'
 
 type QueryKeyFactory = (id: string) => QueryKey
 type QueryKeyEntry =
-  | QueryKey
-  | Record<string, QueryKey | QueryKeyFactory>
-  | QueryKeyFactory
+  QueryKey | Record<string, QueryKey | QueryKeyFactory> | QueryKeyFactory
 
 export const queryKeys = {
   users: ['users'] as const,

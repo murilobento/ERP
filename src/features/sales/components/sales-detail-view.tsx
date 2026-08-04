@@ -20,11 +20,7 @@ import {
 import { downloadInvoice } from '../lib/download-invoice'
 
 export type SalesDetailConfirmAction =
-  | 'ready-for-delivery'
-  | 'deliver'
-  | 'complete'
-  | 'reverse'
-  | null
+  'ready-for-delivery' | 'deliver' | 'complete' | 'reverse' | null
 
 type SalesDetailViewProps = {
   sale: Sale
@@ -61,7 +57,13 @@ export function SalesDetailView({
         <div className='space-y-1'>
           {(() => {
             const standalone = sale.items.filter((i) => !i.kitId)
-            const byKit = new Map<string, { kit: { id: string; name: string } | null | undefined; items: typeof sale.items }>()
+            const byKit = new Map<
+              string,
+              {
+                kit: { id: string; name: string } | null | undefined
+                items: typeof sale.items
+              }
+            >()
             for (const item of sale.items) {
               if (!item.kitId) continue
               if (!byKit.has(item.kitId)) {
@@ -91,17 +93,27 @@ export function SalesDetailView({
                   </div>
                 ))}
                 {Array.from(byKit.entries()).map(([kitId, group]) => (
-                  <div key={kitId} className='rounded-md border border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20'>
+                  <div
+                    key={kitId}
+                    className='rounded-md border border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20'
+                  >
                     <div className='flex items-center justify-between border-b border-blue-200 px-3 py-1.5 dark:border-blue-800'>
                       <div className='flex items-center gap-2'>
                         <Badge variant='blue' className='text-xs'>
                           <PackageCheck size={12} />
                           Kit
                         </Badge>
-                        <span className='text-sm font-medium'>{group.kit?.name || 'Kit'}</span>
+                        <span className='text-sm font-medium'>
+                          {group.kit?.name || 'Kit'}
+                        </span>
                       </div>
                       <strong className='text-sm'>
-                        {formatCurrency(group.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))}
+                        {formatCurrency(
+                          group.items.reduce(
+                            (s, i) => s + i.quantity * i.unitPrice,
+                            0
+                          )
+                        )}
                       </strong>
                     </div>
                     {group.items.map((item) => (
@@ -207,7 +219,10 @@ export function SalesDetailView({
           </Button>
         )}
         {sale.status === 'ready_for_delivery' && (
-          <Button onClick={() => onConfirmAction('deliver')} disabled={isLoading}>
+          <Button
+            onClick={() => onConfirmAction('deliver')}
+            disabled={isLoading}
+          >
             <PackageCheck size={16} className='me-1' />
             Entregar
           </Button>
@@ -222,7 +237,10 @@ export function SalesDetailView({
           </Button>
         )}
         {sale.status === 'completed' && (
-          <Button variant='destructive' onClick={() => onConfirmAction('reverse')}>
+          <Button
+            variant='destructive'
+            onClick={() => onConfirmAction('reverse')}
+          >
             <RotateCcw size={16} className='me-1' />
             Estornar
           </Button>

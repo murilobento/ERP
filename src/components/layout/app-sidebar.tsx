@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useLayout } from '@/context/layout-provider'
+import { useAuthStore } from '@/stores/auth-store'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
-import { useAuthStore } from '@/stores/auth-store'
+import { useLayout } from '@/context/layout-provider'
 import {
   Sidebar,
   SidebarContent,
@@ -11,13 +11,13 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { type Company } from '@/features/company/data/schema'
 import { sidebarData } from './data/sidebar-data'
+import { ModuleSwitcher } from './module-switcher'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
 import { TeamSwitcher } from './team-switcher'
-import { ModuleSwitcher } from './module-switcher'
 import { type Module } from './types'
-import { type Company } from '@/features/company/data/schema'
 
 type CompanyResponse = {
   company: Company | null
@@ -38,7 +38,9 @@ export function AppSidebar() {
     },
   })
 
-  const navGroups = (sidebarData.navGroupsByModule[activeModule.name] ?? []).map((group) => ({
+  const navGroups = (
+    sidebarData.navGroupsByModule[activeModule.name] ?? []
+  ).map((group) => ({
     ...group,
     items: group.items.filter((item) => {
       if (!item.minRole) return true

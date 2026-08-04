@@ -2,14 +2,14 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { DataTableColumnHeader } from '@/components/data-table'
-import { purchaseStatusMap, type Purchase } from '../data/schema'
-import { DataTableRowActions } from './data-table-row-actions'
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import { DataTableColumnHeader } from '@/components/data-table'
+import { purchaseStatusMap, type Purchase } from '../data/schema'
+import { DataTableRowActions } from './data-table-row-actions'
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -78,7 +78,7 @@ export const purchasesColumns: ColumnDef<Purchase>[] = [
       return (
         <HoverCard>
           <HoverCardTrigger asChild>
-            <span className='cursor-default ps-2 underline decoration-dashed underline-offset-4 text-primary'>
+            <span className='cursor-default ps-2 text-primary underline decoration-dashed underline-offset-4'>
               {count} {count === 1 ? 'item' : 'itens'}
             </span>
           </HoverCardTrigger>
@@ -93,12 +93,13 @@ export const purchasesColumns: ColumnDef<Purchase>[] = [
                     {item.supply.name}
                   </span>
                   <span className='font-medium'>
-                    {item.packages} {item.supply.packageUnit || item.supply.unit} ×{' '}
+                    {item.packages}{' '}
+                    {item.supply.packageUnit || item.supply.unit} ×{' '}
                     {formatCurrency(item.packageCost)}
                   </span>
                 </div>
               ))}
-              <div className='mt-1.5 border-t pt-1.5 flex items-center justify-between text-sm font-semibold'>
+              <div className='mt-1.5 flex items-center justify-between border-t pt-1.5 text-sm font-semibold'>
                 <span>Total</span>
                 <span>{formatCurrency(totalCost)}</span>
               </div>

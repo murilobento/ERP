@@ -12,10 +12,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import {
-  type NavigateFn,
-  useTableUrlState,
-} from '@/hooks/use-table-url-state'
+import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 
 type UseDataTableOptions<TData> = {
   data: TData[]

@@ -52,12 +52,7 @@ export function Overview({
     <ResponsiveContainer width='100%' height={250}>
       <BarChart data={chartData}>
         <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
-        <XAxis
-          dataKey='name'
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-        />
+        <XAxis dataKey='name' fontSize={12} tickLine={false} axisLine={false} />
         <YAxis
           fontSize={12}
           tickLine={false}
@@ -65,10 +60,12 @@ export function Overview({
           tickFormatter={formatTick}
         />
         <Tooltip
-          formatter={((value: number | string, name: string) => [
-            formatCurrency(Number(value)),
-            name,
-          ]) as never}
+          formatter={
+            ((value: number | string, name: string) => [
+              formatCurrency(Number(value)),
+              name,
+            ]) as never
+          }
         />
         <Legend />
         <Bar
@@ -76,11 +73,7 @@ export function Overview({
           fill='hsl(217, 91%, 60%)'
           radius={[4, 4, 0, 0]}
         />
-        <Bar
-          dataKey='Custo'
-          fill='hsl(0, 84%, 60%)'
-          radius={[4, 4, 0, 0]}
-        />
+        <Bar dataKey='Custo' fill='hsl(0, 84%, 60%)' radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )

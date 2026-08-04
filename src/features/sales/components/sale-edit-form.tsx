@@ -69,9 +69,7 @@ export function SaleEditForm({
   )
   const [editSelectedProducts, setEditSelectedProducts] = useState<
     Record<string, ProductSupplySearchItem>
-  >(
-    Object.fromEntries(sale.items.map((i) => [i.productId, i.product]))
-  )
+  >(Object.fromEntries(sale.items.map((i) => [i.productId, i.product])))
 
   function addEditItem() {
     if (!editDraftItem.productId || editDraftItem.quantity <= 0) {
@@ -161,9 +159,7 @@ export function SaleEditForm({
       </div>
 
       <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-6 sm:items-center'>
-        <Label className='sm:col-span-2 sm:text-end'>
-          Data de entrega
-        </Label>
+        <Label className='sm:col-span-2 sm:text-end'>Data de entrega</Label>
         <div className='min-w-0 sm:col-span-4'>
           <DatePicker
             selected={editDeliveryDate}
@@ -178,9 +174,7 @@ export function SaleEditForm({
         <Label className='mb-2 block text-sm font-medium'>Itens</Label>
         <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]'>
           <div className='min-w-0 sm:col-span-2 md:col-span-1'>
-            <Label className='text-xs text-muted-foreground'>
-              Produto
-            </Label>
+            <Label className='text-xs text-muted-foreground'>Produto</Label>
             <ProductSupplyCombobox
               type='product'
               value={editDraftItem.productId}
@@ -191,17 +185,13 @@ export function SaleEditForm({
                 }))
               }
               onItemChange={updateEditSelectedProduct}
-              selectedItem={
-                editSelectedProducts[editDraftItem.productId]
-              }
+              selectedItem={editSelectedProducts[editDraftItem.productId]}
               includeStock
               placeholder='Selecione...'
             />
           </div>
           <div className='min-w-0'>
-            <Label className='text-xs text-muted-foreground'>
-              Quantidade
-            </Label>
+            <Label className='text-xs text-muted-foreground'>Quantidade</Label>
             <Input
               type='number'
               min='1'
@@ -297,12 +287,8 @@ export function SaleEditForm({
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {formatCurrency(item.unitPrice)}
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(itemTotal)}
-                        </TableCell>
+                        <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
+                        <TableCell>{formatCurrency(itemTotal)}</TableCell>
                         <TableCell>
                           <Button
                             type='button'
@@ -404,11 +390,7 @@ export function SaleEditForm({
       </div>
 
       <DialogFooter className='gap-2'>
-        <Button
-          variant='outline'
-          onClick={onCancel}
-          disabled={isLoading}
-        >
+        <Button variant='outline' onClick={onCancel} disabled={isLoading}>
           Cancelar
         </Button>
         <Button onClick={handleSave} disabled={isLoading}>

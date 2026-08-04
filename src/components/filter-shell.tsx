@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { Filter, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,6 +13,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/date-picker'
+import {
+  type DatePreset,
+  type DatePresetOption,
+  datePresetOptionsShort,
+  parseFilterDate,
+  formatFilterDate,
+  getPresetRange,
+  isPresetActive,
+} from '@/features/shared/filter-date-utils'
 
 type FilterShellProps = {
   searchValue: string
@@ -137,9 +148,7 @@ export function FilterSection<T extends string>({
   showBorderTop = false,
 }: FilterSectionProps<T>) {
   return (
-    <section
-      className={`grid gap-2${showBorderTop ? ' border-t pt-4' : ''}`}
-    >
+    <section className={`grid gap-2${showBorderTop ? 'border-t pt-4' : ''}`}>
       <div>
         <h3 className='text-sm font-medium'>{title}</h3>
         <p className='text-xs text-muted-foreground'>{description}</p>
@@ -164,18 +173,6 @@ export function FilterSection<T extends string>({
     </section>
   )
 }
-
-import {
-  type DatePreset,
-  type DatePresetOption,
-  datePresetOptionsShort,
-  parseFilterDate,
-  formatFilterDate,
-  getPresetRange,
-  isPresetActive,
-} from '@/features/shared/filter-date-utils'
-import { cn } from '@/lib/utils'
-import { DatePicker } from '@/components/date-picker'
 
 type FilterDateSectionProps = {
   title: string

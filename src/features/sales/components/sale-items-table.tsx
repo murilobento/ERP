@@ -1,8 +1,8 @@
 import { Trash2, PackageCheck } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -11,9 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  type ProductSupplySearchItem,
-} from '@/components/product-supply-combobox'
+import { type ProductSupplySearchItem } from '@/components/product-supply-combobox'
 import { formatCurrency } from '../data/schema'
 
 type ItemForm = {
@@ -27,7 +25,12 @@ type KitForm = {
   quantity: number
   kitName: string
   finalPrice: number
-  kitItems: { productId: string; productName: string; quantity: number; unit: string }[]
+  kitItems: {
+    productId: string
+    productName: string
+    quantity: number
+    unit: string
+  }[]
 }
 
 type SaleItemsTableProps = {
@@ -107,9 +110,7 @@ export function SaleItemsTable({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        {formatCurrency(item.unitPrice)}
-                      </TableCell>
+                      <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
                       <TableCell>{formatCurrency(total)}</TableCell>
                       <TableCell>
                         <Button
@@ -126,7 +127,10 @@ export function SaleItemsTable({
                   )
                 })}
                 {kitRefs.map((kit, kitIndex) => (
-                  <TableRow key={`kit-${kit.kitId}`} className='bg-blue-50/50 dark:bg-blue-950/20'>
+                  <TableRow
+                    key={`kit-${kit.kitId}`}
+                    className='bg-blue-50/50 dark:bg-blue-950/20'
+                  >
                     <TableCell colSpan={3} className='font-medium'>
                       <div className='flex items-center gap-2'>
                         <Badge variant='blue' className='text-xs'>
@@ -135,7 +139,14 @@ export function SaleItemsTable({
                         </Badge>
                         {kit.kitName}
                         <span className='text-xs text-muted-foreground'>
-                          ({kit.kitItems.map((ki) => `${ki.quantity} ${ki.unit} de ${ki.productName}`).join(', ')})
+                          (
+                          {kit.kitItems
+                            .map(
+                              (ki) =>
+                                `${ki.quantity} ${ki.unit} de ${ki.productName}`
+                            )
+                            .join(', ')}
+                          )
                         </span>
                       </div>
                     </TableCell>
@@ -260,12 +271,14 @@ export function SaleItemsTable({
                   </Button>
                 </div>
                 <div className='text-xs text-muted-foreground'>
-                  {kit.kitItems.map((ki) => `${ki.quantity} ${ki.unit} de ${ki.productName}`).join(', ')}
+                  {kit.kitItems
+                    .map(
+                      (ki) => `${ki.quantity} ${ki.unit} de ${ki.productName}`
+                    )
+                    .join(', ')}
                 </div>
                 <div>
-                  <Label className='text-xs text-muted-foreground'>
-                    Total
-                  </Label>
+                  <Label className='text-xs text-muted-foreground'>Total</Label>
                   <div className='font-semibold'>
                     {formatCurrency(kit.finalPrice)}
                   </div>

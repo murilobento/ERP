@@ -7,7 +7,10 @@ type ContactPrimaryButtonsProps = {
   onAdd: () => void
 }
 
-export function ContactPrimaryButtons({ config, onAdd }: ContactPrimaryButtonsProps) {
+export function ContactPrimaryButtons({
+  config,
+  onAdd,
+}: ContactPrimaryButtonsProps) {
   return (
     <div className='flex gap-2'>
       <Button className='space-x-1' onClick={onAdd}>

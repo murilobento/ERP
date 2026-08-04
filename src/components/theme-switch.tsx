@@ -22,7 +22,11 @@ export function ThemeSwitch() {
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       aria-label='Alternar tema'
     >
-      {isDark ? <Sun className='size-[1.2rem]' /> : <Moon className='size-[1.2rem]' />}
+      {isDark ? (
+        <Sun className='size-[1.2rem]' />
+      ) : (
+        <Moon className='size-[1.2rem]' />
+      )}
     </Button>
   )
 }

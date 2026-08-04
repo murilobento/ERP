@@ -1,5 +1,5 @@
-import { useNavigate, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 
 type ErrorPageProps = {
@@ -23,7 +23,12 @@ export function DefaultErrorActions() {
   )
 }
 
-export function ErrorPage({ code, title, description, actions }: ErrorPageProps) {
+export function ErrorPage({
+  code,
+  title,
+  description,
+  actions,
+}: ErrorPageProps) {
   return (
     <div className='h-svh'>
       <div className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>

@@ -1,5 +1,6 @@
 import { type SVGProps } from 'react'
 import { Root as Radio, Item } from '@radix-ui/react-radio-group'
+import { palettes, paletteLabels } from '@/config/palettes'
 import { CircleCheck, RotateCcw, Settings } from 'lucide-react'
 import { IconDir } from '@/assets/custom/icon-dir'
 import { IconLayoutCompact } from '@/assets/custom/icon-layout-compact'
@@ -16,7 +17,6 @@ import { useDirection } from '@/context/direction-provider'
 import { type Collapsible, useLayout } from '@/context/layout-provider'
 import { usePalette } from '@/context/palette-provider'
 import { useTheme } from '@/context/theme-provider'
-import { palettes, paletteLabels } from '@/config/palettes'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -240,7 +240,9 @@ function PaletteConfig() {
       />
       <Select
         value={palette}
-        onValueChange={(value) => setPalette(value as (typeof palettes)[number])}
+        onValueChange={(value) =>
+          setPalette(value as (typeof palettes)[number])
+        }
       >
         <SelectTrigger
           className='w-full max-w-md'
@@ -359,7 +361,8 @@ function LayoutConfig() {
         ))}
       </Radio>
       <div id='layout-description' className='sr-only'>
-        Escolha entre layout padrão expandido, ícones compactos ou modo expandido
+        Escolha entre layout padrão expandido, ícones compactos ou modo
+        expandido
       </div>
     </div>
   )

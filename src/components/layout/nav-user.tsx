@@ -1,10 +1,7 @@
-import {
-  ChevronsUpDown,
-  LogOut,
-} from 'lucide-react'
-import useDialogState from '@/hooks/use-dialog-state'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { getDisplayNameInitials } from '@/lib/utils'
+import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -69,7 +66,9 @@ export function NavUser() {
                     </AvatarFallback>
                   </Avatar>
                   <div className='grid flex-1 text-start text-sm leading-tight'>
-                    <span className='truncate font-semibold'>{displayName}</span>
+                    <span className='truncate font-semibold'>
+                      {displayName}
+                    </span>
                     <span className='truncate text-xs'>{user.email}</span>
                   </div>
                 </div>

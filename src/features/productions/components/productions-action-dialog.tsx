@@ -1,13 +1,9 @@
 import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
-import {
-  ProductSupplyCombobox,
-  type ProductSupplySearchItem,
-} from '@/components/product-supply-combobox'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -27,6 +23,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  ProductSupplyCombobox,
+  type ProductSupplySearchItem,
+} from '@/components/product-supply-combobox'
 
 type ItemForm = {
   productId: string
@@ -137,7 +137,10 @@ export function ProductionsActionDialog({
                   type='product'
                   value={draftItem.productId}
                   onValueChange={(value) =>
-                    setDraftItem((current) => ({ ...current, productId: value }))
+                    setDraftItem((current) => ({
+                      ...current,
+                      productId: value,
+                    }))
                   }
                   onItemChange={updateSelectedProduct}
                   selectedItem={selectedProducts[draftItem.productId]}
@@ -145,7 +148,9 @@ export function ProductionsActionDialog({
                 />
               </div>
               <div className='min-w-0'>
-                <Label className='text-xs text-muted-foreground'>Quantidade</Label>
+                <Label className='text-xs text-muted-foreground'>
+                  Quantidade
+                </Label>
                 <Input
                   type='number'
                   step='1'
@@ -160,7 +165,11 @@ export function ProductionsActionDialog({
                   }
                 />
               </div>
-              <Button type='button' onClick={addItem} className='w-full sm:col-span-2 md:col-span-1 md:w-auto'>
+              <Button
+                type='button'
+                onClick={addItem}
+                className='w-full sm:col-span-2 md:col-span-1 md:w-auto'
+              >
                 <Plus size={16} />
                 Adicionar
               </Button>
@@ -178,7 +187,10 @@ export function ProductionsActionDialog({
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={3} className='h-16 text-center text-muted-foreground'>
+                      <TableCell
+                        colSpan={3}
+                        className='h-16 text-center text-muted-foreground'
+                      >
                         Nenhum item adicionado.
                       </TableCell>
                     </TableRow>

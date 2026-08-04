@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { InfoIcon, TrophyIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -11,8 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/date-picker'
 import {
   Table,
   TableBody,
@@ -21,15 +20,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatCurrency, type Sale } from '../data/schema'
+import { DatePicker } from '@/components/date-picker'
 import { isWithinRange } from '../data/filters'
+import { formatCurrency, type Sale } from '../data/schema'
 
 type BestSellingDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-type DatePreset = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_3_months'
+type DatePreset =
+  'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_3_months'
 
 type DatePresetOption = {
   value: DatePreset
@@ -165,15 +166,11 @@ export function BestSellingDialog({
   const completedSales = useMemo(() => {
     return sales.filter(
       (sale) =>
-        sale.status === 'completed' &&
-        isWithinRange(sale.completedAt, from, to)
+        sale.status === 'completed' && isWithinRange(sale.completedAt, from, to)
     )
   }, [sales, from, to])
 
-  const items = useMemo(
-    () => aggregateItems(completedSales),
-    [completedSales]
-  )
+  const items = useMemo(() => aggregateItems(completedSales), [completedSales])
 
   const totalQuantity = items.reduce((sum, i) => sum + i.totalQuantity, 0)
   const totalRevenue = items.reduce((sum, i) => sum + i.totalRevenue, 0)

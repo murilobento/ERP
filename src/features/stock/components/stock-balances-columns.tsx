@@ -47,7 +47,10 @@ export const stockBalancesColumns: ColumnDef<StockBalance>[] = [
       }
       return (
         <span className='ps-2'>
-          {b.packageUnit} <span className='text-muted-foreground'>({b.packageQuantity} {b.unit})</span>
+          {b.packageUnit}{' '}
+          <span className='text-muted-foreground'>
+            ({b.packageQuantity} {b.unit})
+          </span>
         </span>
       )
     },
@@ -69,7 +72,11 @@ export const stockBalancesColumns: ColumnDef<StockBalance>[] = [
     cell: ({ row }) => {
       const stock = row.getValue('stock') as number
       return (
-        <Badge variant={stock > 0 ? 'default' : stock < 0 ? 'destructive' : 'secondary'}>
+        <Badge
+          variant={
+            stock > 0 ? 'default' : stock < 0 ? 'destructive' : 'secondary'
+          }
+        >
           {stock}
         </Badge>
       )

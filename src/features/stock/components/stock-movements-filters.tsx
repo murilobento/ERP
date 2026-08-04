@@ -1,11 +1,11 @@
 import { type NavigateFn } from '@/hooks/use-table-url-state'
-import { getMovementsFilters, movementTypeOptions } from '../data/filters'
-import { getDateRangeLabel } from '@/features/shared/filter-date-utils'
 import {
   FilterShell,
   FilterSection,
   FilterDateSection,
 } from '@/components/filter-shell'
+import { getDateRangeLabel } from '@/features/shared/filter-date-utils'
+import { getMovementsFilters, movementTypeOptions } from '../data/filters'
 
 type MovementsFiltersProps = {
   search: Record<string, unknown>
@@ -19,7 +19,10 @@ const itemTypeOptions: { value: ItemType; label: string }[] = [
   { value: 'supply', label: 'Insumo' },
 ]
 
-export function StockMovementsFilters({ search, navigate }: MovementsFiltersProps) {
+export function StockMovementsFilters({
+  search,
+  navigate,
+}: MovementsFiltersProps) {
   const filters = getMovementsFilters(search)
   const hasRemovableFilters =
     !!filters.filter ||
@@ -46,7 +49,9 @@ export function StockMovementsFilters({ search, navigate }: MovementsFiltersProp
       : undefined,
   ].filter((item): item is string => Boolean(item))
 
-  function updateFilter(patch: Partial<ReturnType<typeof getMovementsFilters>>) {
+  function updateFilter(
+    patch: Partial<ReturnType<typeof getMovementsFilters>>
+  ) {
     const next = { ...filters, ...patch }
     navigate({
       search: (prev) => ({
@@ -54,7 +59,8 @@ export function StockMovementsFilters({ search, navigate }: MovementsFiltersProp
         page: undefined,
         filter: next.filter || undefined,
         itemType: next.itemType.length > 0 ? next.itemType : undefined,
-        movementTypes: next.movementTypes.length > 0 ? next.movementTypes : undefined,
+        movementTypes:
+          next.movementTypes.length > 0 ? next.movementTypes : undefined,
         dateFrom: next.dateFrom || undefined,
         dateTo: next.dateTo || undefined,
       }),

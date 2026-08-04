@@ -46,9 +46,7 @@ export function PurchaseEditForm({
   onSave,
   onCancel,
 }: PurchaseEditFormProps) {
-  const [editVendorId, setEditVendorId] = useState(
-    purchase.vendorId || ''
-  )
+  const [editVendorId, setEditVendorId] = useState(purchase.vendorId || '')
   const [editSelectedVendor, setEditSelectedVendor] =
     useState<VendorSearchItem | null>(purchase.vendor)
   const [editNotes, setEditNotes] = useState(purchase.notes)
@@ -66,11 +64,7 @@ export function PurchaseEditForm({
   )
   const [editSelectedSupplies, setEditSelectedSupplies] = useState<
     Record<string, ProductSupplySearchItem>
-  >(
-    Object.fromEntries(
-      purchase.items.map((i) => [i.supplyId, i.supply])
-    )
-  )
+  >(Object.fromEntries(purchase.items.map((i) => [i.supplyId, i.supply])))
 
   function updateEditSelectedSupply(item: ProductSupplySearchItem | null) {
     if (!item) return
@@ -99,9 +93,7 @@ export function PurchaseEditForm({
 
   function updateEditItemPackages(index: number, packages: number) {
     setEditItems((current) =>
-      current.map((item, i) =>
-        i === index ? { ...item, packages } : item
-      )
+      current.map((item, i) => (i === index ? { ...item, packages } : item))
     )
   }
 
@@ -116,9 +108,7 @@ export function PurchaseEditForm({
       )
       return
     }
-    const validItems = editItems.filter(
-      (i) => i.supplyId && i.packages > 0
-    )
+    const validItems = editItems.filter((i) => i.supplyId && i.packages > 0)
     if (validItems.length === 0) {
       toast.error('Adicione pelo menos um item.')
       return
@@ -160,9 +150,7 @@ export function PurchaseEditForm({
         <Label className='mb-2 block text-sm font-medium'>Itens</Label>
         <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]'>
           <div className='min-w-0 sm:col-span-2 md:col-span-1'>
-            <Label className='text-xs text-muted-foreground'>
-              Insumo
-            </Label>
+            <Label className='text-xs text-muted-foreground'>Insumo</Label>
             <ProductSupplyCombobox
               type='supply'
               value={editDraftItem.supplyId}
@@ -178,9 +166,7 @@ export function PurchaseEditForm({
             />
           </div>
           <div className='min-w-0'>
-            <Label className='text-xs text-muted-foreground'>
-              Quantidade
-            </Label>
+            <Label className='text-xs text-muted-foreground'>Quantidade</Label>
             <Input
               type='number'
               min='1'
@@ -393,11 +379,7 @@ export function PurchaseEditForm({
       </div>
 
       <DialogFooter className='gap-2'>
-        <Button
-          variant='outline'
-          onClick={onCancel}
-          disabled={isLoading}
-        >
+        <Button variant='outline' onClick={onCancel} disabled={isLoading}>
           Cancelar
         </Button>
         <Button onClick={handleSave} disabled={isLoading}>

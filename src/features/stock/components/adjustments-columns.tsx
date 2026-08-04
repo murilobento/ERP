@@ -14,11 +14,7 @@ export const adjustmentsColumns: ColumnDef<StockAdjustment>[] = [
     accessorFn: (row) => row.product?.name || row.supply?.name || '—',
     cell: ({ row }) => {
       const item = row.original.product || row.original.supply
-      return (
-        <span className='ps-3 font-medium'>
-          {item?.name || '—'}
-        </span>
-      )
+      return <span className='ps-3 font-medium'>{item?.name || '—'}</span>
     },
     meta: {
       className: cn(
@@ -53,7 +49,8 @@ export const adjustmentsColumns: ColumnDef<StockAdjustment>[] = [
       const unit = row.original.product?.unit || row.original.supply?.unit || ''
       return (
         <span className={qty >= 0 ? 'text-green-600' : 'text-red-600'}>
-          {qty > 0 ? '+' : ''}{qty} {unit}
+          {qty > 0 ? '+' : ''}
+          {qty} {unit}
         </span>
       )
     },
@@ -95,7 +92,11 @@ export const adjustmentsColumns: ColumnDef<StockAdjustment>[] = [
     cell: ({ row }) => {
       const author = row.original.author
       if (!author) return <span className='text-muted-foreground'>—</span>
-      return <span>{author.firstName} {author.lastName}</span>
+      return (
+        <span>
+          {author.firstName} {author.lastName}
+        </span>
+      )
     },
   },
   {

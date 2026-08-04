@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { type QueryKey } from '@tanstack/react-query'
 import { AlertTriangle } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
 import api from '@/lib/api'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -54,7 +54,10 @@ export function DeleteEntityDialog({
       disabled={value.trim() !== currentRow.name}
       title={
         <span className='text-destructive'>
-          <AlertTriangle className='me-1 inline-block stroke-destructive' size={18} />{' '}
+          <AlertTriangle
+            className='me-1 inline-block stroke-destructive'
+            size={18}
+          />{' '}
           Excluir {entityLabel}
         </span>
       }
@@ -82,7 +85,9 @@ export function DeleteEntityDialog({
           </Label>
           <Alert variant='destructive'>
             <AlertTitle>Atenção!</AlertTitle>
-            <AlertDescription>Esta operação não pode ser desfeita.</AlertDescription>
+            <AlertDescription>
+              Esta operação não pode ser desfeita.
+            </AlertDescription>
           </Alert>
         </form>
       }

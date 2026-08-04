@@ -14,10 +14,11 @@ type AuditLog = {
   targetUser: { firstName: string; lastName: string; email: string }
 }
 
-const actionBadgeVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
-  user_created: 'default',
-  user_updated: 'secondary',
-}
+const actionBadgeVariant: Record<string, 'default' | 'secondary' | 'outline'> =
+  {
+    user_created: 'default',
+    user_updated: 'secondary',
+  }
 
 const fieldLabels: Record<string, string> = {
   email: 'Email',
@@ -58,7 +59,10 @@ export const auditLogsColumns: ColumnDef<AuditLog>[] = [
       return (
         <div className='text-nowrap'>
           {date.toLocaleDateString('pt-BR')}{' '}
-          {date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          {date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
         </div>
       )
     },
@@ -72,9 +76,7 @@ export const auditLogsColumns: ColumnDef<AuditLog>[] = [
       const action = row.original.action
       const label = row.original.actionLabel
       return (
-        <Badge variant={actionBadgeVariant[action] || 'outline'}>
-          {label}
-        </Badge>
+        <Badge variant={actionBadgeVariant[action] || 'outline'}>{label}</Badge>
       )
     },
   },
@@ -120,8 +122,7 @@ export const auditLogsColumns: ColumnDef<AuditLog>[] = [
     ),
     cell: ({ row }) => {
       const changes = row.original.changes as
-        | Record<string, { old: unknown; new: unknown } | unknown>
-        | undefined
+        Record<string, { old: unknown; new: unknown } | unknown> | undefined
       if (!changes || Object.keys(changes).length === 0) {
         return <span className='text-muted-foreground'>—</span>
       }
@@ -133,14 +134,17 @@ export const auditLogsColumns: ColumnDef<AuditLog>[] = [
               typeof change === 'object' &&
               'old' in change &&
               'new' in change
-            const oldValue = isPair ? (change as { old: unknown }).old : undefined
+            const oldValue = isPair
+              ? (change as { old: unknown }).old
+              : undefined
             const newValue = isPair ? (change as { new: unknown }).new : change
             return (
               <div key={field}>
                 <span className='font-medium'>
                   {fieldLabels[field] || field}
                 </span>
-                :{isPair ? (
+                :
+                {isPair ? (
                   <>
                     {' '}
                     <span className='text-muted-foreground line-through'>

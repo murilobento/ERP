@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Loader2, Plus, PackageCheck } from 'lucide-react'
 import { toast } from 'sonner'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -20,17 +20,14 @@ import {
   type ClientSearchItem,
 } from '@/components/client-combobox'
 import { DatePicker } from '@/components/date-picker'
+import { KitCombobox, type KitSearchItem } from '@/components/kit-combobox'
 import {
   ProductSupplyCombobox,
   type ProductSupplySearchItem,
 } from '@/components/product-supply-combobox'
-import {
-  KitCombobox,
-  type KitSearchItem,
-} from '@/components/kit-combobox'
 import { formatCurrency } from '../data/schema'
-import { useSales } from './sales-provider'
 import { SaleItemsTable } from './sale-items-table'
+import { useSales } from './sales-provider'
 
 type ItemForm = {
   productId: string
@@ -43,7 +40,12 @@ type KitForm = {
   quantity: number
   kitName: string
   finalPrice: number
-  kitItems: { productId: string; productName: string; quantity: number; unit: string }[]
+  kitItems: {
+    productId: string
+    productName: string
+    quantity: number
+    unit: string
+  }[]
 }
 
 type SalesActionDialogProps = {
@@ -347,12 +349,17 @@ export function SalesActionDialog({
             {addMode === 'product' ? (
               <div className='grid grid-cols-1 items-end gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_7rem_8rem_auto]'>
                 <div className='min-w-0 sm:col-span-2 md:col-span-1'>
-                  <Label className='text-xs text-muted-foreground'>Produto</Label>
+                  <Label className='text-xs text-muted-foreground'>
+                    Produto
+                  </Label>
                   <ProductSupplyCombobox
                     type='product'
                     value={draftItem.productId}
                     onValueChange={(val) =>
-                      setDraftItem((current) => ({ ...current, productId: val }))
+                      setDraftItem((current) => ({
+                        ...current,
+                        productId: val,
+                      }))
                     }
                     onItemChange={updateSelectedProduct}
                     selectedItem={selectedProducts[draftItem.productId]}

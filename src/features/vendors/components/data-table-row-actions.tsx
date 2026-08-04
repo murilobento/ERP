@@ -1,5 +1,5 @@
-import { createContactRowActions } from '@/features/shared/contact-row-actions'
 import { queryKeys } from '@/lib/query-keys'
+import { createContactRowActions } from '@/features/shared/contact-row-actions'
 import { useVendors } from './vendors-provider'
 
 const vendorConfig = {
@@ -12,4 +12,8 @@ const vendorConfig = {
   entityPlural: 'fornecedores',
 } as const
 
-export const DataTableRowActions = createContactRowActions(vendorConfig, useVendors, false)
+export const DataTableRowActions = createContactRowActions(
+  vendorConfig,
+  useVendors,
+  false
+)

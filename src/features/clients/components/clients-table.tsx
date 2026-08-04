@@ -1,9 +1,9 @@
 import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { ContactTable } from '@/features/shared/contact-table'
 import { type Client } from '../data/schema'
+import { clientsColumns as columns } from './clients-columns'
 import { useClients } from './clients-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
-import { clientsColumns as columns } from './clients-columns'
 
 type DataTableProps = {
   data: Client[]

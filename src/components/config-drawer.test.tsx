@@ -151,9 +151,7 @@ describe('ConfigDrawer (integration)', () => {
       )
       await userEvent.click(screen.getByRole('option', { name: /^Padrão$/i }))
 
-      await vi.waitFor(() =>
-        expect(getCookie('palette')).toBe('default')
-      )
+      await vi.waitFor(() => expect(getCookie('palette')).toBe('default'))
       await vi.waitFor(() =>
         expect(document.documentElement.hasAttribute('data-palette')).toBe(
           false

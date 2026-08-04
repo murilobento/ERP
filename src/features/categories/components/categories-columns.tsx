@@ -1,7 +1,7 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { type Category } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
@@ -59,9 +59,7 @@ export const categoriesColumns: ColumnDef<Category>[] = [
     cell: ({ row }) => {
       const count = row.original._count?.products || 0
       return (
-        <Badge variant={count > 0 ? 'default' : 'secondary'}>
-          {count}
-        </Badge>
+        <Badge variant={count > 0 ? 'default' : 'secondary'}>{count}</Badge>
       )
     },
   },

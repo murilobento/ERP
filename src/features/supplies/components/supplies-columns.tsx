@@ -1,7 +1,7 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { type SupplyWithStock } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
@@ -62,7 +62,10 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
       if (!pkg) return <span className='ps-2 text-muted-foreground'>—</span>
       return (
         <span className='ps-2'>
-          {pkg} <span className='text-muted-foreground'>({qty} {unit})</span>
+          {pkg}{' '}
+          <span className='text-muted-foreground'>
+            ({qty} {unit})
+          </span>
         </span>
       )
     },
@@ -115,7 +118,9 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
       if (!costPrice) return <span className='text-muted-foreground'>—</span>
       const unit = row.original.unit
       return (
-        <span>R$ {costPrice.toFixed(2)}/{unit}</span>
+        <span>
+          R$ {costPrice.toFixed(2)}/{unit}
+        </span>
       )
     },
   },

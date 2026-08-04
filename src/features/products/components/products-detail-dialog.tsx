@@ -1,4 +1,5 @@
 import { Pen } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -8,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -61,7 +61,9 @@ export function ProductsDetailDialog({
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
             <DialogTitle>{currentRow.name}</DialogTitle>
-            <Badge variant={currentRow.status === 'active' ? 'default' : 'secondary'}>
+            <Badge
+              variant={currentRow.status === 'active' ? 'default' : 'secondary'}
+            >
               {currentRow.status === 'active' ? 'Ativo' : 'Inativo'}
             </Badge>
           </div>

@@ -5,7 +5,10 @@ type GeneralErrorProps = React.HTMLAttributes<HTMLDivElement> & {
   minimal?: boolean
 }
 
-export function GeneralError({ className, minimal = false }: GeneralErrorProps) {
+export function GeneralError({
+  className,
+  minimal = false,
+}: GeneralErrorProps) {
   if (minimal) {
     return (
       <div className={cn('h-svh w-full', className)}>
@@ -14,8 +17,8 @@ export function GeneralError({ className, minimal = false }: GeneralErrorProps) 
           title='Ops! Algo deu errado :)'
           description={
             <>
-              Pedimos desculpas pelo inconveniente. <br /> Por favor, tente novamente
-              mais tarde.
+              Pedimos desculpas pelo inconveniente. <br /> Por favor, tente
+              novamente mais tarde.
             </>
           }
         />
@@ -30,8 +33,8 @@ export function GeneralError({ className, minimal = false }: GeneralErrorProps) 
         title='Ops! Algo deu errado :)'
         description={
           <>
-            Pedimos desculpas pelo inconveniente. <br /> Por favor, tente novamente
-            mais tarde.
+            Pedimos desculpas pelo inconveniente. <br /> Por favor, tente
+            novamente mais tarde.
           </>
         }
         actions={<DefaultErrorActions />}

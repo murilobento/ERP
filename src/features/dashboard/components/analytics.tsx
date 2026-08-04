@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
+import { CheckCircle2, Clock, DollarSign, TrendingUp } from 'lucide-react'
+import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import {
   Card,
@@ -7,13 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  CheckCircle2,
-  Clock,
-  DollarSign,
-  TrendingUp,
-} from 'lucide-react'
-import api from '@/lib/api'
 import { formatCurrency } from '@/features/sales/data/schema'
 import { AnalyticsChart } from './analytics-chart'
 
@@ -129,7 +124,9 @@ export function Analytics() {
         <Card className='col-span-1 lg:col-span-4'>
           <CardHeader className='px-4 py-3'>
             <CardTitle className='text-sm'>Por Método de Pagamento</CardTitle>
-            <CardDescription className='text-xs'>Distribuição das vendas concluídas</CardDescription>
+            <CardDescription className='text-xs'>
+              Distribuição das vendas concluídas
+            </CardDescription>
           </CardHeader>
           <CardContent className='px-4 pb-3'>
             <SimpleBarList
@@ -145,7 +142,9 @@ export function Analytics() {
         <Card className='col-span-1 lg:col-span-3'>
           <CardHeader className='px-4 py-3'>
             <CardTitle className='text-sm'>Por Status da Venda</CardTitle>
-            <CardDescription className='text-xs'>Quantidade e valor por status</CardDescription>
+            <CardDescription className='text-xs'>
+              Quantidade e valor por status
+            </CardDescription>
           </CardHeader>
           <CardContent className='px-4 pb-3'>
             <SimpleBarList

@@ -1,9 +1,6 @@
 import { type ComponentType, type ReactNode } from 'react'
-import {
-  type Table as ReactTable,
-  flexRender,
-} from '@tanstack/react-table'
-import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
+import { type Table as ReactTable, flexRender } from '@tanstack/react-table'
+import { cn } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -12,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
+import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 
 type DataTableShellProps<TData> = {
   table: ReactTable<TData>
@@ -96,15 +93,17 @@ export function DataTableShell<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className={cn(
-                    'group/row',
-                    onRowClick && 'cursor-pointer'
-                  )}
+                  className={cn('group/row', onRowClick && 'cursor-pointer')}
                   onClick={
                     onRowClick
                       ? (e) => {
                           const target = e.target as HTMLElement
-                          if (target.closest('button, input, [role="checkbox"], [data-radix-collection-item]')) return
+                          if (
+                            target.closest(
+                              'button, input, [role="checkbox"], [data-radix-collection-item]'
+                            )
+                          )
+                            return
                           onRowClick(row.original)
                         }
                       : undefined

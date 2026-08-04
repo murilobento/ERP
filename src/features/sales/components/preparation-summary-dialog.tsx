@@ -56,7 +56,8 @@ function aggregateItems(sales: Sale[]): AggregatedItem[] {
       orderCount: data.saleIds.size,
     }))
     .sort((a, b) => {
-      if (b.totalQuantity !== a.totalQuantity) return b.totalQuantity - a.totalQuantity
+      if (b.totalQuantity !== a.totalQuantity)
+        return b.totalQuantity - a.totalQuantity
       return a.name.localeCompare(b.name)
     })
 }
@@ -86,7 +87,10 @@ export function PreparationSummaryDialog({
     return map
   }, [balancesData])
 
-  const items = useMemo(() => aggregateItems(preparationSales), [preparationSales])
+  const items = useMemo(
+    () => aggregateItems(preparationSales),
+    [preparationSales]
+  )
 
   const totalItems = items.reduce((sum, item) => sum + item.totalQuantity, 0)
   const totalOrders = preparationSales.length

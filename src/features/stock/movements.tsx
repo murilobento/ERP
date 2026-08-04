@@ -1,16 +1,16 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query-keys'
 import { getRouteApi } from '@tanstack/react-router'
+import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import { ConfigDrawer } from '@/components/config-drawer'
+import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
-import { FullscreenToggle } from '@/components/fullscreen-toggle'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { useDocumentTitle } from '@/hooks/use-document-title'
-import api from '@/lib/api'
 import { StockMovementsFilters } from './components/stock-movements-filters'
 import { StockMovementsTable } from './components/stock-movements-table'
 import { filterMovements } from './data/filters'
@@ -48,7 +48,9 @@ export function StockMovements() {
 
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div>
-          <h2 className='text-2xl font-bold tracking-tight'>Movimentações de Estoque</h2>
+          <h2 className='text-2xl font-bold tracking-tight'>
+            Movimentações de Estoque
+          </h2>
           <p className='text-muted-foreground'>
             Consulte entradas, saídas, estornos e ajustes manuais.
           </p>
@@ -56,7 +58,11 @@ export function StockMovements() {
 
         <StockMovementsFilters search={search} navigate={navigate} />
 
-        <StockMovementsTable data={filteredMovements} search={search} navigate={navigate} />
+        <StockMovementsTable
+          data={filteredMovements}
+          search={search}
+          navigate={navigate}
+        />
       </Main>
     </>
   )

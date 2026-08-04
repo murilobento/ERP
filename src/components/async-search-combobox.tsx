@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
-import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { cn } from '@/lib/utils'
+import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -55,8 +55,12 @@ export function AsyncSearchCombobox<T extends SearchItem>({
   const [selectedItem, setSelectedItem] = useState<T | null>(null)
   const debouncedSearch = useDebouncedValue(search)
 
-  // eslint-disable-next-line @tanstack/query/exhaustive-deps
-  const { data: items = [], isFetching, isError } = useQuery({
+  const {
+    data: items = [],
+    isFetching,
+    isError,
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+  } = useQuery({
     queryKey: [...queryKey, debouncedSearch],
     queryFn: () => fetchFn(debouncedSearch),
     enabled: open && debouncedSearch.trim().length > 0,
@@ -125,7 +129,7 @@ export function AsyncSearchCombobox<T extends SearchItem>({
                     <Check
                       className={cn(
                         'size-4',
-                        value === item.id ? 'opacity-100' : 'opacity-0',
+                        value === item.id ? 'opacity-100' : 'opacity-0'
                       )}
                     />
                     {renderItem(item)}

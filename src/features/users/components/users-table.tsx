@@ -2,9 +2,9 @@ import { type NavigateFn } from '@/hooks/use-table-url-state'
 import { DataTableShell } from '@/features/shared/data-table-shell'
 import { useDataTable } from '@/features/shared/use-data-table'
 import { type User } from '../data/schema'
-import { useUsers } from './users-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { usersColumns as columns } from './users-columns'
+import { useUsers } from './users-provider'
 
 type DataTableProps = {
   data: User[]
