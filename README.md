@@ -1,142 +1,324 @@
-# Shadcn Admin Dashboard
+# Lume Artisan
 
-Admin Dashboard UI crafted with Shadcn and Vite. Built with responsiveness and accessibility in mind.
+Sistema de gestão para produção e venda de produtos artesanais.
 
-![alt text](public/images/shadcn-admin.png)
+O projeto reúne cadastro de clientes, fornecedores, produtos, insumos, kits,
+compras, produções, vendas e estoque. O backend também controla autenticação,
+permissões, movimentações contábeis de estoque e emissão de faturas em PDF.
 
-[![Sponsored by Clerk](https://img.shields.io/badge/Sponsored%20by-Clerk-5b6ee1?logo=clerk)](https://go.clerk.com/GttUAaK)
+## Sumário
 
-I've been creating dashboard UIs at work and for my personal projects. I always wanted to make a reusable collection of dashboard UI for future projects; and here it is now. While I've created a few custom components, some of the code is directly adapted from ShadcnUI examples.
+- [Visão geral](#visão-geral)
+- [Tecnologias](#tecnologias)
+- [Pré-requisitos](#pré-requisitos)
+- [Execução local](#execução-local)
+- [Comandos úteis](#comandos-úteis)
+- [Variáveis de ambiente](#variáveis-de-ambiente)
+- [Deploy na Vercel](#deploy-na-vercel)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Testes](#testes)
+- [Limitações conhecidas](#limitações-conhecidas)
 
-> This is not a starter project (template) though. I'll probably make one in the future.
+## Visão geral
 
-## Features
+O Lume Artisan é uma aplicação de duas camadas:
 
-- Light/dark mode
-- Responsive
-- Accessible
-- With built-in Sidebar component
-- Global search command
-- 10+ pages
-- Extra custom components
-- RTL support
+| Camada   | Responsabilidade             | Desenvolvimento | Produção                     |
+| -------- | ---------------------------- | --------------- | ---------------------------- |
+| Frontend | Interface SPA em React       | Vite em `:5173` | Arquivos estáticos na Vercel |
+| Backend  | API REST e regras de negócio | Hono em `:3001` | Function Node.js da Vercel   |
+| Banco    | Persistência e migrations    | PostgreSQL      | Neon PostgreSQL              |
 
-<details>
-<summary>Customized Components (click to expand)</summary>
+No desenvolvimento, o Vite encaminha `/api` para o backend. Em produção,
+frontend e backend usam o mesmo domínio, preservando o funcionamento dos
+cookies de autenticação.
 
-This project uses Shadcn UI components, but some have been slightly modified for better RTL (Right-to-Left) support and other improvements. These customized components differ from the original Shadcn UI versions.
+## Tecnologias
 
-If you want to update components using the Shadcn CLI (e.g., `npx shadcn@latest add <component>`), it's generally safe for non-customized components. For the listed customized ones, you may need to manually merge changes to preserve the project's modifications and avoid overwriting RTL support or other updates.
+- React 19, Vite e TypeScript
+- TanStack Router, TanStack Query e TanStack Table
+- Hono e `@hono/node-server`
+- PostgreSQL e Prisma 6
+- JWT em cookies `httpOnly`
+- Puppeteer local e Chromium serverless para PDFs
+- Bun como gerenciador de dependências
+- Vitest e Playwright para testes
 
-> If you don't require RTL support, you can safely update the 'RTL Updated Components' via the Shadcn CLI, as these changes are primarily for RTL compatibility. The 'Modified Components' may have other customizations to consider.
+## Pré-requisitos
 
-### Modified Components
+Instale os seguintes componentes:
 
-- scroll-area
-- sonner
-- separator
+- [Bun](https://bun.sh/)
+- PostgreSQL local ou uma instância PostgreSQL hospedada
+- Chromium do Playwright para executar os testes de frontend
 
-### RTL Updated Components
-
-- alert-dialog
-- calendar
-- command
-- dialog
-- dropdown-menu
-- select
-- table
-- sheet
-- sidebar
-- switch
-
-**Notes:**
-
-- **Modified Components**: These have general updates, potentially including RTL adjustments.
-- **RTL Updated Components**: These have specific changes for RTL language support (e.g., layout, positioning).
-- For implementation details, check the source files in `src/components/ui/`.
-- All other Shadcn UI components in the project are standard and can be safely updated via the CLI.
-
-</details>
-
-## Tech Stack
-
-**UI:** [ShadcnUI](https://ui.shadcn.com) (TailwindCSS + RadixUI)
-
-**Build Tool:** [Vite](https://vitejs.dev/)
-
-**Routing:** [TanStack Router](https://tanstack.com/router/latest)
-
-**Type Checking:** [TypeScript](https://www.typescriptlang.org/)
-
-**Linting/Formatting:** [ESLint](https://eslint.org/) & [Prettier](https://prettier.io/)
-
-**Icons:** [Lucide Icons](https://lucide.dev/icons/), [Tabler Icons](https://tabler.io/icons) (Brand icons only)
-
-**Auth (partial):** [Clerk](https://go.clerk.com/GttUAaK)
-
-## Run Locally
-
-Clone the project
+Confira as versões disponíveis:
 
 ```bash
-  git clone https://github.com/satnaing/shadcn-admin.git
+bun --version
+psql --version
 ```
 
-Go to the project directory
+## Execução local
+
+### 1. Obter o projeto
 
 ```bash
-  cd shadcn-admin
+git clone <url-do-repositorio> lumeartisan
+cd lumeartisan
 ```
 
-Install dependencies
+### 2. Instalar dependências
 
 ```bash
-  bun install
+bun install
 ```
 
-Start the server
+O `postinstall` gera automaticamente o Prisma Client.
+
+### 3. Configurar o ambiente
+
+Crie o arquivo local de variáveis:
 
 ```bash
-  bun run dev
+cp .env.example .env
 ```
 
-## Deploy on Vercel
+Edite o `.env` com os dados do PostgreSQL:
 
-The Vite SPA is deployed as static output and the Hono API runs through
-`api/[[...route]].ts` as a Node.js function. Use Neon for PostgreSQL and
-configure these Vercel environment variables:
+```env
+DATABASE_URL=postgresql://usuario:senha@localhost:5432/lumeartisan
+DIRECT_URL=postgresql://usuario:senha@localhost:5432/lumeartisan
+JWT_SECRET=segredo-local-de-desenvolvimento
+CORS_ORIGIN=http://localhost:5173
+```
 
-- `DATABASE_URL`: pooled Neon connection string
-- `DIRECT_URL`: direct Neon connection string for migrations
-- `JWT_SECRET`: strong production secret
-- `CORS_ORIGIN`: production application URL
-- `PUPPETEER_SKIP_DOWNLOAD`: `true` during the Vercel build
+Em um PostgreSQL local sem pooler, `DATABASE_URL` e `DIRECT_URL` podem ter o
+mesmo valor. Nunca versione o arquivo `.env`.
 
-Run the `Deploy Database Migrations` GitHub Actions workflow after adding
-`DATABASE_URL` and `DIRECT_URL` repository secrets. Create the first admin
-locally with production database variables and a strong password:
+### 4. Aplicar as migrations
+
+Crie o banco `lumeartisan` no PostgreSQL e execute:
 
 ```bash
-SEED_ADMIN_EMAIL=admin@example.com SEED_ADMIN_PASSWORD='strong-password' bun run seed:admin
+bun run prisma:migrate:deploy
 ```
 
-The Hobby plan limits functions to 10 seconds. Invoice PDF generation uses
-serverless Chromium and should be smoke-tested after deployment.
+### 5. Criar o administrador
 
-## Sponsoring this project ❤️
+Defina as credenciais no `.env`:
 
-If you find this project helpful or use this in your own work, consider [sponsoring me](https://github.com/sponsors/satnaing) to support development and maintenance. You can [buy me a coffee](https://buymeacoffee.com/satnaing) as well. Don’t worry, every penny helps. Thank you! 🙏
+```env
+SEED_ADMIN_EMAIL=admin@example.com
+SEED_ADMIN_PASSWORD=uma-senha-forte
+SEED_ADMIN_FIRST_NAME=Admin
+SEED_ADMIN_LAST_NAME=Sistema
+```
 
-For questions or sponsorship inquiries, feel free to reach out at [satnaingdev@gmail.com](mailto:satnaingdev@gmail.com).
+Depois execute o seed:
 
-### Current Sponsor
+```bash
+bun run seed:admin
+```
 
-- [Clerk](https://go.clerk.com/GttUAaK) - authentication and user management for the modern web
+O script não aceita a senha padrão `admin123` quando executado com
+`NODE_ENV=production`.
 
-## Author
+### 6. Iniciar a aplicação
 
-Crafted with 🤍 by [@satnaing](https://github.com/satnaing)
+```bash
+bun run dev
+```
 
-## License
+Acesse `http://localhost:5173`.
 
-Licensed under the [MIT License](https://choosealicense.com/licenses/mit/)
+| Serviço      | URL                                |
+| ------------ | ---------------------------------- |
+| Frontend     | `http://localhost:5173`            |
+| API          | `http://localhost:3001`            |
+| Health check | `http://localhost:3001/api/health` |
+
+Se a porta `3001` já estiver ocupada por outro processo, escolha outra porta
+para a API. O `API_PORT` configura o proxy do Vite e o `PORT` configura o
+servidor Hono:
+
+```bash
+API_PORT=3002 PORT=3002 bun run dev
+```
+
+Nesse caso, o health check ficará disponível em
+`http://localhost:3002/api/health`.
+
+## Comandos úteis
+
+```bash
+bun run dev                    # Frontend e backend em modo watch
+bun run dev:client             # Somente o frontend
+bun run dev:server             # Somente o backend
+bun run build                  # Prisma, typecheck e build do frontend
+bun run preview                # Preview do build Vite
+bun run lint                   # ESLint
+bun run format:check           # Verificação do Prettier
+bun run test                   # Testes unitários de frontend e API
+bun run test:integration       # Testes de integração
+bun run test:full              # Suíte completa
+bun run prisma:generate        # Regenera o Prisma Client
+bun run prisma:migrate:deploy  # Aplica migrations existentes
+bun run seed:admin             # Cria o administrador inicial
+```
+
+Para executar os testes de frontend pela primeira vez, instale o navegador:
+
+```bash
+bun run test:browser:install
+```
+
+## Variáveis de ambiente
+
+| Variável                | Obrigatória | Uso                                                       |
+| ----------------------- | ----------- | --------------------------------------------------------- |
+| `DATABASE_URL`          | Sim         | Conexão principal do Prisma; use URL pooled em serverless |
+| `DIRECT_URL`            | Sim         | Conexão direta para migrations e introspecção             |
+| `JWT_SECRET`            | Produção    | Segredo para assinar tokens JWT                           |
+| `CORS_ORIGIN`           | Recomendada | Origins permitidas, separadas por vírgula                 |
+| `SEED_ADMIN_EMAIL`      | Seed        | E-mail do administrador inicial                           |
+| `SEED_ADMIN_PASSWORD`   | Seed        | Senha do administrador inicial                            |
+| `SEED_ADMIN_FIRST_NAME` | Seed        | Nome do administrador inicial                             |
+| `SEED_ADMIN_LAST_NAME`  | Seed        | Sobrenome do administrador inicial                        |
+
+Em desenvolvimento, o backend usa um segredo JWT local de fallback. Em
+produção, `JWT_SECRET` é obrigatório e não possui fallback.
+
+## Deploy na Vercel
+
+O deploy utiliza o modelo same-origin:
+
+```text
+Vercel
+├── dist/                     Frontend Vite estático
+└── api/[[...route]].ts       API Hono em Function Node.js
+    └── Neon PostgreSQL
+```
+
+### 1. Criar o banco no Neon
+
+Crie um projeto em [Neon](https://neon.tech/) e obtenha duas URLs:
+
+- URL pooled para `DATABASE_URL`
+- URL direta para `DIRECT_URL`
+
+A URL pooled deve ser usada pelas requisições da aplicação para evitar excesso
+de conexões em funções serverless.
+
+### 2. Configurar o projeto Vercel
+
+Importe o repositório na Vercel. O `bun.lock` permite a detecção automática do
+Bun. Configure estas variáveis no ambiente **Production**:
+
+```text
+DATABASE_URL=<url-pooled-do-neon>
+DIRECT_URL=<url-direta-do-neon>
+JWT_SECRET=<segredo-aleatorio-forte>
+CORS_ORIGIN=https://seu-dominio.vercel.app
+PUPPETEER_SKIP_DOWNLOAD=true
+```
+
+O arquivo `vercel.json` já configura:
+
+- Build com `prisma generate`, TypeScript e Vite
+- Saída estática em `dist/`
+- Fallback da SPA para as rotas do TanStack Router
+- Function Hono com runtime `nodejs`
+- Limite de 10 segundos compatível com o plano Hobby
+
+### 3. Aplicar as migrations
+
+Adicione `DATABASE_URL` e `DIRECT_URL` como secrets do repositório no GitHub.
+Depois, no GitHub:
+
+1. Abra a aba **Actions**.
+2. Selecione **Deploy Database Migrations**.
+3. Clique em **Run workflow**.
+
+As migrations não são executadas durante o cold start nem dentro de uma
+requisição HTTP.
+
+### 4. Criar o administrador de produção
+
+Execute o seed uma única vez a partir de uma máquina confiável, usando as
+variáveis de produção e uma senha forte:
+
+```bash
+DATABASE_URL='<url-pooled-do-neon>' \
+DIRECT_URL='<url-direta-do-neon>' \
+SEED_ADMIN_EMAIL='admin@example.com' \
+SEED_ADMIN_PASSWORD='senha-forte' \
+bun run seed:admin
+```
+
+Não use `admin123` em um ambiente exposto.
+
+### 5. Verificar o deploy
+
+Depois do deploy, valide:
+
+1. `GET https://seu-dominio.vercel.app/api/health`
+2. Login pelo frontend
+3. Acesso à sessão em `/api/auth/me`
+4. Renovação do token em `/api/auth/refresh`
+5. Geração de uma fatura PDF
+
+## Estrutura do projeto
+
+```text
+api/                    Entrypoint serverless da Vercel
+prisma/                 Schema e migrations do PostgreSQL
+scripts/                Scripts operacionais, incluindo seed do admin
+server/src/app.ts       Aplicação Hono reutilizável
+server/src/index.ts     Servidor local long-running
+server/src/lib/         Prisma, autenticação, estoque, preço e PDF
+server/src/routes/      Rotas da API
+src/                    Frontend React e rotas do TanStack Router
+vercel.json             Configuração de build e roteamento da Vercel
+```
+
+Os módulos de domínio mais importantes são:
+
+- Stock Ledger: saldo e movimentações de estoque
+- Pricing: custo, margem e formação de preço
+- Query Keys Registry: chaves centralizadas do React Query
+- useEntityMutation: padrão de mutações do frontend
+
+## Testes
+
+Os testes de API rodam sem banco externo usando mocks e fixtures. Os testes de
+integração precisam de um banco configurado em `DATABASE_URL_TEST`.
+
+```bash
+bun run test:api
+bun run test:unit
+bun run test:integration
+```
+
+Antes de abrir um pull request, execute também:
+
+```bash
+bun run lint
+bun run build
+bun run test
+```
+
+## Limitações conhecidas
+
+- O rate limit de login ainda é mantido em memória. Em múltiplas functions da
+  Vercel, a proteção não é compartilhada entre instâncias.
+- O PDF usa Chromium serverless e pode exceder os 10 segundos do plano Hobby
+  em cold starts. Se isso ocorrer, avalie `@sparticuz/chromium-min`, um serviço
+  externo de browser ou um backend long-running.
+- O seed é uma operação manual e não deve ser executado no boot da aplicação.
+- Migrations devem ser executadas pelo workflow de banco, nunca durante uma
+  requisição da API.
+
+## Licença
+
+Este projeto está disponível sob a licença [MIT](LICENSE).

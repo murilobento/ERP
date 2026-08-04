@@ -1,9 +1,11 @@
 import path from 'path'
-import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { playwright } from '@vitest/browser-playwright'
+import { defineConfig } from 'vitest/config'
+
+const apiPort = Number(process.env.API_PORT) || 3001
 
 export default defineConfig({
   plugins: [
@@ -24,7 +26,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: `http://localhost:${apiPort}`,
         changeOrigin: true,
       },
     },
@@ -51,10 +53,7 @@ export default defineConfig({
           ) {
             return 'vendor-forms'
           }
-          if (
-            id.includes('/date-fns/') ||
-            id.includes('/react-day-picker/')
-          ) {
+          if (id.includes('/date-fns/') || id.includes('/react-day-picker/')) {
             return 'vendor-date'
           }
           if (id.includes('/recharts/')) {

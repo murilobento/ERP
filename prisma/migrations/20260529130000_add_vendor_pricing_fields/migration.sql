@@ -1,0 +1,35 @@
+CREATE TABLE "Vendor" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "zipCode" TEXT NOT NULL DEFAULT '',
+    "street" TEXT NOT NULL DEFAULT '',
+    "number" TEXT NOT NULL DEFAULT '',
+    "complement" TEXT NOT NULL DEFAULT '',
+    "neighborhood" TEXT NOT NULL DEFAULT '',
+    "city" TEXT NOT NULL DEFAULT '',
+    "state" TEXT NOT NULL DEFAULT '',
+    "status" TEXT NOT NULL DEFAULT 'active',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Vendor_pkey" PRIMARY KEY ("id")
+);
+
+ALTER TABLE "Product" ADD COLUMN "margin" DOUBLE PRECISION NOT NULL DEFAULT 0;
+ALTER TABLE "Supply" ADD COLUMN "costPrice" DOUBLE PRECISION NOT NULL DEFAULT 0;
+ALTER TABLE "PurchaseItem" ADD COLUMN "packageCost" DOUBLE PRECISION NOT NULL DEFAULT 0;
+ALTER TABLE "Purchase" ADD COLUMN "vendorId" TEXT;
+ALTER TABLE "User" ADD COLUMN "role" TEXT NOT NULL DEFAULT 'operator';
+ALTER TABLE "User" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'active';
+ALTER TABLE "StockMovement" ADD COLUMN "authorId" TEXT;
+ALTER TABLE "StockMovement" ADD COLUMN "stockBefore" DOUBLE PRECISION;
+ALTER TABLE "StockMovement" ADD COLUMN "stockAfter" DOUBLE PRECISION;
+
+ALTER TABLE "Purchase"
+ADD CONSTRAINT "Purchase_vendorId_fkey"
+FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "StockMovement"
+ADD CONSTRAINT "StockMovement_authorId_fkey"
+FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
