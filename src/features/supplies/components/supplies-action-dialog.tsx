@@ -2,9 +2,9 @@ import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { queryKeys } from '@/lib/query-keys'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,15 +23,44 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { type Supply } from '../data/schema'
+
+const PACKAGE_UNIT_OPTIONS = [
+  'pacote',
+  'litro',
+  'dúzia',
+  'saco',
+  'caixa',
+  'lata',
+  'garrafa',
+  'pote',
+  'bandeja',
+  'cartela',
+  'tubo',
+  'rolo',
+  'galão',
+] as const
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
-  unit: z.string().min(1, 'Unidade base é obrigatória.'),
-  packageUnit: z.string(),
-  packageQuantity: z.number().min(0.01, 'Qtd por embalagem deve ser maior que zero.'),
+  unit: z.enum(['un', 'g', 'ml'], {
+    error: 'Selecione uma unidade válida.',
+  }),
+  packageUnit: z.enum(PACKAGE_UNIT_OPTIONS, {
+    error: 'Selecione uma embalagem válida.',
+  }),
+  packageQuantity: z
+    .number()
+    .min(0.01, 'Qtd por embalagem deve ser maior que zero.'),
   status: z.string().min(1, 'Status é obrigatório.'),
 })
 
@@ -64,7 +93,7 @@ export function SuppliesActionDialog({
       : {
           name: '',
           unit: 'un',
-          packageUnit: '',
+          packageUnit: 'pacote',
           packageQuantity: 1,
           status: 'active',
         },
@@ -106,7 +135,9 @@ export function SuppliesActionDialog({
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
-            <DialogTitle>{isEdit ? 'Editar Insumo' : 'Novo Insumo'}</DialogTitle>
+            <DialogTitle>
+              {isEdit ? 'Editar Insumo' : 'Novo Insumo'}
+            </DialogTitle>
             <div className='flex items-center gap-2'>
               <Switch
                 checked={statusValue === 'active'}
@@ -137,7 +168,12 @@ export function SuppliesActionDialog({
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                   <FormLabel className='col-span-2 text-end'>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder='Farinha de trigo' className='col-span-4' autoComplete='off' {...field} />
+                    <Input
+                      placeholder='Farinha de trigo'
+                      className='col-span-4'
+                      autoComplete='off'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
@@ -148,10 +184,21 @@ export function SuppliesActionDialog({
               name='unit'
               render={({ field }) => (
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Unidade base</FormLabel>
-                  <FormControl>
-                    <Input placeholder='g, ml, un, m...' className='col-span-4' autoComplete='off' {...field} />
-                  </FormControl>
+                  <FormLabel className='col-span-2 text-end'>
+                    Unidade base
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className='col-span-4'>
+                        <SelectValue placeholder='Selecione a unidade' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value='un'>un</SelectItem>
+                      <SelectItem value='g'>g</SelectItem>
+                      <SelectItem value='ml'>ml</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
               )}
@@ -161,10 +208,23 @@ export function SuppliesActionDialog({
               name='packageUnit'
               render={({ field }) => (
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Embalagem</FormLabel>
-                  <FormControl>
-                    <Input placeholder='1kg, 1L, dúzia (12 un)...' className='col-span-4' autoComplete='off' {...field} />
-                  </FormControl>
+                  <FormLabel className='col-span-2 text-end'>
+                    Embalagem
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className='col-span-4'>
+                        <SelectValue placeholder='Selecione a embalagem' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PACKAGE_UNIT_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
               )}
@@ -174,12 +234,25 @@ export function SuppliesActionDialog({
               name='packageQuantity'
               render={({ field }) => (
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Qtd por embalagem</FormLabel>
+                  <FormLabel className='col-span-2 text-end'>
+                    Qtd por embalagem
+                  </FormLabel>
                   <div className='col-span-4 flex items-center gap-2'>
                     <FormControl>
-                      <Input type='number' step='0.01' min='0.01' autoComplete='off' value={field.value} onChange={(e) => field.onChange(e.target.valueAsNumber || 0)} />
+                      <Input
+                        type='number'
+                        step='0.01'
+                        min='0.01'
+                        autoComplete='off'
+                        value={field.value}
+                        onChange={(e) =>
+                          field.onChange(e.target.valueAsNumber || 0)
+                        }
+                      />
                     </FormControl>
-                    <span className='shrink-0 text-sm text-muted-foreground'>{unit || 'un'}</span>
+                    <span className='shrink-0 text-sm text-muted-foreground'>
+                      {unit || 'un'}
+                    </span>
                   </div>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>

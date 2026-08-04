@@ -37,7 +37,7 @@ const supply: Supply = {
   id: 'supply-1',
   name: 'Farinha',
   description: '',
-  unit: 'kg',
+  unit: 'g',
   packageUnit: 'saco',
   packageQuantity: 5,
   costPrice: 10,
@@ -67,13 +67,10 @@ describe('SuppliesActionDialog', () => {
   it('validates required fields before submitting', async () => {
     const { getByLabelText, getByRole, getByText } = await renderDialog()
 
-    await userEvent.clear(getByLabelText(/^Unidade base$/i))
+    await userEvent.clear(getByLabelText(/^Nome$/i))
     await userEvent.click(getByRole('button', { name: /^Salvar$/i }))
 
     await expect.element(getByText('Nome é obrigatório.')).toBeInTheDocument()
-    await expect
-      .element(getByText('Unidade base é obrigatória.'))
-      .toBeInTheDocument()
     expect(apiPost).not.toHaveBeenCalled()
   })
 
@@ -84,13 +81,14 @@ describe('SuppliesActionDialog', () => {
     })
 
     await userEvent.type(getByLabelText(/^Nome$/i), 'Farinha')
-    await userEvent.clear(getByLabelText(/^Unidade base$/i))
-    await userEvent.type(getByLabelText(/^Unidade base$/i), 'kg')
-    await userEvent.type(getByLabelText(/^Embalagem$/i), 'saco')
+    await userEvent.click(getByRole('combobox', { name: /^Unidade base$/i }))
+    await userEvent.click(getByRole('option', { name: 'g' }))
+    await userEvent.click(getByRole('combobox', { name: /^Embalagem$/i }))
+    await userEvent.click(getByRole('option', { name: 'saco' }))
     await userEvent.clear(getByLabelText(/^Qtd por embalagem$/i))
     await userEvent.type(getByLabelText(/^Qtd por embalagem$/i), '5')
 
-    await expect.element(getByText('1 embalagem = 5 kg')).toBeInTheDocument()
+    await expect.element(getByText('1 embalagem = 5 g')).toBeInTheDocument()
 
     await userEvent.click(getByRole('button', { name: /^Salvar$/i }))
 
@@ -99,7 +97,7 @@ describe('SuppliesActionDialog', () => {
       '/supplies',
       expect.objectContaining({
         name: 'Farinha',
-        unit: 'kg',
+        unit: 'g',
         packageUnit: 'saco',
         packageQuantity: 5,
         status: 'active',
