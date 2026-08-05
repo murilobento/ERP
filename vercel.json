@@ -9,7 +9,7 @@
     }
   ],
   "functions": {
-    "api/[[...route]].ts": {
+    "api/[...route].ts": {
       "maxDuration": 10
     }
   }
