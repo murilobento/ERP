@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import prisma from "../lib/prisma.js";
-import { generateInvoicePdf } from "../lib/pdf.js";
 import { expandKitIntoSaleItems } from "../lib/pricing.js";
 import { recordSaleDelivery, recordSaleReversal, StockLedgerError } from "../lib/stock.js";
 import { authMiddleware } from "../middleware/auth.js";
@@ -549,6 +548,7 @@ saleRoutes.get("/:id/invoice", async (c) => {
 		},
 	});
 
+	const { generateInvoicePdf } = await import("../lib/pdf.js");
 	const pdfBuffer = await generateInvoicePdf({
 		saleId: sale.id,
 		status: sale.status,
