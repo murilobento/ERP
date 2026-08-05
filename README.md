@@ -245,18 +245,48 @@ requisição HTTP.
 
 ### 4. Criar o administrador de produção
 
-Execute o seed uma única vez a partir de uma máquina confiável, usando as
-variáveis de produção e uma senha forte:
+O seed não deve ser executado durante o build ou dentro de uma Function da
+Vercel. Execute-o uma única vez, a partir de uma máquina confiável, usando as
+variáveis do ambiente **Production**.
+
+Instale e autentique a CLI da Vercel e associe o diretório local ao projeto:
 
 ```bash
-DATABASE_URL='<url-pooled-do-neon>' \
-DIRECT_URL='<url-direta-do-neon>' \
+npm i -g vercel
+vercel login
+vercel link
+```
+
+A forma recomendada é executar o seed sem salvar as variáveis de produção em
+um arquivo local:
+
+```bash
 SEED_ADMIN_EMAIL='admin@example.com' \
 SEED_ADMIN_PASSWORD='senha-forte' \
+SEED_ADMIN_FIRST_NAME='Admin' \
+SEED_ADMIN_LAST_NAME='Sistema' \
+vercel env run -e production -- bun run seed:admin
+```
+
+Como alternativa, baixe as variáveis de produção para um arquivo local:
+
+```bash
+vercel env pull --environment=production .env.production.local
+
+set -a
+source .env.production.local
+set +a
+
+SEED_ADMIN_EMAIL='admin@example.com' \
+SEED_ADMIN_PASSWORD='senha-forte' \
+SEED_ADMIN_FIRST_NAME='Admin' \
+SEED_ADMIN_LAST_NAME='Sistema' \
 bun run seed:admin
 ```
 
-Não use `admin123` em um ambiente exposto.
+O arquivo `.env.production.local` é ignorado pelo Git e não deve ser
+versionado. Não use `admin123` em um ambiente exposto. Se o e-mail informado
+já existir, o seed não cria um usuário duplicado.
 
 ### 5. Verificar o deploy
 
