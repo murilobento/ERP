@@ -1,14 +1,14 @@
 import { Hono } from 'hono'
-import prisma from '../lib/prisma'
+import prisma from '../lib/prisma.js'
 import {
   expandConsumption,
   getSupplyStockMap,
   recordProductionCompletion,
   recordProductionReversal,
   StockLedgerError,
-} from '../lib/stock'
-import { authMiddleware } from '../middleware/auth'
-import { requireRole } from '../lib/rbac'
+} from '../lib/stock.js'
+import { authMiddleware } from '../middleware/auth.js'
+import { requireRole } from '../lib/rbac.js'
 
 const productionRoutes = new Hono()
 

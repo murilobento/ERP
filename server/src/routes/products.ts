@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
-import prisma from '../lib/prisma'
-import { computeProductPrices } from '../lib/pricing'
-import { getProductStock, getProductStockMap } from '../lib/stock'
-import { authMiddleware } from '../middleware/auth'
+import prisma from '../lib/prisma.js'
+import { computeProductPrices } from '../lib/pricing.js'
+import { getProductStock, getProductStockMap } from '../lib/stock.js'
+import { authMiddleware } from '../middleware/auth.js'
 
 const productRoutes = new Hono()
 

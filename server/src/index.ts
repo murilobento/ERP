@@ -5,8 +5,8 @@ import 'dotenv/config'
  * Production on Vercel uses api/[[...route]].ts via hono/vercel.
  */
 import { serve } from '@hono/node-server'
-import { app } from './app'
-import prisma from './lib/prisma'
+import { app } from './app.js'
+import prisma from './lib/prisma.js'
 
 const port = Number(process.env.PORT) || 3001
 

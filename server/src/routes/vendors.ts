@@ -1,4 +1,4 @@
-import { createContactRoutes } from '../lib/contact-routes'
+import { createContactRoutes } from '../lib/contact-routes.js'
 
 const vendorRoutes = createContactRoutes({
   model: 'vendor',

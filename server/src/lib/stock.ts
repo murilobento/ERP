@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client'
-import prisma from './prisma'
+import prisma from './prisma.js'
 
 type StockDb = Pick<PrismaClient, 'stockMovement'>
 

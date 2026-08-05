@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import type { PrismaClient } from '@prisma/client'
-import prisma from './prisma'
-import { authMiddleware } from '../middleware/auth'
+import prisma from './prisma.js'
+import { authMiddleware } from '../middleware/auth.js'
 
 interface ContactRoutesConfig {
   model: keyof Pick<PrismaClient, 'client' | 'vendor'>

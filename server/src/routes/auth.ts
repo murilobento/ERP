@@ -1,13 +1,13 @@
 import { Hono } from 'hono'
 import { setCookie, getCookie } from 'hono/cookie'
-import prisma from '../lib/prisma'
+import prisma from '../lib/prisma.js'
 import {
   comparePassword,
   signAccessToken,
   signRefreshToken,
   verifyToken,
-} from '../lib/auth'
-import { authMiddleware } from '../middleware/auth'
+} from '../lib/auth.js'
+import { authMiddleware } from '../middleware/auth.js'
 
 const authRoutes = new Hono()
 

@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
-import prisma from '../lib/prisma'
-import { hashPassword } from '../lib/auth'
-import { authMiddleware } from '../middleware/auth'
-import { requireRole, ROLES, type Role } from '../lib/rbac'
+import prisma from '../lib/prisma.js'
+import { hashPassword } from '../lib/auth.js'
+import { authMiddleware } from '../middleware/auth.js'
+import { requireRole, ROLES, type Role } from '../lib/rbac.js'
 
 const userRoutes = new Hono()
 

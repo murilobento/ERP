@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono'
 import { getCookie } from 'hono/cookie'
-import prisma from '../lib/prisma'
-import { verifyToken } from '../lib/auth'
+import prisma from '../lib/prisma.js'
+import { verifyToken } from '../lib/auth.js'
 
 export async function authMiddleware(c: Context, next: Next) {
   const token = getCookie(c, 'access_token')

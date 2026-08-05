@@ -1,10 +1,10 @@
 import { Hono } from "hono";
-import prisma from "../lib/prisma";
-import { generateInvoicePdf } from "../lib/pdf";
-import { expandKitIntoSaleItems } from "../lib/pricing";
-import { recordSaleDelivery, recordSaleReversal, StockLedgerError } from "../lib/stock";
-import { authMiddleware } from "../middleware/auth";
-import { requireRole } from "../lib/rbac";
+import prisma from "../lib/prisma.js";
+import { generateInvoicePdf } from "../lib/pdf.js";
+import { expandKitIntoSaleItems } from "../lib/pricing.js";
+import { recordSaleDelivery, recordSaleReversal, StockLedgerError } from "../lib/stock.js";
+import { authMiddleware } from "../middleware/auth.js";
+import { requireRole } from "../lib/rbac.js";
 
 const saleRoutes = new Hono();
 

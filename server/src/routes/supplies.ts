@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import prisma from '../lib/prisma'
-import { getSupplyStock, getSupplyStockMap } from '../lib/stock'
-import { authMiddleware } from '../middleware/auth'
+import prisma from '../lib/prisma.js'
+import { getSupplyStock, getSupplyStockMap } from '../lib/stock.js'
+import { authMiddleware } from '../middleware/auth.js'
 
 const supplyRoutes = new Hono()
 

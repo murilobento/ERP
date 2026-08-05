@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import prisma from '../lib/prisma'
-import { computeKitPricing } from '../lib/pricing'
-import { authMiddleware } from '../middleware/auth'
+import prisma from '../lib/prisma.js'
+import { computeKitPricing } from '../lib/pricing.js'
+import { authMiddleware } from '../middleware/auth.js'
 
 const kitRoutes = new Hono()
 

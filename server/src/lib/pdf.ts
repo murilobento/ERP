@@ -1,4 +1,4 @@
-import { generateInvoiceHtml } from './invoice-template'
+import { generateInvoiceHtml } from './invoice-template.js'
 
 type InvoiceItem = {
   name: string
