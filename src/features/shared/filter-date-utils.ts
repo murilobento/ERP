@@ -17,7 +17,9 @@ const datePartsFormatter = new Intl.DateTimeFormat('en-US', {
 
 function getDateParts(date: Date) {
   return Object.fromEntries(
-    datePartsFormatter.formatToParts(date).map(({ type, value }) => [type, value])
+    datePartsFormatter
+      .formatToParts(date)
+      .map(({ type, value }) => [type, value])
   ) as Record<'year' | 'month' | 'day', string>
 }
 

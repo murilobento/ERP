@@ -7,8 +7,12 @@ import {
 
 describe('application date utilities', () => {
   it('uses the Sao Paulo calendar day for UTC timestamps', () => {
-    expect(formatDateInAppTimeZone('2026-01-01T02:59:59.999Z')).toBe('2025-12-31')
-    expect(formatDateInAppTimeZone('2026-01-01T03:00:00.000Z')).toBe('2026-01-01')
+    expect(formatDateInAppTimeZone('2026-01-01T02:59:59.999Z')).toBe(
+      '2025-12-31'
+    )
+    expect(formatDateInAppTimeZone('2026-01-01T03:00:00.000Z')).toBe(
+      '2026-01-01'
+    )
   })
 
   it('does not shift a date-only API value', () => {
@@ -25,8 +29,8 @@ describe('application date utilities', () => {
   })
 
   it('parses payment input as Sao Paulo local time', () => {
-    expect(parseDateTimeLocalInAppTimeZone('2026-01-01T12:30')?.toISOString()).toBe(
-      '2026-01-01T15:30:00.000Z'
-    )
+    expect(
+      parseDateTimeLocalInAppTimeZone('2026-01-01T12:30')?.toISOString()
+    ).toBe('2026-01-01T15:30:00.000Z')
   })
 })

@@ -20,12 +20,12 @@ import {
   type ClientSearchItem,
 } from '@/components/client-combobox'
 import { DatePicker } from '@/components/date-picker'
-import { parseFilterDate } from '@/features/shared/filter-date-utils'
 import { KitCombobox, type KitSearchItem } from '@/components/kit-combobox'
 import {
   ProductSupplyCombobox,
   type ProductSupplySearchItem,
 } from '@/components/product-supply-combobox'
+import { parseFilterDate } from '@/features/shared/filter-date-utils'
 import { formatCurrency } from '../data/schema'
 import { SaleItemsTable } from './sale-items-table'
 import { useSales } from './sales-provider'
