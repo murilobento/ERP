@@ -20,6 +20,7 @@ import {
   type ClientSearchItem,
 } from '@/components/client-combobox'
 import { DatePicker } from '@/components/date-picker'
+import { parseFilterDate } from '@/features/shared/filter-date-utils'
 import { KitCombobox, type KitSearchItem } from '@/components/kit-combobox'
 import {
   ProductSupplyCombobox,
@@ -67,7 +68,7 @@ export function SalesActionDialog({
   const [notes, setNotes] = useState(isEdit ? currentRow.notes : '')
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(
     isEdit && currentRow.deliveryDate
-      ? new Date(currentRow.deliveryDate)
+      ? parseFilterDate(currentRow.deliveryDate)
       : undefined
   )
   const [addMode, setAddMode] = useState<'product' | 'kit'>('product')

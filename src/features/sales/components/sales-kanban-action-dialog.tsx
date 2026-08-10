@@ -30,6 +30,10 @@ import {
   type Sale,
   type SaleStatus,
 } from '../data/schema'
+import {
+  formatDateTimeLocalInAppTimeZone,
+  parseDateTimeLocalInAppTimeZone,
+} from '@/features/shared/filter-date-utils'
 import { useSales } from './sales-provider'
 
 type SaleResponse = {
@@ -93,15 +97,11 @@ const transitionMap: Partial<
 }
 
 function toDateTimeLocal(date: Date) {
-  const offset = date.getTimezoneOffset()
-  const localDate = new Date(date.getTime() - offset * 60 * 1000)
-  return localDate.toISOString().slice(0, 16)
+  return formatDateTimeLocalInAppTimeZone(date)
 }
 
 function parseDateTimeLocal(value: string) {
-  if (!value) return undefined
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? undefined : date
+  return parseDateTimeLocalInAppTimeZone(value)
 }
 
 function setDatePreservingTime(date: Date | undefined, currentValue: string) {

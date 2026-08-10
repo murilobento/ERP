@@ -4,6 +4,11 @@ import { expandKitIntoSaleItems } from "../lib/pricing.js";
 import { recordSaleDelivery, recordSaleReversal, StockLedgerError } from "../lib/stock.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { requireRole } from "../lib/rbac.js";
+import {
+	formatDateInAppTimeZone,
+	parseDateOnlyInAppTimeZone,
+	parseDateTimeInAppTimeZone,
+} from "../lib/date-time.js";
 
 const saleRoutes = new Hono();
 
@@ -57,6 +62,13 @@ type KitSaleInput = {
 	kitId: string;
 	quantity: number;
 };
+
+function serializeSale<T extends { deliveryDate: Date | null }>(sale: T) {
+	return {
+		...sale,
+		deliveryDate: formatDateInAppTimeZone(sale.deliveryDate),
+	};
+}
 
 function validateSaleItems(items: SaleItemInput[]) {
 	if (!Array.isArray(items) || items.length === 0) {
@@ -128,7 +140,7 @@ saleRoutes.get("/", async (c) => {
 		orderBy: { createdAt: "desc" },
 	});
 
-	return c.json({ sales });
+	return c.json({ sales: sales.map(serializeSale) });
 });
 
 saleRoutes.post("/", requireRole("admin", "manager", "operator"), async (c) => {
@@ -145,10 +157,10 @@ saleRoutes.post("/", requireRole("admin", "manager", "operator"), async (c) => {
 		return c.json({ error: "Cliente é obrigatório." }, 400);
 	}
 
-	if (
-		!deliveryDate ||
-		Number.isNaN(new Date(`${deliveryDate}T00:00:00`).getTime())
-	) {
+	const parsedDeliveryDate = deliveryDate
+		? parseDateOnlyInAppTimeZone(deliveryDate)
+		: null;
+	if (!parsedDeliveryDate) {
 		return c.json({ error: "Data de entrega é obrigatória." }, 400);
 	}
 
@@ -188,7 +200,7 @@ saleRoutes.post("/", requireRole("admin", "manager", "operator"), async (c) => {
 			clientId,
 			customer: client.name,
 			notes: notes || "",
-			deliveryDate: new Date(`${deliveryDate}T00:00:00`),
+			deliveryDate: parsedDeliveryDate,
 			status: "in_preparation",
 			items: {
 				createMany: {
@@ -204,7 +216,7 @@ saleRoutes.post("/", requireRole("admin", "manager", "operator"), async (c) => {
 		select: SALE_SELECT,
 	});
 
-	return c.json({ sale }, 201);
+	return c.json({ sale: serializeSale(sale) }, 201);
 });
 
 saleRoutes.get("/:id", async (c) => {
@@ -218,7 +230,7 @@ saleRoutes.get("/:id", async (c) => {
 		return c.json({ error: "Venda não encontrada." }, 404);
 	}
 
-	return c.json({ sale });
+	return c.json({ sale: serializeSale(sale) });
 });
 
 saleRoutes.patch("/:id", requireRole("admin", "manager", "operator"), async (c) => {
@@ -279,10 +291,11 @@ saleRoutes.patch("/:id", requireRole("admin", "manager", "operator"), async (c) 
 		}
 	}
 
-	if (
-		deliveryDate !== undefined &&
-		Number.isNaN(new Date(`${deliveryDate}T00:00:00`).getTime())
-	) {
+	const parsedDeliveryDate =
+		deliveryDate === undefined
+			? undefined
+			: parseDateOnlyInAppTimeZone(deliveryDate);
+	if (deliveryDate !== undefined && !parsedDeliveryDate) {
 		return c.json({ error: "Data de entrega inválida." }, 400);
 	}
 
@@ -298,8 +311,7 @@ saleRoutes.patch("/:id", requireRole("admin", "manager", "operator"), async (c) 
 			data.customer = client.name;
 		}
 		if (notes !== undefined) data.notes = notes;
-		if (deliveryDate !== undefined)
-			data.deliveryDate = new Date(`${deliveryDate}T00:00:00`);
+		if (parsedDeliveryDate) data.deliveryDate = parsedDeliveryDate;
 
 		await tx.sale.update({ where: { id: saleId }, data });
 
@@ -322,7 +334,7 @@ saleRoutes.patch("/:id", requireRole("admin", "manager", "operator"), async (c) 
 		select: SALE_SELECT,
 	});
 
-	return c.json({ sale });
+	return c.json({ sale: serializeSale(sale) });
 });
 
 saleRoutes.post("/:id/ready-for-delivery", requireRole("admin", "manager", "operator"), async (c) => {
@@ -348,7 +360,7 @@ saleRoutes.post("/:id/ready-for-delivery", requireRole("admin", "manager", "oper
 		select: SALE_SELECT,
 	});
 
-	return c.json({ sale });
+	return c.json({ sale: serializeSale(sale) });
 });
 
 saleRoutes.post("/:id/deliver", requireRole("admin", "manager", "operator"), async (c) => {
@@ -400,7 +412,7 @@ saleRoutes.post("/:id/deliver", requireRole("admin", "manager", "operator"), asy
 		select: SALE_SELECT,
 	});
 
-	return c.json({ sale });
+	return c.json({ sale: serializeSale(sale) });
 });
 
 saleRoutes.post("/:id/complete", requireRole("admin", "manager", "operator"), async (c) => {
@@ -415,7 +427,8 @@ saleRoutes.post("/:id/complete", requireRole("admin", "manager", "operator"), as
 	if (!paymentMethod || !paymentMethod.trim()) {
 		return c.json({ error: "Forma de pagamento é obrigatória." }, 400);
 	}
-	if (!paidAt || Number.isNaN(new Date(paidAt).getTime())) {
+	const parsedPaidAt = paidAt ? parseDateTimeInAppTimeZone(paidAt) : null;
+	if (!parsedPaidAt) {
 		return c.json({ error: "Data do pagamento é obrigatória." }, 400);
 	}
 
@@ -436,13 +449,13 @@ saleRoutes.post("/:id/complete", requireRole("admin", "manager", "operator"), as
 			status: "completed",
 			completedAt: new Date(),
 			paymentMethod: paymentMethod.trim(),
-			paidAt: new Date(paidAt),
+			paidAt: parsedPaidAt,
 			paymentNotes: paymentNotes?.trim() || "",
 		},
 		select: SALE_SELECT,
 	});
 
-	return c.json({ sale });
+	return c.json({ sale: serializeSale(sale) });
 });
 
 saleRoutes.post("/:id/reverse", requireRole("admin", "manager", "operator"), async (c) => {
@@ -504,7 +517,7 @@ saleRoutes.post("/:id/reverse", requireRole("admin", "manager", "operator"), asy
 		select: SALE_SELECT,
 	});
 
-	return c.json({ sale });
+	return c.json({ sale: serializeSale(sale) });
 });
 
 saleRoutes.get("/:id/invoice", async (c) => {

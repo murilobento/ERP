@@ -17,6 +17,10 @@ import {
   type Sale,
   saleStatusMap,
 } from '../data/schema'
+import {
+  formatDateInAppTimeZone,
+  formatDateTimeInAppTimeZone,
+} from '@/features/shared/filter-date-utils'
 import { downloadInvoice } from '../lib/download-invoice'
 
 export type SalesDetailConfirmAction =
@@ -146,7 +150,7 @@ export function SalesDetailView({
         <div>
           <h4 className='mb-1 text-sm font-medium'>Data de entrega</h4>
           <p className='text-sm text-muted-foreground'>
-            {new Date(sale.deliveryDate).toLocaleDateString()}
+            {formatDateInAppTimeZone(sale.deliveryDate)}
           </p>
         </div>
       )}
@@ -156,7 +160,7 @@ export function SalesDetailView({
           <h4 className='mb-1 text-sm font-medium'>Pagamento</h4>
           <p className='text-sm text-muted-foreground'>
             {paymentMethodMap[sale.paymentMethod] || sale.paymentMethod} ·{' '}
-            {new Date(sale.paidAt).toLocaleString()}
+          {formatDateTimeInAppTimeZone(sale.paidAt)}
           </p>
           {sale.paymentNotes && (
             <p className='mt-1 text-sm'>{sale.paymentNotes}</p>
@@ -175,7 +179,7 @@ export function SalesDetailView({
         <div className='rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2'>
           <h4 className='mb-1 text-sm font-medium text-destructive'>Estorno</h4>
           <p className='text-sm text-muted-foreground'>
-            {new Date(sale.reversedAt).toLocaleString()}
+          {formatDateTimeInAppTimeZone(sale.reversedAt)}
           </p>
           {sale.reversalReason && (
             <p className='mt-1 text-sm'>Motivo: {sale.reversalReason}</p>
@@ -186,7 +190,7 @@ export function SalesDetailView({
       <div>
         <h4 className='mb-1 text-sm font-medium'>Criada em</h4>
         <p className='text-sm text-muted-foreground'>
-          {new Date(sale.createdAt).toLocaleString()}
+          {formatDateTimeInAppTimeZone(sale.createdAt)}
         </p>
       </div>
 

@@ -18,6 +18,7 @@ import {
   type ClientSearchItem,
 } from '@/components/client-combobox'
 import { DatePicker } from '@/components/date-picker'
+import { parseFilterDate } from '@/features/shared/filter-date-utils'
 import {
   ProductSupplyCombobox,
   type ProductSupplySearchItem,
@@ -53,7 +54,7 @@ export function SaleEditForm({
     useState<ClientSearchItem | null>(sale.client)
   const [editNotes, setEditNotes] = useState(sale.notes)
   const [editDeliveryDate, setEditDeliveryDate] = useState<Date | undefined>(
-    sale.deliveryDate ? new Date(sale.deliveryDate) : undefined
+    sale.deliveryDate ? parseFilterDate(sale.deliveryDate) : undefined
   )
   const [editDraftItem, setEditDraftItem] = useState<ItemForm>({
     productId: '',

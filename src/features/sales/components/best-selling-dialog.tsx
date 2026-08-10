@@ -21,6 +21,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DatePicker } from '@/components/date-picker'
+import {
+  formatFilterDate,
+  getPresetRange as getSharedPresetRange,
+  parseFilterDate,
+} from '@/features/shared/filter-date-utils'
 import { isWithinRange } from '../data/filters'
 import { formatCurrency, type Sale } from '../data/schema'
 
@@ -45,50 +50,21 @@ const datePresetOptions: DatePresetOption[] = [
   { value: 'last_3_months', label: 'Últimos 3 meses' },
 ]
 
-function formatFilterDate(date: Date | undefined) {
-  if (!date) return ''
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
 function getPresetRange(preset: DatePreset) {
-  const base = new Date()
-  base.setHours(0, 0, 0, 0)
-
-  if (preset === 'today') {
-    const value = formatFilterDate(base)
-    return { from: value, to: value }
-  }
-
-  if (preset === 'yesterday') {
-    const yesterday = new Date(base)
-    yesterday.setDate(yesterday.getDate() - 1)
-    const value = formatFilterDate(yesterday)
-    return { from: value, to: value }
-  }
-
-  if (preset === 'this_month') {
-    const from = new Date(base.getFullYear(), base.getMonth(), 1)
-    const to = new Date(base.getFullYear(), base.getMonth() + 1, 0)
-    return { from: formatFilterDate(from), to: formatFilterDate(to) }
-  }
-
-  if (preset === 'last_month') {
-    const from = new Date(base.getFullYear(), base.getMonth() - 1, 1)
-    const to = new Date(base.getFullYear(), base.getMonth(), 0)
-    return { from: formatFilterDate(from), to: formatFilterDate(to) }
-  }
-
-  const from = new Date(base.getFullYear(), base.getMonth() - 3, 1)
-  return { from: formatFilterDate(from), to: formatFilterDate(base) }
-}
-
-function parseFilterDate(value: string) {
-  if (!value) return undefined
-  const date = new Date(`${value}T00:00:00`)
-  return Number.isNaN(date.getTime()) ? undefined : date
+  if (preset !== 'last_3_months') return getSharedPresetRange(preset)
+  const currentMonth = parseFilterDate(getSharedPresetRange('this_month').from)
+  if (!currentMonth) return { from: '', to: '' }
+  const from = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() - 2,
+    1
+  )
+  const to = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+    0
+  )
+  return { from: formatFilterDate(from), to: formatFilterDate(to) }
 }
 
 type AggregatedItem = {

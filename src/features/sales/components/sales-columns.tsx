@@ -9,6 +9,7 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
 import { DataTableColumnHeader } from '@/components/data-table'
+import { formatDateInAppTimeZone } from '@/features/shared/filter-date-utils'
 import {
   formatCurrency,
   getSaleTotal,
@@ -179,8 +180,8 @@ export const salesColumns: ColumnDef<Sale>[] = [
       <DataTableColumnHeader column={column} title='Criado em' />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue('createdAt'))
-      return <div className='text-nowrap'>{date.toLocaleDateString()}</div>
+      const value = row.getValue('createdAt') as string
+      return <div className='text-nowrap'>{formatDateInAppTimeZone(value)}</div>
     },
   },
   {
@@ -191,8 +192,7 @@ export const salesColumns: ColumnDef<Sale>[] = [
     cell: ({ row }) => {
       const value = row.getValue('deliveryDate') as string | null
       if (!value) return <span className='text-muted-foreground'>—</span>
-      const date = new Date(value)
-      return <div className='text-nowrap'>{date.toLocaleDateString()}</div>
+      return <div className='text-nowrap'>{formatDateInAppTimeZone(value)}</div>
     },
   },
   {

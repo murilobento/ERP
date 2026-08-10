@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { type Purchase, purchaseStatusMap } from '../data/schema'
+import { formatDateTimeInAppTimeZone } from '@/features/shared/filter-date-utils'
 import { PurchaseEditForm } from './purchase-edit-form'
 import { usePurchases } from './purchases-provider'
 
@@ -300,7 +301,7 @@ export function PurchasesDetailDialog() {
                     Estorno
                   </h4>
                   <p className='text-sm text-muted-foreground'>
-                    {new Date(purchase.reversedAt).toLocaleString()}
+                    {formatDateTimeInAppTimeZone(purchase.reversedAt)}
                   </p>
                   {purchase.reversalReason && (
                     <p className='mt-1 text-sm'>
@@ -313,7 +314,7 @@ export function PurchasesDetailDialog() {
               <div>
                 <h4 className='mb-1 text-sm font-medium'>Criada em</h4>
                 <p className='text-sm text-muted-foreground'>
-                  {new Date(purchase.createdAt).toLocaleString()}
+                  {formatDateTimeInAppTimeZone(purchase.createdAt)}
                 </p>
               </div>
 
@@ -321,7 +322,7 @@ export function PurchasesDetailDialog() {
                 <div>
                   <h4 className='mb-1 text-sm font-medium'>Concluída em</h4>
                   <p className='text-sm text-muted-foreground'>
-                    {new Date(purchase.completedAt).toLocaleString()}
+                    {formatDateTimeInAppTimeZone(purchase.completedAt)}
                   </p>
                 </div>
               )}

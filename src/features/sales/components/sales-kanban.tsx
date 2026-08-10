@@ -21,6 +21,7 @@ import {
   type Sale,
   type SaleStatus,
 } from '../data/schema'
+import { formatDateInAppTimeZone } from '@/features/shared/filter-date-utils'
 import { PreparationSummaryDialog } from './preparation-summary-dialog'
 import { useSales } from './sales-provider'
 
@@ -45,7 +46,12 @@ const allowedDrops: Record<SaleStatus, SaleStatus> = {
 
 function formatDeliveryDate(value: string | null) {
   if (!value) return 'Sem entrega'
-  return new Date(value).toLocaleDateString('pt-BR')
+  const date = formatDateInAppTimeZone(value)
+  return date
+    ? new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' }).format(
+        new Date(`${date}T12:00:00`)
+      )
+    : 'Sem entrega'
 }
 
 function getItemCountLabel(count: number) {

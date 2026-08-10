@@ -1,6 +1,7 @@
 import z from 'zod'
 import { createFileRoute } from '@tanstack/react-router'
 import { Sales } from '@/features/sales'
+import { getPresetRange } from '@/features/shared/filter-date-utils'
 
 const saleStatusSchema = z.enum([
   'in_preparation',
@@ -10,8 +11,7 @@ const saleStatusSchema = z.enum([
 ])
 
 function todayStr() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return getPresetRange('today').from
 }
 
 const salesSearchSchema = z.object({
