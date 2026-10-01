@@ -43,10 +43,20 @@ const purchase: Purchase = {
   items: [],
 }
 
-function confirmationInput() {
-  return document.querySelector<HTMLInputElement>(
-    'input[placeholder="Digite o nome para confirmar a exclusão."]'
-  )!
+async function renderDialog() {
+  const onOpenChange = vi.fn()
+  const queryClient = new QueryClient()
+  const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
+  const rendered = render(
+    <QueryClientProvider client={queryClient}>
+      <PurchasesDeleteDialog
+        open
+        onOpenChange={onOpenChange}
+        currentRow={purchase}
+      />
+    </QueryClientProvider>
+  )
+  return { ...(await rendered), invalidateQueries, onOpenChange }
 }
 
 describe('PurchasesDeleteDialog', () => {
@@ -55,25 +65,23 @@ describe('PurchasesDeleteDialog', () => {
     apiDelete.mockResolvedValue({ data: { ok: true } })
   })
 
-  it('confirms with the supplier name and deletes the purchase', async () => {
-    const onOpenChange = vi.fn()
-    const queryClient = new QueryClient()
-    const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
-    const rendered = render(
-      <QueryClientProvider client={queryClient}>
-        <PurchasesDeleteDialog
-          open
-          onOpenChange={onOpenChange}
-          currentRow={purchase}
-        />
-      </QueryClientProvider>
-    )
-    const { getByRole } = await rendered
+  it('deletes with a simple yes/no confirmation, without typing the supplier name', async () => {
+    const { getByRole, getByText, invalidateQueries, onOpenChange } =
+      await renderDialog()
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    await expect.element(confirm).toBeDisabled()
+    await expect.element(confirm).toBeEnabled()
 
-    await userEvent.type(confirmationInput(), 'Moinho Central')
+    // nenhum campo de digitação para confirmar a exclusão
+    expect(
+      document.querySelector(
+        'input[placeholder="Digite o nome para confirmar a exclusão."]'
+      )
+    ).toBeNull()
+
+    // o nome do fornecedor continua identificando o registro na pergunta
+    await expect.element(getByText(/Moinho Central/)).toBeInTheDocument()
+
     await userEvent.click(confirm)
 
     await vi.waitFor(() =>
@@ -83,6 +91,15 @@ describe('PurchasesDeleteDialog', () => {
       queryKey: queryKeys.purchases,
     })
     expect(toastSuccess).toHaveBeenCalledWith('Compra excluída com sucesso.')
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('cancels without calling the api', async () => {
+    const { getByRole, onOpenChange } = await renderDialog()
+
+    await userEvent.click(getByRole('button', { name: 'Cancelar' }))
+
+    expect(apiDelete).not.toHaveBeenCalled()
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 })

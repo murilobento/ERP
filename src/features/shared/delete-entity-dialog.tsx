@@ -20,6 +20,11 @@ type DeleteEntityDialogProps = {
   successMessage: string
   formId: string
   displayLabel?: string
+  /**
+   * `type-name` (default): digitar o nome do registro para liberar a exclusão.
+   * `simple`: confirmação sim/não, sem campo de digitação.
+   */
+  confirmMode?: 'type-name' | 'simple'
 }
 
 export function DeleteEntityDialog({
@@ -32,16 +37,20 @@ export function DeleteEntityDialog({
   successMessage,
   formId,
   displayLabel,
+  confirmMode = 'type-name',
 }: DeleteEntityDialogProps) {
   const [value, setValue] = useState('')
   const { run } = useEntityMutation()
 
   if (!currentRow) return null
 
+  const simpleConfirm = confirmMode === 'simple'
   const confirmationName = displayLabel ?? currentRow.name ?? ''
+  const recordLabel = confirmationName || 'este registro'
+  const isConfirmed = simpleConfirm || value.trim() === confirmationName
 
   const handleDelete = async () => {
-    if (!confirmationName || value.trim() !== confirmationName) return
+    if (!isConfirmed) return
     await run({
       mutation: () => api.delete(`/${endpoint}/${currentRow.id}`),
       invalidate: [queryKey],
@@ -55,7 +64,7 @@ export function DeleteEntityDialog({
       open={open}
       onOpenChange={onOpenChange}
       form={formId}
-      disabled={!confirmationName || value.trim() !== confirmationName}
+      disabled={!isConfirmed}
       title={
         <span className='text-destructive'>
           <AlertTriangle
@@ -76,17 +85,19 @@ export function DeleteEntityDialog({
         >
           <p className='mb-2'>
             Tem certeza que deseja excluir{' '}
-            <span className='font-bold'>{confirmationName}</span>?
+            <span className='font-bold'>{recordLabel}</span>?
           </p>
-          <Label className='my-2'>
-            Nome:
-            <Input
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder='Digite o nome para confirmar a exclusão.'
-              autoFocus
-            />
-          </Label>
+          {!simpleConfirm && (
+            <Label className='my-2'>
+              Nome:
+              <Input
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder='Digite o nome para confirmar a exclusão.'
+                autoFocus
+              />
+            </Label>
+          )}
           <Alert variant='destructive'>
             <AlertTitle>Atenção!</AlertTitle>
             <AlertDescription>
