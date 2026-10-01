@@ -23,6 +23,7 @@ const tx = vi.hoisted(() => ({
 const prisma = vi.hoisted(() => ({
   purchase: {
     findUnique: vi.fn(),
+    delete: vi.fn(),
   },
   user: {
     findUnique: vi.fn(),
@@ -195,5 +196,70 @@ describe('purchase routes', () => {
         }),
       })
     )
+  })
+
+  it('deletes a pending purchase', async () => {
+    prisma.purchase.findUnique.mockResolvedValue({
+      id: 'purchase-1',
+      status: 'pending',
+    })
+
+    const response = await app.request('/api/purchases/purchase-1', {
+      method: 'DELETE',
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ ok: true })
+    expect(prisma.purchase.delete).toHaveBeenCalledWith({
+      where: { id: 'purchase-1' },
+    })
+  })
+
+  it('rejects deleting purchases that are not pending', async () => {
+    prisma.purchase.findUnique.mockResolvedValue(completedPurchase)
+
+    const response = await app.request('/api/purchases/purchase-1', {
+      method: 'DELETE',
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Apenas compras pendentes podem ser excluídas.',
+    })
+    expect(prisma.purchase.delete).not.toHaveBeenCalled()
+  })
+
+  it('returns 404 when deleting a missing purchase', async () => {
+    prisma.purchase.findUnique.mockResolvedValue(null)
+
+    const response = await app.request('/api/purchases/missing', {
+      method: 'DELETE',
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(404)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Compra não encontrada.',
+    })
+    expect(prisma.purchase.delete).not.toHaveBeenCalled()
+  })
+
+  it('blocks operators from deleting purchases', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      status: 'active',
+      role: 'operator',
+    })
+
+    const response = await app.request('/api/purchases/purchase-1', {
+      method: 'DELETE',
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({ error: 'Acesso negado.' })
+    expect(prisma.purchase.findUnique).not.toHaveBeenCalled()
   })
 })

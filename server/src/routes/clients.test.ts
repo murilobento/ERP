@@ -48,11 +48,11 @@ describe('client routes', () => {
     )
   })
 
-  it('requires name and phone to create clients', async () => {
+  it('requires name to create clients', async () => {
     const response = await app.request('/api/clients', {
       method: 'POST',
       headers: authHeaders,
-      body: JSON.stringify({ name: 'Cliente' }),
+      body: JSON.stringify({ phone: '11 99999-0000' }),
     })
 
     expect(response.status).toBe(400)
@@ -60,6 +60,27 @@ describe('client routes', () => {
       error: 'Todos os campos obrigatórios devem ser preenchidos.',
     })
     expect(prisma.client.create).not.toHaveBeenCalled()
+  })
+
+  it('creates clients without a phone', async () => {
+    prisma.client.create.mockResolvedValue({
+      id: 'client-1',
+      name: 'Cliente',
+      phone: '',
+    })
+
+    const response = await app.request('/api/clients', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ name: 'Cliente' }),
+    })
+
+    expect(response.status).toBe(201)
+    expect(prisma.client.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'Cliente', phone: '' }),
+      })
+    )
   })
 
   it('updates only provided client fields', async () => {

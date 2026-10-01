@@ -73,10 +73,25 @@ describe('VendorsActionDialog', () => {
     await userEvent.click(getByRole('button', { name: /salvar alterações/i }))
 
     await expect.element(getByText('Nome é obrigatório.')).toBeInTheDocument()
-    await expect
-      .element(getByText('Telefone é obrigatório.'))
-      .toBeInTheDocument()
     expect(apiPost).not.toHaveBeenCalled()
+  })
+
+  it('creates vendors without a phone', async () => {
+    const onOpenChange = vi.fn()
+    const { getByLabelText, getByRole } = await renderDialog({ onOpenChange })
+
+    await userEvent.type(getByLabelText(/^Nome$/i), 'Fornecedor Sem Telefone')
+    await userEvent.click(getByRole('button', { name: /salvar alterações/i }))
+
+    await vi.waitFor(() => expect(apiPost).toHaveBeenCalledOnce())
+    expect(apiPost).toHaveBeenCalledWith(
+      '/vendors',
+      expect.objectContaining({
+        name: 'Fornecedor Sem Telefone',
+        phone: '',
+      })
+    )
+    expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
   it('creates vendors with formatted phone and default active status', async () => {

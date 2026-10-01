@@ -1,11 +1,13 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Eye, Pen } from 'lucide-react'
+import { Eye, Pen, Trash2 } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -18,7 +20,11 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = usePurchases()
+  const { auth } = useAuthStore()
   const purchase = row.original
+  const canDelete =
+    purchase.status === 'pending' &&
+    (auth.user?.role === 'admin' || auth.user?.role === 'manager')
 
   return (
     <DropdownMenu modal={false}>
@@ -55,6 +61,23 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               <Pen size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
+        )}
+        {canDelete && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(purchase)
+                setOpen('delete')
+              }}
+              className='text-red-500!'
+            >
+              Excluir
+              <DropdownMenuShortcut>
+                <Trash2 size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

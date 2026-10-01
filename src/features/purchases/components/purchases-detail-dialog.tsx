@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, Loader2, Pen, RotateCcw } from 'lucide-react'
+import { CheckCircle2, Loader2, Pen, RotateCcw, Trash2 } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
@@ -18,6 +19,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { formatDateTimeInAppTimeZone } from '@/features/shared/filter-date-utils'
 import { type Purchase, purchaseStatusMap } from '../data/schema'
+import {
+  formatCurrency,
+  itemTotal,
+  itemUnitPrice,
+  purchaseTotal,
+} from '../data/totals'
 import { PurchaseEditForm } from './purchase-edit-form'
 import { usePurchases } from './purchases-provider'
 
@@ -27,6 +34,7 @@ type PurchaseResponse = {
 
 export function PurchasesDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = usePurchases()
+  const { auth } = useAuthStore()
   const { run, isLoading } = useEntityMutation()
   const [showReverse, setShowReverse] = useState(false)
   const [reverseReason, setReverseReason] = useState('')
@@ -53,6 +61,8 @@ export function PurchasesDetailDialog() {
     variant: 'secondary' as const,
   }
   const canEdit = purchase.status === 'pending'
+  const canDelete =
+    canEdit && (auth.user?.role === 'admin' || auth.user?.role === 'manager')
 
   function syncPurchase(updatedPurchase: Purchase) {
     queryClient.setQueryData<Purchase[]>(queryKeys.purchases, (old) =>
@@ -135,6 +145,14 @@ export function PurchasesDetailDialog() {
         setCurrentRow(null)
       },
     })
+  }
+
+  function requestDelete() {
+    setShowReverse(false)
+    setReverseReason('')
+    setConfirmComplete(false)
+    setIsEditing(false)
+    setOpen('delete')
   }
 
   function handleClose(state: boolean) {
@@ -257,32 +275,61 @@ export function PurchasesDetailDialog() {
               <div>
                 <h4 className='mb-2 text-sm font-medium'>Itens</h4>
                 <div className='space-y-1'>
-                  {purchase.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className='flex items-center justify-between rounded-md border px-3 py-2 text-sm'
-                    >
-                      <span>{item.supply.name}</span>
-                      <div className='flex items-center gap-2'>
-                        {item.packageCost > 0 && (
-                          <>
-                            <span className='text-muted-foreground'>
-                              R$ {item.packageCost.toFixed(2)}/
-                              {item.supply.packageUnit || 'emb.'}
-                            </span>
-                            <span className='text-muted-foreground'>·</span>
-                          </>
-                        )}
-                        <span className='text-muted-foreground'>
-                          {item.packages} {item.supply.packageUnit || 'emb.'}(s)
-                        </span>
-                        <span className='text-muted-foreground'>=</span>
-                        <strong>
-                          {item.quantity} {item.supply.unit}
-                        </strong>
+                  {purchase.items.map((item) => {
+                    const hasPrice = item.packageCost > 0
+                    const unitPrice = itemUnitPrice(
+                      item.packageCost,
+                      item.supply.packageQuantity
+                    )
+                    return (
+                      <div
+                        key={item.id}
+                        className='rounded-md border px-3 py-2 text-sm'
+                      >
+                        <div className='flex items-center justify-between gap-2'>
+                          <span className='font-medium'>
+                            {item.supply.name}
+                          </span>
+                          <strong className='text-nowrap'>
+                            {hasPrice ? formatCurrency(itemTotal(item)) : '—'}
+                          </strong>
+                        </div>
+                        <div className='mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground'>
+                          <span>
+                            {item.packages} {item.supply.packageUnit || 'emb.'}
+                            (s)
+                          </span>
+                          {hasPrice && (
+                            <>
+                              <span>×</span>
+                              <span className='text-nowrap'>
+                                {formatCurrency(item.packageCost)} por{' '}
+                                {item.supply.packageUnit || 'emb.'}
+                              </span>
+                              <span>·</span>
+                              <span className='text-nowrap'>
+                                {formatCurrency(unitPrice)}/{item.supply.unit}
+                              </span>
+                            </>
+                          )}
+                          <span>=</span>
+                          <span>
+                            {item.quantity} {item.supply.unit}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
+                </div>
+
+                <div className='flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm'>
+                  <span className='text-muted-foreground'>
+                    Total da compra ({purchase.items.length}{' '}
+                    {purchase.items.length === 1 ? 'item' : 'itens'})
+                  </span>
+                  <span className='font-semibold'>
+                    {formatCurrency(purchaseTotal(purchase.items))}
+                  </span>
                 </div>
               </div>
 
@@ -350,6 +397,16 @@ export function PurchasesDetailDialog() {
                       )}
                       Concluir
                     </Button>
+                    {canDelete && (
+                      <Button
+                        variant='destructive'
+                        onClick={requestDelete}
+                        disabled={isLoading}
+                      >
+                        <Trash2 size={16} className='me-1' />
+                        Excluir
+                      </Button>
+                    )}
                     <Button variant='outline' onClick={() => setOpen(null)}>
                       Fechar
                     </Button>

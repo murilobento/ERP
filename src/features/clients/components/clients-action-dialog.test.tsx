@@ -73,10 +73,22 @@ describe('ClientsActionDialog', () => {
     await userEvent.click(getByRole('button', { name: /salvar alterações/i }))
 
     await expect.element(getByText('Nome é obrigatório.')).toBeInTheDocument()
-    await expect
-      .element(getByText('Telefone é obrigatório.'))
-      .toBeInTheDocument()
     expect(apiPost).not.toHaveBeenCalled()
+  })
+
+  it('creates clients without a phone', async () => {
+    const onOpenChange = vi.fn()
+    const { getByLabelText, getByRole } = await renderDialog({ onOpenChange })
+
+    await userEvent.type(getByLabelText(/^Nome$/i), 'Cliente Sem Telefone')
+    await userEvent.click(getByRole('button', { name: /salvar alterações/i }))
+
+    await vi.waitFor(() => expect(apiPost).toHaveBeenCalledOnce())
+    expect(apiPost).toHaveBeenCalledWith(
+      '/clients',
+      expect.objectContaining({ name: 'Cliente Sem Telefone', phone: '' })
+    )
+    expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
   it('creates clients with formatted phone and default active status', async () => {

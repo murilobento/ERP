@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAuthStore } from '@/stores/auth-store'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
@@ -30,6 +31,7 @@ type SaleResponse = {
 
 export function SalesDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = useSales()
+  const { auth } = useAuthStore()
   const { run, isLoading } = useEntityMutation()
   const [confirmAction, setConfirmAction] =
     useState<SalesDetailConfirmAction>(null)
@@ -52,6 +54,10 @@ export function SalesDetailDialog() {
   const sale = detail ?? currentRow
   const total = getSaleTotal(sale)
   const canEdit = sale.status !== 'completed'
+  const canDelete =
+    (sale.status === 'in_preparation' ||
+      sale.status === 'ready_for_delivery') &&
+    (auth.user?.role === 'admin' || auth.user?.role === 'manager')
 
   function resetActionState() {
     setConfirmAction(null)
@@ -128,6 +134,12 @@ export function SalesDetailDialog() {
     })
   }
 
+  function requestDelete() {
+    resetActionState()
+    exitEditMode()
+    setOpen('delete')
+  }
+
   function handleClose(state: boolean) {
     if (!state) {
       resetActionState()
@@ -201,8 +213,10 @@ export function SalesDetailDialog() {
             <SalesDetailView
               sale={sale}
               canEdit={canEdit}
+              canDelete={canDelete}
               isLoading={isLoading}
               onEdit={() => setIsEditing(true)}
+              onDelete={requestDelete}
               onConfirmAction={setConfirmAction}
               onClose={() => handleClose(false)}
             />

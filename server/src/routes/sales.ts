@@ -520,6 +520,29 @@ saleRoutes.post("/:id/reverse", requireRole("admin", "manager", "operator"), asy
 	return c.json({ sale: serializeSale(sale) });
 });
 
+saleRoutes.delete("/:id", requireRole("admin", "manager"), async (c) => {
+	const saleId = c.req.param("id");
+
+	const existing = await prisma.sale.findUnique({ where: { id: saleId } });
+	if (!existing) {
+		return c.json({ error: "Venda não encontrada." }, 404);
+	}
+
+	if (
+		existing.status !== "in_preparation" &&
+		existing.status !== "ready_for_delivery"
+	) {
+		return c.json(
+			{ error: "Apenas vendas ainda não entregues podem ser excluídas." },
+			400,
+		);
+	}
+
+	await prisma.sale.delete({ where: { id: saleId } });
+
+	return c.json({ ok: true });
+});
+
 saleRoutes.get("/:id/invoice", async (c) => {
 	const saleId = c.req.param("id");
 

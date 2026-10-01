@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Trash2, Pen } from 'lucide-react'
+import { History, Trash2, Pen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,43 +19,67 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useSupplies()
+
+  function openHistory() {
+    setCurrentRow(row.original)
+    setOpen('history')
+  }
+
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant='ghost'
-          className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'
-        >
-          <DotsHorizontalIcon className='h-4 w-4' />
-          <span className='sr-only'>Abrir menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-40'>
-        <DropdownMenuItem
-          onClick={() => {
-            setCurrentRow(row.original)
-            setOpen('edit')
-          }}
-        >
-          Editar
-          <DropdownMenuShortcut>
-            <Pen size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            setCurrentRow(row.original)
-            setOpen('delete')
-          }}
-          className='text-red-500!'
-        >
-          Excluir
-          <DropdownMenuShortcut>
-            <Trash2 size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className='flex items-center justify-end gap-1'>
+      <Button
+        variant='ghost'
+        className='flex h-8 w-8 p-0 hover:text-primary'
+        aria-label='Histórico de compras'
+        title='Histórico de compras'
+        onClick={openHistory}
+      >
+        <History size={16} />
+      </Button>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant='ghost'
+            className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'
+          >
+            <DotsHorizontalIcon className='h-4 w-4' />
+            <span className='sr-only'>Abrir menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align='end' className='w-52'>
+          <DropdownMenuItem onClick={openHistory}>
+            Histórico de compras
+            <DropdownMenuShortcut>
+              <History size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(row.original)
+              setOpen('edit')
+            }}
+          >
+            Editar
+            <DropdownMenuShortcut>
+              <Pen size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(row.original)
+              setOpen('delete')
+            }}
+            className='text-red-500!'
+          >
+            Excluir
+            <DropdownMenuShortcut>
+              <Trash2 size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }

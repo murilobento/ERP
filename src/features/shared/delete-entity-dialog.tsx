@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 
-type DeleteableEntity = { id: string; name: string }
+type DeleteableEntity = { id: string; name?: string }
 
 type DeleteEntityDialogProps = {
   open: boolean
@@ -19,6 +19,7 @@ type DeleteEntityDialogProps = {
   entityLabel: string
   successMessage: string
   formId: string
+  displayLabel?: string
 }
 
 export function DeleteEntityDialog({
@@ -30,14 +31,17 @@ export function DeleteEntityDialog({
   entityLabel,
   successMessage,
   formId,
+  displayLabel,
 }: DeleteEntityDialogProps) {
   const [value, setValue] = useState('')
   const { run } = useEntityMutation()
 
   if (!currentRow) return null
 
+  const confirmationName = displayLabel ?? currentRow.name ?? ''
+
   const handleDelete = async () => {
-    if (value.trim() !== currentRow.name) return
+    if (!confirmationName || value.trim() !== confirmationName) return
     await run({
       mutation: () => api.delete(`/${endpoint}/${currentRow.id}`),
       invalidate: [queryKey],
@@ -51,7 +55,7 @@ export function DeleteEntityDialog({
       open={open}
       onOpenChange={onOpenChange}
       form={formId}
-      disabled={value.trim() !== currentRow.name}
+      disabled={!confirmationName || value.trim() !== confirmationName}
       title={
         <span className='text-destructive'>
           <AlertTriangle
@@ -72,7 +76,7 @@ export function DeleteEntityDialog({
         >
           <p className='mb-2'>
             Tem certeza que deseja excluir{' '}
-            <span className='font-bold'>{currentRow.name}</span>?
+            <span className='font-bold'>{confirmationName}</span>?
           </p>
           <Label className='my-2'>
             Nome:

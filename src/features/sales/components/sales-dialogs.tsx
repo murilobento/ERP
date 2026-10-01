@@ -11,6 +11,11 @@ const SalesDetailDialog = lazy(() =>
     default: module.SalesDetailDialog,
   }))
 )
+const SalesDeleteDialog = lazy(() =>
+  import('./sales-delete-dialog').then((module) => ({
+    default: module.SalesDeleteDialog,
+  }))
+)
 const SalesKanbanActionDialog = lazy(() =>
   import('./sales-kanban-action-dialog').then((module) => ({
     default: module.SalesKanbanActionDialog,
@@ -23,7 +28,7 @@ const BestSellingDialog = lazy(() =>
 )
 
 export function SalesDialogs() {
-  const { open, setOpen, currentRow, kanbanAction } = useSales()
+  const { open, setOpen, currentRow, setCurrentRow, kanbanAction } = useSales()
   return (
     <Suspense fallback={null}>
       {open === 'add' ? (
@@ -41,6 +46,18 @@ export function SalesDialogs() {
         />
       ) : null}
       {open === 'view' ? <SalesDetailDialog /> : null}
+      {open === 'delete' && currentRow ? (
+        <SalesDeleteDialog
+          open
+          onOpenChange={(state) => {
+            if (!state) {
+              setOpen(null)
+              setTimeout(() => setCurrentRow(null), 500)
+            }
+          }}
+          currentRow={currentRow}
+        />
+      ) : null}
       {open === 'best-selling' ? (
         <BestSellingDialog
           open

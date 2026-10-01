@@ -47,9 +47,12 @@ Use este vocabulário ao falar do código — não os nomes de arquivo/handler.
 
 - **Sale** — venda ao cliente. Ciclo de status: `in_preparation` →
   `ready_for_delivery` → `delivered` → `completed`. Entrega decrementa estoque
-  de produto; estorno devolve.
+  de produto; estorno devolve. Exclusão só antes da entrega
+  (`in_preparation` ou `ready_for_delivery`), por admin ou manager — esses
+  status nunca movimentaram estoque.
 - **Purchase** — compra de insumo. `pending` → `completed`. Conclusão incrementa
   estoque de insumo e recalcula `Supply.costPrice`; estorno reverte ambos.
+  Exclusão só em `pending`, por admin ou manager.
 - **Production** — transformação de insumos em produtos. `in_production` →
   `completed`. Criação já nasce em `in_production` (sem rascunho). Conclusão
   emite saída de produto e consome insumos (composição); estorno reverte e

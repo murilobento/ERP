@@ -59,9 +59,13 @@ export function createContactColumns(
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title='Telefone' />
       ),
-      cell: ({ row }) => (
-        <div className='w-fit ps-2 text-nowrap'>{row.getValue('phone')}</div>
-      ),
+      cell: ({ row }) => {
+        const phone = (row.getValue('phone') as string) || ''
+        if (!phone) {
+          return <span className='text-muted-foreground'>—</span>
+        }
+        return <div className='w-fit ps-2 text-nowrap'>{phone}</div>
+      },
     },
     {
       id: 'address',

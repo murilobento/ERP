@@ -81,14 +81,14 @@ export function createContactRoutes(config: ContactRoutesConfig) {
     const body = await c.req.json()
     const { name, phone, zipCode, street, number, complement, neighborhood, city, state, status } = body
 
-    if (!name || !phone) {
+    if (!name) {
       return c.json({ error: 'Todos os campos obrigatórios devem ser preenchidos.' }, 400)
     }
 
     const entity = await prisma[model].create({
       data: {
         name,
-        phone,
+        phone: phone || '',
         zipCode: zipCode || '',
         street: street || '',
         number: number || '',
@@ -133,7 +133,7 @@ export function createContactRoutes(config: ContactRoutesConfig) {
     for (const field of CONTACT_FIELDS) {
       const value = body[field]
       if (value !== undefined) {
-        if (field === 'complement') {
+        if (field === 'complement' || field === 'phone') {
           data[field] = value
         } else if (value) {
           data[field] = value

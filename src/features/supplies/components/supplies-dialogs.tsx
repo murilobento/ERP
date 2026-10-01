@@ -1,5 +1,6 @@
 import { SuppliesActionDialog } from './supplies-action-dialog'
 import { SuppliesDeleteDialog } from './supplies-delete-dialog'
+import { SuppliesHistoryDialog } from './supplies-history-dialog'
 import { useSupplies } from './supplies-provider'
 
 export function SuppliesDialogs() {
@@ -33,6 +34,8 @@ export function SuppliesDialogs() {
             }}
             currentRow={currentRow}
           />
+
+          <SuppliesHistoryDialog key={`supply-history-${currentRow.id}`} />
         </>
       )}
     </>

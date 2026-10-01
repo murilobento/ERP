@@ -35,4 +35,5 @@ export const queryKeys = {
   purchase: (id: string): QueryKey => ['purchase', id],
   sale: (id: string): QueryKey => ['sale', id],
   client: (id: string): QueryKey => ['client', id],
+  supplyPurchases: (id: string): QueryKey => ['supply-purchases', id],
 } satisfies Record<string, QueryKeyEntry>

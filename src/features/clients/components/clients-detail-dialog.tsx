@@ -96,7 +96,11 @@ export function ClientsDetailDialog({
               {client.status === 'active' ? 'Ativo' : 'Inativo'}
             </Badge>
           </div>
-          <DialogDescription>Telefone: {client.phone}</DialogDescription>
+          <DialogDescription>
+            {client.phone
+              ? `Telefone: ${client.phone}`
+              : 'Telefone não informado'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className='space-y-4'>

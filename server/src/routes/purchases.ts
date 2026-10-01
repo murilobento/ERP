@@ -379,4 +379,21 @@ purchaseRoutes.post('/:id/reverse', requireRole('admin', 'manager', 'operator'),
   return c.json({ purchase })
 })
 
+purchaseRoutes.delete('/:id', requireRole('admin', 'manager'), async (c) => {
+  const purchaseId = c.req.param('id')
+
+  const existing = await prisma.purchase.findUnique({ where: { id: purchaseId } })
+  if (!existing) {
+    return c.json({ error: 'Compra não encontrada.' }, 404)
+  }
+
+  if (existing.status !== 'pending') {
+    return c.json({ error: 'Apenas compras pendentes podem ser excluídas.' }, 400)
+  }
+
+  await prisma.purchase.delete({ where: { id: purchaseId } })
+
+  return c.json({ ok: true })
+})
+
 export { purchaseRoutes }

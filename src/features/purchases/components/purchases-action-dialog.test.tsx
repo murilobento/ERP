@@ -278,17 +278,18 @@ describe('PurchasesActionDialog', () => {
   })
 
   it('updates the quantity of an added item from the table and recalculates the total', async () => {
-    const { getByRole, getByText } = await renderDialog()
+    const { getByRole } = await renderDialog()
 
     await userEvent.click(buttonByText('Selecione o fornecedor'))
     await addSupplyItem()
+    const table = getByRole('table')
     const rowQuantityInput = numberInput(2)
     expect(rowQuantityInput.value).toBe('3')
-    expect(getByText('15')).toBeTruthy()
+    await expect.element(table.getByText('= 15 kg')).toBeInTheDocument()
 
     await userEvent.clear(rowQuantityInput)
     await userEvent.type(rowQuantityInput, '5')
-    expect(getByText('25')).toBeTruthy()
+    await expect.element(table.getByText('= 25 kg')).toBeInTheDocument()
 
     await userEvent.click(getByRole('button', { name: /^Criar Compra$/i }))
 
@@ -298,6 +299,21 @@ describe('PurchasesActionDialog', () => {
       notes: '',
       items: [{ supplyId: 'supply-1', packages: 5, packageCost: 10.5 }],
     })
+  })
+
+  it('shows unit price, line total and the purchase total', async () => {
+    const { getByRole, getByText } = await renderDialog()
+
+    await userEvent.click(buttonByText('Selecione o fornecedor'))
+    await addSupplyItem()
+
+    // 3 embalagens de 5 kg a R$ 10,50 => R$ 2,10/kg e total de R$ 31,50
+    const table = getByRole('table')
+    await expect.element(table.getByText(/2,10/)).toBeInTheDocument()
+    await expect.element(table.getByText(/31,50/)).toBeInTheDocument()
+    await expect
+      .element(getByText(/Total da compra \(1 item\)/))
+      .toBeInTheDocument()
   })
 
   it('blocks submit when an item has invalid quantity', async () => {

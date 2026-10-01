@@ -64,7 +64,6 @@ export const sidebarData: SidebarData = {
         title: 'Geral',
         items: [
           { title: 'Clientes', url: '/clients', icon: Contact },
-          { title: 'Fornecedores', url: '/vendors', icon: Truck },
           { title: 'Vendas', url: '/sales', icon: BadgeDollarSign },
         ],
       },
@@ -76,6 +75,7 @@ export const sidebarData: SidebarData = {
           { title: 'Acerto de Estoque', url: '/stock', icon: Warehouse },
           { title: 'Categorias', url: '/categories', icon: Tag },
           { title: 'Compras', url: '/purchases', icon: Truck },
+          { title: 'Fornecedores', url: '/vendors', icon: Truck },
           { title: 'Insumos', url: '/supplies', icon: FlaskConical },
           { title: 'Kits', url: '/kits', icon: PackageCheck },
           {

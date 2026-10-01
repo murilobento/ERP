@@ -25,6 +25,7 @@ const prisma = vi.hoisted(() => ({
     create: vi.fn(),
     findUnique: vi.fn(),
     update: vi.fn(),
+    delete: vi.fn(),
   },
   stockMovement: {
     aggregate: vi.fn(),
@@ -312,5 +313,71 @@ describe('sale routes', () => {
         }),
       })
     )
+  })
+
+  it.each(['in_preparation', 'ready_for_delivery'])(
+    'deletes a sale in %s',
+    async (status) => {
+      prisma.sale.findUnique.mockResolvedValue({ id: 'sale-1', status })
+
+      const response = await app.request('/api/sales/sale-1', {
+        method: 'DELETE',
+        headers: authHeaders,
+      })
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual({ ok: true })
+      expect(prisma.sale.delete).toHaveBeenCalledWith({ where: { id: 'sale-1' } })
+    }
+  )
+
+  it.each(['delivered', 'completed'])(
+    'rejects deleting a sale in %s',
+    async (status) => {
+      prisma.sale.findUnique.mockResolvedValue({ id: 'sale-1', status })
+
+      const response = await app.request('/api/sales/sale-1', {
+        method: 'DELETE',
+        headers: authHeaders,
+      })
+
+      expect(response.status).toBe(400)
+      await expect(response.json()).resolves.toEqual({
+        error: 'Apenas vendas ainda não entregues podem ser excluídas.',
+      })
+      expect(prisma.sale.delete).not.toHaveBeenCalled()
+    }
+  )
+
+  it('returns 404 when deleting a missing sale', async () => {
+    prisma.sale.findUnique.mockResolvedValue(null)
+
+    const response = await app.request('/api/sales/missing', {
+      method: 'DELETE',
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(404)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Venda não encontrada.',
+    })
+    expect(prisma.sale.delete).not.toHaveBeenCalled()
+  })
+
+  it('blocks operators from deleting sales', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      status: 'active',
+      role: 'operator',
+    })
+
+    const response = await app.request('/api/sales/sale-1', {
+      method: 'DELETE',
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({ error: 'Acesso negado.' })
+    expect(prisma.sale.findUnique).not.toHaveBeenCalled()
   })
 })

@@ -22,6 +22,13 @@ import {
   type VendorSearchItem,
 } from '@/components/vendor-combobox'
 import { type Purchase } from '../data/schema'
+import {
+  formatCurrency,
+  itemQuantity,
+  itemTotal,
+  itemUnitPrice,
+  purchaseTotal,
+} from '../data/totals'
 
 type EditItemForm = {
   supplyId: string
@@ -213,9 +220,10 @@ export function PurchaseEditForm({
               <TableHeader>
                 <TableRow>
                   <TableHead>Insumo</TableHead>
-                  <TableHead>Quantidade</TableHead>
+                  <TableHead>Qtd.</TableHead>
                   <TableHead>Preço emb.</TableHead>
-                  <TableHead>Total</TableHead>
+                  <TableHead>Unit. (R$/un)</TableHead>
+                  <TableHead>Total (R$)</TableHead>
                   <TableHead className='w-10' />
                 </TableRow>
               </TableHeader>
@@ -223,7 +231,7 @@ export function PurchaseEditForm({
                 {editItems.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className='h-16 text-center text-muted-foreground'
                     >
                       Nenhum item adicionado.
@@ -232,9 +240,17 @@ export function PurchaseEditForm({
                 ) : (
                   editItems.map((item, index) => {
                     const supply = editSelectedSupplies[item.supplyId]
-                    const total = supply
-                      ? item.packages * (supply.packageQuantity || 1)
+                    const quantity = supply
+                      ? itemQuantity(item.packages, supply.packageQuantity)
                       : 0
+                    const hasPrice = item.packageCost > 0
+                    const unitPrice = hasPrice
+                      ? itemUnitPrice(
+                          item.packageCost,
+                          supply?.packageQuantity || 1
+                        )
+                      : 0
+                    const lineTotal = hasPrice ? itemTotal(item) : 0
                     const packagesInvalid = item.packages <= 0
 
                     return (
@@ -264,14 +280,20 @@ export function PurchaseEditForm({
                               </span>
                             )}
                           </div>
+                          <span className='mt-0.5 block text-xs text-muted-foreground'>
+                            = {quantity} {supply?.unit || ''}
+                          </span>
                         </TableCell>
-                        <TableCell>
-                          {item.packageCost > 0
-                            ? `R$ ${item.packageCost.toFixed(2)}`
+                        <TableCell className='text-nowrap'>
+                          {hasPrice ? formatCurrency(item.packageCost) : '—'}
+                        </TableCell>
+                        <TableCell className='text-nowrap'>
+                          {hasPrice
+                            ? `${formatCurrency(unitPrice)}/${supply?.unit || 'un'}`
                             : '—'}
                         </TableCell>
-                        <TableCell>
-                          {total} {supply?.unit || ''}
+                        <TableCell className='font-medium text-nowrap'>
+                          {hasPrice ? formatCurrency(lineTotal) : '—'}
                         </TableCell>
                         <TableCell>
                           <Button
@@ -300,9 +322,17 @@ export function PurchaseEditForm({
             ) : (
               editItems.map((item, index) => {
                 const supply = editSelectedSupplies[item.supplyId]
-                const total = supply
-                  ? item.packages * (supply.packageQuantity || 1)
+                const quantity = supply
+                  ? itemQuantity(item.packages, supply.packageQuantity)
                   : 0
+                const hasPrice = item.packageCost > 0
+                const unitPrice = hasPrice
+                  ? itemUnitPrice(
+                      item.packageCost,
+                      supply?.packageQuantity || 1
+                    )
+                  : 0
+                const lineTotal = hasPrice ? itemTotal(item) : 0
                 const packagesInvalid = item.packages <= 0
 
                 return (
@@ -327,7 +357,7 @@ export function PurchaseEditForm({
                     <div className='grid grid-cols-2 gap-x-3 gap-y-2 text-sm'>
                       <div>
                         <Label className='text-xs text-muted-foreground'>
-                          Quantidade
+                          Qtd. (emb.)
                         </Label>
                         <div className='mt-1 flex items-center gap-2'>
                           <Input
@@ -350,23 +380,34 @@ export function PurchaseEditForm({
                             </span>
                           )}
                         </div>
+                        <span className='mt-0.5 block text-xs text-muted-foreground'>
+                          = {quantity} {supply?.unit || ''}
+                        </span>
                       </div>
                       <div>
                         <Label className='text-xs text-muted-foreground'>
                           Preço emb.
                         </Label>
                         <div className='mt-1'>
-                          {item.packageCost > 0
-                            ? `R$ ${item.packageCost.toFixed(2)}`
+                          {hasPrice ? formatCurrency(item.packageCost) : '—'}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className='text-xs text-muted-foreground'>
+                          Unit. (R$/un)
+                        </Label>
+                        <div className='mt-1'>
+                          {hasPrice
+                            ? `${formatCurrency(unitPrice)}/${supply?.unit || 'un'}`
                             : '—'}
                         </div>
                       </div>
                       <div className='col-span-2'>
                         <Label className='text-xs text-muted-foreground'>
-                          Total
+                          Total (R$)
                         </Label>
                         <div className='mt-1 font-medium'>
-                          {total} {supply?.unit || ''}
+                          {hasPrice ? formatCurrency(lineTotal) : '—'}
                         </div>
                       </div>
                     </div>
@@ -376,6 +417,18 @@ export function PurchaseEditForm({
             )}
           </div>
         </div>
+
+        {editItems.length > 0 && (
+          <div className='flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm'>
+            <span className='text-muted-foreground'>
+              Total da compra ({editItems.length}{' '}
+              {editItems.length === 1 ? 'item' : 'itens'})
+            </span>
+            <span className='font-semibold'>
+              {formatCurrency(purchaseTotal(editItems))}
+            </span>
+          </div>
+        )}
       </div>
 
       <DialogFooter className='gap-2'>

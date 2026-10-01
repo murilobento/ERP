@@ -126,6 +126,68 @@ supplyRoutes.get('/:id', async (c) => {
   })
 })
 
+supplyRoutes.get('/:id/purchases', async (c) => {
+  const supplyId = c.req.param('id')
+
+  const supply = await prisma.supply.findUnique({
+    where: { id: supplyId },
+    select: SUPPLY_SELECT,
+  })
+  if (!supply) {
+    return c.json({ error: 'Insumo não encontrado.' }, 404)
+  }
+
+  const purchaseItems = await prisma.purchaseItem.findMany({
+    where: { supplyId },
+    select: {
+      packages: true,
+      quantity: true,
+      packageCost: true,
+      purchase: {
+        select: {
+          id: true,
+          supplier: true,
+          status: true,
+          createdAt: true,
+          completedAt: true,
+        },
+      },
+    },
+    orderBy: { purchase: { createdAt: 'desc' } },
+  })
+
+  const pkgQty = supply.packageQuantity || 1
+  const purchases = purchaseItems.map((item) => ({
+    id: item.purchase.id,
+    supplier: item.purchase.supplier,
+    status: item.purchase.status,
+    createdAt: item.purchase.createdAt,
+    completedAt: item.purchase.completedAt,
+    packages: item.packages,
+    quantity: item.quantity,
+    packageCost: item.packageCost,
+    unitPrice: item.packageCost / pkgQty,
+    total: item.packages * item.packageCost,
+  }))
+
+  // O resumo considera apenas compras concluídas: pendentes podem ser
+  // estornadas ou excluídas e ainda não movimentaram dinheiro/estoque.
+  const completed = purchases.filter((purchase) => purchase.status === 'completed')
+  const totalSpent = completed.reduce((sum, purchase) => sum + purchase.total, 0)
+  const totalQuantity = completed.reduce((sum, purchase) => sum + purchase.quantity, 0)
+  const count = new Set(completed.map((purchase) => purchase.id)).size
+
+  return c.json({
+    supply,
+    purchases,
+    summary: {
+      count,
+      totalSpent,
+      avgUnitPrice: totalQuantity > 0 ? totalSpent / totalQuantity : 0,
+    },
+  })
+})
+
 supplyRoutes.patch('/:id', async (c) => {
   const supplyId = c.req.param('id')
   const body = await c.req.json()

@@ -6,6 +6,7 @@ import {
   PackageCheck,
   Pen,
   RotateCcw,
+  Trash2,
   Truck,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -29,8 +30,10 @@ export type SalesDetailConfirmAction =
 type SalesDetailViewProps = {
   sale: Sale
   canEdit: boolean
+  canDelete: boolean
   isLoading: boolean
   onEdit: () => void
+  onDelete: () => void
   onConfirmAction: (action: SalesDetailConfirmAction) => void
   onClose: () => void
 }
@@ -38,8 +41,10 @@ type SalesDetailViewProps = {
 export function SalesDetailView({
   sale,
   canEdit,
+  canDelete,
   isLoading,
   onEdit,
+  onDelete,
   onConfirmAction,
   onClose,
 }: SalesDetailViewProps) {
@@ -247,6 +252,12 @@ export function SalesDetailView({
           >
             <RotateCcw size={16} className='me-1' />
             Estornar
+          </Button>
+        )}
+        {canDelete && (
+          <Button variant='destructive' onClick={onDelete} disabled={isLoading}>
+            <Trash2 size={16} className='me-1' />
+            Excluir
           </Button>
         )}
         <Button variant='outline' onClick={onClose}>

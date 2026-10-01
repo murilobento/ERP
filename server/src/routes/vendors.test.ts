@@ -57,11 +57,11 @@ describe('vendor routes', () => {
     )
   })
 
-  it('requires name and phone to create vendors', async () => {
+  it('requires name to create vendors', async () => {
     const response = await app.request('/api/vendors', {
       method: 'POST',
       headers: authHeaders,
-      body: JSON.stringify({ name: 'Fornecedor' }),
+      body: JSON.stringify({ phone: '11 99999-0000' }),
     })
 
     expect(response.status).toBe(400)
@@ -69,6 +69,27 @@ describe('vendor routes', () => {
       error: 'Todos os campos obrigatórios devem ser preenchidos.',
     })
     expect(prisma.vendor.create).not.toHaveBeenCalled()
+  })
+
+  it('creates vendors without a phone', async () => {
+    prisma.vendor.create.mockResolvedValue({
+      id: 'vendor-1',
+      name: 'Fornecedor',
+      phone: '',
+    })
+
+    const response = await app.request('/api/vendors', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ name: 'Fornecedor' }),
+    })
+
+    expect(response.status).toBe(201)
+    expect(prisma.vendor.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'Fornecedor', phone: '' }),
+      })
+    )
   })
 
   it('toggles vendor status between active and inactive', async () => {

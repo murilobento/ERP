@@ -30,7 +30,7 @@ import { type Contact, type ContactConfig } from './contact-types'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
-  phone: z.string().min(1, 'Telefone é obrigatório.'),
+  phone: z.string(),
   zipCode: z.string(),
   street: z.string(),
   number: z.string(),

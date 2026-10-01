@@ -1,6 +1,7 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Eye, FileText, Pen } from 'lucide-react'
+import { Eye, FileText, Pen, Trash2 } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { handleServerError } from '@/lib/handle-server-error'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,7 +22,12 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useSales()
+  const { auth } = useAuthStore()
   const sale = row.original
+  const canDelete =
+    (sale.status === 'in_preparation' ||
+      sale.status === 'ready_for_delivery') &&
+    (auth.user?.role === 'admin' || auth.user?.role === 'manager')
 
   async function handleInvoice() {
     try {
@@ -66,6 +72,23 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               <Pen size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
+        )}
+        {canDelete && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(sale)
+                setOpen('delete')
+              }}
+              className='text-red-500!'
+            >
+              Excluir
+              <DropdownMenuShortcut>
+                <Trash2 size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleInvoice}>
