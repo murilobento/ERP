@@ -72,7 +72,7 @@ describe('recordSaleDelivery', () => {
       saleId: 'sale-1',
       customer: 'Cliente',
       authorId: 'user-1',
-      items: [{ productId: 'product-1', quantity: 2, product: { name: 'Bolo', unit: 'un' } }],
+      items: [{ productId: 'product-1', quantity: 2, product: { name: 'Bolo' } }],
     })
 
     expect(setup.created).toHaveLength(1)
@@ -94,7 +94,7 @@ describe('recordSaleDelivery', () => {
         saleId: 'sale-1',
         customer: 'Cliente',
         authorId: 'user-1',
-        items: [{ productId: 'product-1', quantity: 5, product: { name: 'Bolo', unit: 'un' } }],
+        items: [{ productId: 'product-1', quantity: 5, product: { name: 'Bolo' } }],
       })
     ).rejects.toBeInstanceOf(StockLedgerError)
 
@@ -109,8 +109,8 @@ describe('recordSaleDelivery', () => {
       customer: 'Cliente',
       authorId: 'user-1',
       items: [
-        { productId: 'product-1', quantity: 3, product: { name: 'Bolo', unit: 'un' } },
-        { productId: 'product-1', quantity: 3, product: { name: 'Bolo', unit: 'un' } },
+        { productId: 'product-1', quantity: 3, product: { name: 'Bolo' } },
+        { productId: 'product-1', quantity: 3, product: { name: 'Bolo' } },
       ],
     })
 
@@ -133,7 +133,6 @@ describe('recordProductionCompletion', () => {
       quantity: 3,
       product: {
         name: 'Bolo',
-        unit: 'un',
         composition: [
           { supplyId: 'supply-1', quantity: 2, supply: { name: 'Farinha', unit: 'kg' } },
         ],

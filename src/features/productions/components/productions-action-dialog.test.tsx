@@ -13,7 +13,6 @@ const invalidateQueries = vi.hoisted(() => vi.fn())
 const product: ProductSupplySearchItem = {
   id: 'product-1',
   name: 'Bolo de Chocolate',
-  unit: 'un',
 }
 
 vi.mock('@/lib/api', () => ({

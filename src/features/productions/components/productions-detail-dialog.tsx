@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { Loader2, CheckCircle2, XCircle, RotateCcw } from 'lucide-react'
 import api from '@/lib/api'
+import { formatDateTime } from '@/lib/date-time'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Badge } from '@/components/ui/badge'
@@ -342,9 +343,7 @@ export function ProductionsDetailDialog() {
                             <TableCell className='font-medium'>
                               {item.product.name}
                             </TableCell>
-                            <TableCell>
-                              {item.quantity} {item.product.unit}
-                            </TableCell>
+                            <TableCell>{item.quantity}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -396,7 +395,7 @@ export function ProductionsDetailDialog() {
                 <div>
                   <h4 className='mb-1 text-sm font-medium'>Concluída em</h4>
                   <p className='text-sm text-muted-foreground'>
-                    {new Date(production.completedAt).toLocaleString()}
+                    {formatDateTime(production.completedAt)}
                   </p>
                 </div>
               )}
@@ -407,9 +406,9 @@ export function ProductionsDetailDialog() {
                     Estorno
                   </h4>
                   <p className='text-sm text-muted-foreground'>
-                    {new Date(
-                      production?.reversedAt || currentRow?.reversedAt || ''
-                    ).toLocaleString()}
+                    {formatDateTime(
+                      production?.reversedAt || currentRow?.reversedAt
+                    )}
                   </p>
                   {(production?.reversalReason ||
                     currentRow?.reversalReason) && (

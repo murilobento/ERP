@@ -1,3 +1,4 @@
+import { formatDateTime } from '@/lib/date-time'
 import { Badge } from '@/components/ui/badge'
 import { purchaseStatusMap } from '@/features/purchases/data/schema'
 import { saleStatusMap } from '@/features/sales/data/schema'
@@ -18,9 +19,9 @@ const productionStatusMap: Record<
   cancelled: { label: 'Cancelada', variant: 'destructive' },
 }
 
-function formatDate(value: string | null | undefined) {
+function formatMoment(value: string | null | undefined) {
   if (!value) return '—'
-  return new Date(value).toLocaleString()
+  return formatDateTime(value)
 }
 
 export function ReferenceHoverContent({
@@ -58,24 +59,24 @@ export function ReferenceHoverContent({
           <div className='mt-1.5 space-y-1 border-t pt-1.5'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Criada em</span>
-              <span>{formatDate(d.createdAt)}</span>
+              <span>{formatMoment(d.createdAt)}</span>
             </div>
             {d.deliveryDate && (
               <div className='flex items-center justify-between text-sm'>
                 <span className='text-muted-foreground'>Previsão entrega</span>
-                <span>{formatDate(d.deliveryDate)}</span>
+                <span>{formatMoment(d.deliveryDate)}</span>
               </div>
             )}
             {d.deliveredAt && (
               <div className='flex items-center justify-between text-sm'>
                 <span className='text-muted-foreground'>Entregue em</span>
-                <span>{formatDate(d.deliveredAt)}</span>
+                <span>{formatMoment(d.deliveredAt)}</span>
               </div>
             )}
             {d.completedAt && (
               <div className='flex items-center justify-between text-sm'>
                 <span className='text-muted-foreground'>Concluída em</span>
-                <span>{formatDate(d.completedAt)}</span>
+                <span>{formatMoment(d.completedAt)}</span>
               </div>
             )}
           </div>
@@ -111,12 +112,12 @@ export function ReferenceHoverContent({
           <div className='mt-1.5 space-y-1 border-t pt-1.5'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Criada em</span>
-              <span>{formatDate(d.createdAt)}</span>
+              <span>{formatMoment(d.createdAt)}</span>
             </div>
             {d.completedAt && (
               <div className='flex items-center justify-between text-sm'>
                 <span className='text-muted-foreground'>Concluída em</span>
-                <span>{formatDate(d.completedAt)}</span>
+                <span>{formatMoment(d.completedAt)}</span>
               </div>
             )}
           </div>
@@ -138,9 +139,7 @@ export function ReferenceHoverContent({
           </div>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-muted-foreground'>Quantidade</span>
-            <span className='font-medium'>
-              {d.quantity} {d.product.unit}
-            </span>
+            <span className='font-medium'>{d.quantity}</span>
           </div>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-muted-foreground'>Status</span>
@@ -154,12 +153,12 @@ export function ReferenceHoverContent({
           <div className='mt-1.5 space-y-1 border-t pt-1.5'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Criada em</span>
-              <span>{formatDate(d.createdAt)}</span>
+              <span>{formatMoment(d.createdAt)}</span>
             </div>
             {d.completedAt && (
               <div className='flex items-center justify-between text-sm'>
                 <span className='text-muted-foreground'>Concluída em</span>
-                <span>{formatDate(d.completedAt)}</span>
+                <span>{formatMoment(d.completedAt)}</span>
               </div>
             )}
           </div>
@@ -197,18 +196,18 @@ export function ReferenceHoverContent({
           <div className='mt-1.5 space-y-1 border-t pt-1.5'>
             <div className='flex items-center justify-between text-sm'>
               <span className='text-muted-foreground'>Criado em</span>
-              <span>{formatDate(d.createdAt)}</span>
+              <span>{formatMoment(d.createdAt)}</span>
             </div>
             {d.completedAt && (
               <div className='flex items-center justify-between text-sm'>
                 <span className='text-muted-foreground'>Concluído em</span>
-                <span>{formatDate(d.completedAt)}</span>
+                <span>{formatMoment(d.completedAt)}</span>
               </div>
             )}
             {d.reversedAt && (
               <div className='flex items-center justify-between text-sm'>
                 <span className='text-muted-foreground'>Estornado em</span>
-                <span>{formatDate(d.reversedAt)}</span>
+                <span>{formatMoment(d.reversedAt)}</span>
               </div>
             )}
             {d.reversalReason && (

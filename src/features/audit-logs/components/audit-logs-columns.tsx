@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatDateTime } from '@/lib/date-time'
 import { Badge } from '@/components/ui/badge'
 import { DataTableColumnHeader } from '@/components/data-table'
 
@@ -55,16 +56,8 @@ export const auditLogsColumns: ColumnDef<AuditLog>[] = [
       <DataTableColumnHeader column={column} title='Data/Hora' />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue('createdAt'))
-      return (
-        <div className='text-nowrap'>
-          {date.toLocaleDateString('pt-BR')}{' '}
-          {date.toLocaleTimeString('pt-BR', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </div>
-      )
+      const value = row.getValue('createdAt') as string
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
   {

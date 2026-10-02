@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { InfoIcon, PackageCheck } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatDate } from '@/lib/date-time'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +15,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { formatDateInAppTimeZone } from '@/features/shared/filter-date-utils'
 import {
   formatCurrency,
   getSaleTotal,
@@ -46,12 +46,7 @@ const allowedDrops: Record<SaleStatus, SaleStatus> = {
 
 function formatDeliveryDate(value: string | null) {
   if (!value) return 'Sem entrega'
-  const date = formatDateInAppTimeZone(value)
-  return date
-    ? new Intl.DateTimeFormat('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-      }).format(new Date(`${date}T12:00:00`))
-    : 'Sem entrega'
+  return formatDate(value) || 'Sem entrega'
 }
 
 function getItemCountLabel(count: number) {
@@ -233,7 +228,7 @@ export function SalesKanban({ data, preparationSales }: SalesKanbanProps) {
                                           {item.product.name}
                                         </span>
                                         <span className='font-medium'>
-                                          {item.quantity} {item.product.unit} ×{' '}
+                                          {item.quantity} ×{' '}
                                           {formatCurrency(item.unitPrice)}
                                         </span>
                                       </div>
@@ -254,8 +249,7 @@ export function SalesKanban({ data, preparationSales }: SalesKanbanProps) {
                                                 {item.product.name}
                                               </span>
                                               <span className='font-medium'>
-                                                {item.quantity}{' '}
-                                                {item.product.unit} ×{' '}
+                                                {item.quantity} ×{' '}
                                                 {formatCurrency(item.unitPrice)}
                                               </span>
                                             </div>

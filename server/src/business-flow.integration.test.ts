@@ -39,7 +39,7 @@ describe.skipIf(!hasTestDatabase)('business flow integration', () => {
     const product = await prisma.product.create({
       data: {
         name: 'Bolo',
-        unit: 'un',
+        
         categoryId: category.id,
         status: 'active',
         composition: {

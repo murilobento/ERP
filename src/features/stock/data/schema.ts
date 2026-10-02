@@ -2,7 +2,7 @@ export type StockBalance = {
   type: 'product' | 'supply'
   id: string
   name: string
-  unit: string
+  unit?: string
   packageUnit?: string
   packageQuantity?: number
   stock: number
@@ -32,7 +32,7 @@ export type ProductionReference = {
   status: string
   createdAt: string
   completedAt: string | null
-  product: { id: string; name: string; unit: string }
+  product: { id: string; name: string }
 }
 
 export type AdjustmentReference = {
@@ -63,7 +63,7 @@ export type StockMovement = {
   referenceId: string | null
   notes: string
   createdAt: string
-  product: { id: string; name: string; unit: string } | null
+  product: { id: string; name: string } | null
   supply: { id: string; name: string; unit: string } | null
   author: { id: string; firstName: string; lastName: string } | null
   reference: StockMovementReference | null
@@ -87,7 +87,7 @@ export type StockAdjustment = {
   reversalReason: string
   createdAt: string
   updatedAt: string
-  product: { id: string; name: string; unit: string } | null
+  product: { id: string; name: string } | null
   supply: { id: string; name: string; unit: string } | null
   author: { id: string; firstName: string; lastName: string } | null
   completedBy: { id: string; firstName: string; lastName: string } | null

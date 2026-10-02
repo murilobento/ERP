@@ -36,7 +36,6 @@ const authHeaders = {
 const product = {
   id: 'product-1',
   name: 'Bolo',
-  unit: 'un',
   composition: [
     {
       id: 'composition-1',

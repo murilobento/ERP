@@ -1,4 +1,5 @@
 import { Pen } from 'lucide-react'
+import { formatDateTime } from '@/lib/date-time'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -115,9 +116,7 @@ export function KitsDetailDialog({
                         <TableCell className='font-medium'>
                           {item.product.name}
                         </TableCell>
-                        <TableCell>
-                          {item.quantity} {item.product.unit}
-                        </TableCell>
+                        <TableCell>{item.quantity}</TableCell>
                         <TableCell>{formatCurrency(total)}</TableCell>
                       </TableRow>
                     )
@@ -138,15 +137,11 @@ export function KitsDetailDialog({
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>
               <p className='text-xs text-muted-foreground'>Criado em</p>
-              <p className='text-sm'>
-                {new Date(currentRow.createdAt).toLocaleString()}
-              </p>
+              <p className='text-sm'>{formatDateTime(currentRow.createdAt)}</p>
             </div>
             <div>
               <p className='text-xs text-muted-foreground'>Atualizado em</p>
-              <p className='text-sm'>
-                {new Date(currentRow.updatedAt).toLocaleString()}
-              </p>
+              <p className='text-sm'>{formatDateTime(currentRow.updatedAt)}</p>
             </div>
           </div>
         </div>

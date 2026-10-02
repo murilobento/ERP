@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react'
 import api from '@/lib/api'
+import { formatDateTime } from '@/lib/date-time'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Badge } from '@/components/ui/badge'
@@ -88,7 +89,7 @@ export function AdjustmentsDetailDialog() {
   }
 
   const itemName = adjustment?.product?.name || adjustment?.supply?.name || '—'
-  const itemUnit = adjustment?.product?.unit || adjustment?.supply?.unit || ''
+  const itemUnit = adjustment?.supply?.unit || ''
   const status = adjustment?.status as StockAdjustment['status']
   const statusConfig = status ? stockAdjustmentStatusMap[status] : null
 
@@ -126,7 +127,9 @@ export function AdjustmentsDetailDialog() {
                   className={`font-medium ${adjustment.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}
                 >
                   {adjustment.quantity > 0 ? '+' : ''}
-                  {adjustment.quantity} {itemUnit}
+                  {itemUnit
+                    ? `${adjustment.quantity} ${itemUnit}`
+                    : adjustment.quantity}
                 </p>
               </div>
               <div>
@@ -154,7 +157,7 @@ export function AdjustmentsDetailDialog() {
               <div>
                 <Label className='text-muted-foreground'>Criado em</Label>
                 <p className='font-medium'>
-                  {new Date(adjustment.createdAt).toLocaleDateString()}
+                  {formatDateTime(adjustment.createdAt)}
                 </p>
               </div>
               {adjustment.completedAt && (
@@ -164,7 +167,7 @@ export function AdjustmentsDetailDialog() {
                       Concluído em
                     </Label>
                     <p className='font-medium'>
-                      {new Date(adjustment.completedAt).toLocaleDateString()}
+                      {formatDateTime(adjustment.completedAt)}
                     </p>
                   </div>
                   <div>
@@ -186,7 +189,7 @@ export function AdjustmentsDetailDialog() {
                       Estornado em
                     </Label>
                     <p className='font-medium'>
-                      {new Date(adjustment.reversedAt).toLocaleDateString()}
+                      {formatDateTime(adjustment.reversedAt)}
                     </p>
                   </div>
                   <div>

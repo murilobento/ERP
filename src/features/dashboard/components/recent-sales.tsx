@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/date-time'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency, saleStatusMap } from '@/features/sales/data/schema'
 
@@ -29,12 +30,7 @@ export function RecentSales({
       {sales.map((sale) => {
         const statusInfo =
           saleStatusMap[sale.status as keyof typeof saleStatusMap]
-        const date = new Date(sale.createdAt)
-        const dateStr = date.toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit',
-        })
+        const dateStr = formatDate(sale.createdAt)
         return (
           <div
             key={sale.id}

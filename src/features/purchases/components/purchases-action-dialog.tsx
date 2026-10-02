@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/lib/api'
+import { formatUnitPrice } from '@/lib/formatters'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
@@ -339,7 +340,7 @@ export function PurchasesActionDialog({
                             </TableCell>
                             <TableCell className='text-nowrap'>
                               {hasPrice
-                                ? `${formatCurrency(unitPrice)}/${supply?.unit || 'un'}`
+                                ? `${formatUnitPrice(unitPrice)}/${supply?.unit || 'un'}`
                                 : '—'}
                             </TableCell>
                             <TableCell className='font-medium text-nowrap'>
@@ -450,7 +451,7 @@ export function PurchasesActionDialog({
                             </Label>
                             <div className='mt-1'>
                               {hasPrice
-                                ? `${formatCurrency(unitPrice)}/${supply?.unit || 'un'}`
+                                ? `${formatUnitPrice(unitPrice)}/${supply?.unit || 'un'}`
                                 : '—'}
                             </div>
                           </div>

@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatDateTime } from '@/lib/date-time'
 import { cn } from '@/lib/utils'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -123,8 +124,8 @@ export const usersColumns: ColumnDef<User>[] = [
       <DataTableColumnHeader column={column} title='Criado em' />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue('createdAt'))
-      return <div className='text-nowrap'>{date.toLocaleDateString()}</div>
+      const value = row.getValue('createdAt') as string
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
   {

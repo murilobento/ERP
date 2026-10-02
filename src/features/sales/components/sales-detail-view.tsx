@@ -9,13 +9,10 @@ import {
   Trash2,
   Truck,
 } from 'lucide-react'
+import { formatDate, formatDateTime } from '@/lib/date-time'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
-import {
-  formatDateInAppTimeZone,
-  formatDateTimeInAppTimeZone,
-} from '@/features/shared/filter-date-utils'
 import {
   formatCurrency,
   paymentMethodMap,
@@ -91,7 +88,7 @@ export function SalesDetailView({
                     <span>{item.product.name}</span>
                     <div className='flex items-center gap-2'>
                       <span className='text-muted-foreground'>
-                        {item.quantity} {item.product.unit}
+                        {item.quantity}
                       </span>
                       <span className='text-muted-foreground'>x</span>
                       <span>{formatCurrency(item.unitPrice)}</span>
@@ -133,7 +130,7 @@ export function SalesDetailView({
                         <span className='pl-4'>{item.product.name}</span>
                         <div className='flex items-center gap-2'>
                           <span className='text-muted-foreground'>
-                            {item.quantity} {item.product.unit}
+                            {item.quantity}
                           </span>
                           <span className='text-muted-foreground'>x</span>
                           <span>{formatCurrency(item.unitPrice)}</span>
@@ -155,7 +152,7 @@ export function SalesDetailView({
         <div>
           <h4 className='mb-1 text-sm font-medium'>Data de entrega</h4>
           <p className='text-sm text-muted-foreground'>
-            {formatDateInAppTimeZone(sale.deliveryDate)}
+            {formatDate(sale.deliveryDate)}
           </p>
         </div>
       )}
@@ -165,7 +162,7 @@ export function SalesDetailView({
           <h4 className='mb-1 text-sm font-medium'>Pagamento</h4>
           <p className='text-sm text-muted-foreground'>
             {paymentMethodMap[sale.paymentMethod] || sale.paymentMethod} ·{' '}
-            {formatDateTimeInAppTimeZone(sale.paidAt)}
+            {formatDateTime(sale.paidAt)}
           </p>
           {sale.paymentNotes && (
             <p className='mt-1 text-sm'>{sale.paymentNotes}</p>
@@ -184,7 +181,7 @@ export function SalesDetailView({
         <div className='rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2'>
           <h4 className='mb-1 text-sm font-medium text-destructive'>Estorno</h4>
           <p className='text-sm text-muted-foreground'>
-            {formatDateTimeInAppTimeZone(sale.reversedAt)}
+            {formatDateTime(sale.reversedAt)}
           </p>
           {sale.reversalReason && (
             <p className='mt-1 text-sm'>Motivo: {sale.reversalReason}</p>
@@ -195,7 +192,7 @@ export function SalesDetailView({
       <div>
         <h4 className='mb-1 text-sm font-medium'>Criada em</h4>
         <p className='text-sm text-muted-foreground'>
-          {formatDateTimeInAppTimeZone(sale.createdAt)}
+          {formatDateTime(sale.createdAt)}
         </p>
       </div>
 

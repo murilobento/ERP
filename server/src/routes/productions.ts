@@ -27,7 +27,7 @@ const PRODUCTION_SELECT = {
   updatedAt: true,
   completedAt: true,
   product: {
-    select: { id: true, name: true, unit: true },
+    select: { id: true, name: true },
   },
   items: {
     select: {
@@ -35,7 +35,7 @@ const PRODUCTION_SELECT = {
       productId: true,
       quantity: true,
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
     },
   },
@@ -165,7 +165,6 @@ productionRoutes.get('/:id', async (c) => {
             select: {
               id: true,
               name: true,
-              unit: true,
               composition: {
                 select: {
                   id: true,

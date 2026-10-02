@@ -42,7 +42,7 @@ const SALE_SELECT = {
 			unitPrice: true,
 			kitId: true,
 			product: {
-				select: { id: true, name: true, unit: true, status: true },
+				select: { id: true, name: true, status: true },
 			},
 			kit: {
 				select: { id: true, name: true },
@@ -396,7 +396,7 @@ saleRoutes.post("/:id/deliver", requireRole("admin", "manager", "operator"), asy
 				items: existing.items.map((item) => ({
 					productId: item.productId,
 					quantity: item.quantity,
-					product: { name: item.product.name, unit: item.product.unit },
+					product: { name: item.product.name },
 				})),
 			});
 		});
@@ -507,7 +507,7 @@ saleRoutes.post("/:id/reverse", requireRole("admin", "manager", "operator"), asy
 			items: existing.items.map((item) => ({
 				productId: item.productId,
 				quantity: item.quantity,
-				product: { name: item.product.name, unit: item.product.unit },
+				product: { name: item.product.name },
 			})),
 		});
 	});
@@ -596,7 +596,6 @@ saleRoutes.get("/:id/invoice", async (c) => {
 		notes: sale.notes,
 		items: sale.items.map((item) => ({
 			name: item.product.name,
-			unit: item.product.unit,
 			quantity: item.quantity,
 			unitPrice: item.unitPrice,
 		})),

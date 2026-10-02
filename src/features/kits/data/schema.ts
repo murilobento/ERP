@@ -5,7 +5,6 @@ export type KitItem = {
   product: {
     id: string
     name: string
-    unit: string
     status: string
     margin: number
     composition: {

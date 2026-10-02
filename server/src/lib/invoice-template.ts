@@ -1,6 +1,5 @@
 type InvoiceItem = {
 	name: string
-	unit: string
 	quantity: number
 	unitPrice: number
 }
@@ -303,7 +302,6 @@ export function generateInvoiceHtml(data: InvoiceData): string {
         <tr>
           <th style="width:40%">Produto</th>
           <th class="right">Qtd</th>
-          <th>Unidade</th>
           <th class="right">Preço Unit.</th>
           <th class="right">Total</th>
         </tr>
@@ -315,7 +313,6 @@ export function generateInvoiceHtml(data: InvoiceData): string {
         <tr>
           <td class="item-name">${e(item.name)}</td>
           <td class="right item-qty">${item.quantity.toLocaleString('pt-BR')}</td>
-          <td>${e(item.unit)}</td>
           <td class="right">${formatCurrency(item.unitPrice)}</td>
           <td class="right" style="font-weight:600">${formatCurrency(item.quantity * item.unitPrice)}</td>
         </tr>`,

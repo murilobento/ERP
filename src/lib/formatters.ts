@@ -1,3 +1,21 @@
+const unitPriceFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 4,
+})
+
+/**
+ * Preço por unidade base (R$/un, R$/kg). É uma taxa, não um valor em reais:
+ * insumos baratos custam menos de 1 centavo por grama, e arredondar para 2
+ * casas quebra a conferência da composição — 100 g × R$ 0,008 = R$ 0,80,
+ * mas "R$ 0,01" × 100 daria R$ 0,10. Até 4 casas, com zeros à direita
+ * removidos (R$ 0,008 e R$ 2,10).
+ */
+export function formatUnitPrice(value: number): string {
+  return unitPriceFormatter.format(value)
+}
+
 export function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11)
   if (digits.length <= 2) return digits.length ? `(${digits}` : ''

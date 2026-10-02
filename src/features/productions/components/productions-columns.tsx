@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatDateTime } from '@/lib/date-time'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -101,7 +102,7 @@ export const productionsColumns: ColumnDef<Production>[] = [
 
       return (
         <div className='ps-2 text-nowrap'>
-          {firstItem.quantity} {firstItem.product.unit}
+          {firstItem.quantity}
           {items.length > 1 && (
             <span className='ms-2 text-xs text-muted-foreground'>
               em {items.length} itens
@@ -131,8 +132,8 @@ export const productionsColumns: ColumnDef<Production>[] = [
       <DataTableColumnHeader column={column} title='Criado em' />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue('createdAt'))
-      return <div className='text-nowrap'>{date.toLocaleDateString()}</div>
+      const value = row.getValue('createdAt') as string
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
   {

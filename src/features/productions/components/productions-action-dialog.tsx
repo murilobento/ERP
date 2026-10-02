@@ -203,9 +203,7 @@ export function ProductionsActionDialog({
                           <TableCell className='font-medium'>
                             {product?.name || item.productId}
                           </TableCell>
-                          <TableCell>
-                            {item.quantity} {product?.unit || ''}
-                          </TableCell>
+                          <TableCell>{item.quantity}</TableCell>
                           <TableCell>
                             <Button
                               type='button'

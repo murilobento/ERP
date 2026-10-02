@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CheckCircle2, Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatUnitPrice } from '@/lib/formatters'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -289,7 +290,7 @@ export function PurchaseEditForm({
                         </TableCell>
                         <TableCell className='text-nowrap'>
                           {hasPrice
-                            ? `${formatCurrency(unitPrice)}/${supply?.unit || 'un'}`
+                            ? `${formatUnitPrice(unitPrice)}/${supply?.unit || 'un'}`
                             : '—'}
                         </TableCell>
                         <TableCell className='font-medium text-nowrap'>
@@ -398,7 +399,7 @@ export function PurchaseEditForm({
                         </Label>
                         <div className='mt-1'>
                           {hasPrice
-                            ? `${formatCurrency(unitPrice)}/${supply?.unit || 'un'}`
+                            ? `${formatUnitPrice(unitPrice)}/${supply?.unit || 'un'}`
                             : '—'}
                         </div>
                       </div>

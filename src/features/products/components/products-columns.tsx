@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatUnitPrice } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -63,15 +64,6 @@ export const productsColumns: ColumnDef<Product>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'unit',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Unidade' />
-    ),
-    cell: ({ row }) => (
-      <div className='w-fit ps-2 text-nowrap'>{row.getValue('unit')}</div>
-    ),
-  },
-  {
     id: 'categoryName',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Categoria' />
@@ -101,13 +93,8 @@ export const productsColumns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => {
       const costPrice = row.getValue('costPrice') as number
-      const unit = row.original.unit
       if (!costPrice) return <span className='text-muted-foreground'>—</span>
-      return (
-        <span>
-          R$ {costPrice.toFixed(2)}/{unit}
-        </span>
-      )
+      return <span>R$ {costPrice.toFixed(2)}</span>
     },
   },
   {
@@ -127,13 +114,8 @@ export const productsColumns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => {
       const salePrice = row.getValue('salePrice') as number
-      const unit = row.original.unit
       if (!salePrice) return <span className='text-muted-foreground'>—</span>
-      return (
-        <span>
-          R$ {salePrice.toFixed(2)}/{unit}
-        </span>
-      )
+      return <span>R$ {salePrice.toFixed(2)}</span>
     },
   },
   {
@@ -168,7 +150,7 @@ export const productsColumns: ColumnDef<Product>[] = [
                   </span>
                   <span className='font-medium'>
                     {item.quantity} {item.supply.unit} ×{' '}
-                    {formatCurrency(item.supply.costPrice)}
+                    {formatUnitPrice(item.supply.costPrice)}
                   </span>
                 </div>
               ))}

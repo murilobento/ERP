@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatDateTime } from '@/lib/date-time'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { DataTableColumnHeader } from '@/components/data-table'
@@ -46,11 +47,11 @@ export const adjustmentsColumns: ColumnDef<StockAdjustment>[] = [
     ),
     cell: ({ row }) => {
       const qty = row.original.quantity
-      const unit = row.original.product?.unit || row.original.supply?.unit || ''
+      const unit = row.original.supply?.unit
       return (
         <span className={qty >= 0 ? 'text-green-600' : 'text-red-600'}>
           {qty > 0 ? '+' : ''}
-          {qty} {unit}
+          {unit ? `${qty} ${unit}` : qty}
         </span>
       )
     },
@@ -107,8 +108,7 @@ export const adjustmentsColumns: ColumnDef<StockAdjustment>[] = [
     cell: ({ row }) => {
       const value = row.getValue('completedAt') as string | null
       if (!value) return <span className='text-muted-foreground'>—</span>
-      const date = new Date(value)
-      return <div className='text-nowrap'>{date.toLocaleDateString()}</div>
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
   {

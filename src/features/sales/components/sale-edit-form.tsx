@@ -281,11 +281,6 @@ export function SaleEditForm({
                                 )
                               }
                             />
-                            {product?.unit && (
-                              <span className='text-xs text-muted-foreground'>
-                                {product.unit}
-                              </span>
-                            )}
                           </div>
                         </TableCell>
                         <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
@@ -358,11 +353,6 @@ export function SaleEditForm({
                               )
                             }
                           />
-                          {product?.unit && (
-                            <span className='text-xs text-muted-foreground'>
-                              {product.unit}
-                            </span>
-                          )}
                         </div>
                       </div>
                       <div>

@@ -45,7 +45,6 @@ type KitForm = {
     productId: string
     productName: string
     quantity: number
-    unit: string
   }[]
 }
 
@@ -124,7 +123,6 @@ export function SalesActionDialog({
                   productId: i.productId,
                   productName: i.product.name,
                   quantity: i.quantity,
-                  unit: i.product.unit,
                 })
                 return acc
               },
@@ -180,7 +178,6 @@ export function SalesActionDialog({
         productId: ki.productId,
         productName: ki.product.name,
         quantity: ki.quantity * draftKitQuantity,
-        unit: ki.product.unit,
       })),
     }
 

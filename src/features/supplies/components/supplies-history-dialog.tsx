@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import api from '@/lib/api'
+import { formatDateTime } from '@/lib/date-time'
+import { formatUnitPrice } from '@/lib/formatters'
 import { queryKeys } from '@/lib/query-keys'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { formatDateInAppTimeZone } from '@/features/shared/filter-date-utils'
 import {
   formatCurrency,
   supplyPurchaseStatusMap,
@@ -89,11 +90,11 @@ export function SuppliesHistoryDialog() {
                 />
                 <SummaryCard
                   label='Preço médio'
-                  value={`${formatCurrency(summary?.avgUnitPrice ?? 0)}/${supply.unit}`}
+                  value={`${formatUnitPrice(summary?.avgUnitPrice ?? 0)}/${supply.unit}`}
                 />
                 <SummaryCard
                   label='Custo atual'
-                  value={`${formatCurrency(supply.costPrice)}/${supply.unit}`}
+                  value={`${formatUnitPrice(supply.costPrice)}/${supply.unit}`}
                 />
               </div>
               <p className='text-xs text-muted-foreground'>
@@ -130,9 +131,7 @@ export function SuppliesHistoryDialog() {
                           </Badge>
                         </div>
                         <div className='mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground'>
-                          <span>
-                            {formatDateInAppTimeZone(purchase.createdAt)}
-                          </span>
+                          <span>{formatDateTime(purchase.createdAt)}</span>
                           <span>·</span>
                           <span>
                             {purchase.packages} {packageUnit}(s) ={' '}
@@ -145,7 +144,7 @@ export function SuppliesHistoryDialog() {
                         </div>
                         <div className='mt-1 flex flex-wrap items-center justify-between gap-x-2 text-xs'>
                           <span className='text-muted-foreground'>
-                            Unit. {formatCurrency(purchase.unitPrice)}/
+                            Unit. {formatUnitPrice(purchase.unitPrice)}/
                             {supply.unit}
                           </span>
                           <span className='text-sm font-semibold'>

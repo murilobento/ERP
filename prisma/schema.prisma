@@ -104,7 +104,6 @@ model Product {
   id          String   @id @default(cuid())
   name        String
   description String   @default("")
-  unit        String   @default("un")
   margin      Float    @default(0)
   status      String   @default("active")
   categoryId  String

@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/lib/api'
+import { formatUnitPrice } from '@/lib/formatters'
 import { handleServerError } from '@/lib/handle-server-error'
 import { queryKeys } from '@/lib/query-keys'
 import { Button } from '@/components/ui/button'
@@ -249,7 +250,7 @@ export function ProductsCompositionDialog({
                               </div>
                             </TableCell>
                             <TableCell>
-                              {supply ? formatCurrency(unitCost) : '—'}
+                              {supply ? formatUnitPrice(unitCost) : '—'}
                             </TableCell>
                             <TableCell>
                               {supply ? formatCurrency(total) : '—'}
@@ -336,7 +337,7 @@ export function ProductsCompositionDialog({
                               Custo un.
                             </Label>
                             <div className='mt-1'>
-                              {supply ? formatCurrency(unitCost) : '—'}
+                              {supply ? formatUnitPrice(unitCost) : '—'}
                             </div>
                           </div>
                           <div className='col-span-2'>
@@ -359,9 +360,7 @@ export function ProductsCompositionDialog({
           {totalCost > 0 && (
             <div className='flex items-center justify-between rounded-md border px-3 py-2 text-sm'>
               <span className='font-medium'>Custo total por unidade</span>
-              <span className='font-semibold'>
-                {formatCurrency(totalCost)}/{currentRow.unit}
-              </span>
+              <span className='font-semibold'>{formatCurrency(totalCost)}</span>
             </div>
           )}
         </div>

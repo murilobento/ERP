@@ -82,7 +82,6 @@ const saleBase: Sale = {
       product: {
         id: 'product-1',
         name: 'Bolo de Chocolate',
-        unit: 'un',
         status: 'active',
       },
     },

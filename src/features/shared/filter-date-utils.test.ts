@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatDateInAppTimeZone,
+  getDateRangeLabel,
+  getPresetRange,
   isWithinRange,
   parseDateTimeLocalInAppTimeZone,
 } from './filter-date-utils'
@@ -32,5 +34,18 @@ describe('application date utilities', () => {
     expect(
       parseDateTimeLocalInAppTimeZone('2026-01-01T12:30')?.toISOString()
     ).toBe('2026-01-01T15:30:00.000Z')
+  })
+
+  it('shows filter ranges in dd/mm/aaaa while keeping yyyy-mm-dd values', () => {
+    expect(getDateRangeLabel('2026-01-01', '2026-01-31')).toBe(
+      '01/01/2026 até 31/01/2026'
+    )
+    expect(getDateRangeLabel('2026-01-01', '')).toBe('A partir de 01/01/2026')
+    expect(getDateRangeLabel('', '2026-01-31')).toBe('Até 31/01/2026')
+  })
+
+  it('still prefers the preset label over a formatted range', () => {
+    const today = getPresetRange('today')
+    expect(getDateRangeLabel(today.from, today.to)).toBe('Hoje')
   })
 })

@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatDateTime } from '@/lib/date-time'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -106,7 +107,7 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
       const m = row.original
       return (
         <span className='ps-2 text-muted-foreground'>
-          {formatStock(m.stockBefore, m.product?.unit || m.supply?.unit)}
+          {formatStock(m.stockBefore, m.supply?.unit)}
         </span>
       )
     },
@@ -122,7 +123,7 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
       return (
         <span className={q >= 0 ? 'text-green-600' : 'text-red-600'}>
           {q > 0 ? '+' : ''}
-          {formatStock(q, m.product?.unit || m.supply?.unit)}
+          {formatStock(q, m.supply?.unit)}
         </span>
       )
     },
@@ -136,7 +137,7 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
       const m = row.original
       return (
         <span className='ps-2 font-medium'>
-          {formatStock(m.stockAfter, m.product?.unit || m.supply?.unit)}
+          {formatStock(m.stockAfter, m.supply?.unit)}
         </span>
       )
     },
@@ -163,8 +164,8 @@ export const stockMovementsColumns: ColumnDef<StockMovement>[] = [
       <DataTableColumnHeader column={column} title='Data' />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue('createdAt'))
-      return <div className='text-nowrap'>{date.toLocaleString()}</div>
+      const value = row.getValue('createdAt') as string
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
 ]

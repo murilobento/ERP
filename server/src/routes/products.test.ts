@@ -104,7 +104,7 @@ describe('product routes', () => {
       {
         id: 'product-1',
         name: 'Bolo',
-        unit: 'un',
+        
         margin: 20,
         status: 'active',
         composition: [],
@@ -136,7 +136,7 @@ describe('product routes', () => {
       {
         id: 'product-1',
         name: 'Bolo',
-        unit: 'un',
+        
         margin: 50,
         status: 'active',
         composition: [

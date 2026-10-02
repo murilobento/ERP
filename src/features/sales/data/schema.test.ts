@@ -20,7 +20,6 @@ describe('sale data helpers', () => {
             product: {
               id: 'product-1',
               name: 'Bolo',
-              unit: 'un',
               status: 'active',
             },
           },
@@ -33,7 +32,6 @@ describe('sale data helpers', () => {
             product: {
               id: 'product-2',
               name: 'Doce',
-              unit: 'un',
               status: 'active',
             },
           },

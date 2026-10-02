@@ -1,4 +1,6 @@
 import { Pen } from 'lucide-react'
+import { formatDateTime } from '@/lib/date-time'
+import { formatUnitPrice } from '@/lib/formatters'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -75,10 +77,6 @@ export function ProductsDetailDialog({
         <div className='space-y-4'>
           <div className='grid grid-cols-2 gap-3 sm:grid-cols-3'>
             <div>
-              <p className='text-xs text-muted-foreground'>Unidade</p>
-              <p className='text-sm font-medium'>{currentRow.unit}</p>
-            </div>
-            <div>
               <p className='text-xs text-muted-foreground'>Estoque</p>
               <p className='text-sm font-medium'>
                 <Badge variant={currentRow.stock > 0 ? 'default' : 'secondary'}>
@@ -87,10 +85,10 @@ export function ProductsDetailDialog({
               </p>
             </div>
             <div>
-              <p className='text-xs text-muted-foreground'>Custo un.</p>
+              <p className='text-xs text-muted-foreground'>Custo</p>
               <p className='text-sm font-medium'>
                 {currentRow.costPrice
-                  ? `${formatCurrency(currentRow.costPrice)}/${currentRow.unit}`
+                  ? formatCurrency(currentRow.costPrice)
                   : '—'}
               </p>
             </div>
@@ -98,7 +96,7 @@ export function ProductsDetailDialog({
               <p className='text-xs text-muted-foreground'>Preço de venda</p>
               <p className='text-sm font-medium'>
                 {currentRow.salePrice
-                  ? `${formatCurrency(currentRow.salePrice)}/${currentRow.unit}`
+                  ? formatCurrency(currentRow.salePrice)
                   : '—'}
               </p>
             </div>
@@ -144,7 +142,7 @@ export function ProductsDetailDialog({
                           <TableCell>
                             {item.quantity} {item.supply.unit}
                           </TableCell>
-                          <TableCell>{formatCurrency(unitCost)}</TableCell>
+                          <TableCell>{formatUnitPrice(unitCost)}</TableCell>
                           <TableCell>{formatCurrency(total)}</TableCell>
                         </TableRow>
                       )
@@ -154,7 +152,7 @@ export function ProductsDetailDialog({
                         Total
                       </TableCell>
                       <TableCell className='font-semibold'>
-                        {formatCurrency(totalCost)}/{currentRow.unit}
+                        {formatCurrency(totalCost)}
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -166,15 +164,11 @@ export function ProductsDetailDialog({
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>
               <p className='text-xs text-muted-foreground'>Criado em</p>
-              <p className='text-sm'>
-                {new Date(currentRow.createdAt).toLocaleString()}
-              </p>
+              <p className='text-sm'>{formatDateTime(currentRow.createdAt)}</p>
             </div>
             <div>
               <p className='text-xs text-muted-foreground'>Atualizado em</p>
-              <p className='text-sm'>
-                {new Date(currentRow.updatedAt).toLocaleString()}
-              </p>
+              <p className='text-sm'>{formatDateTime(currentRow.updatedAt)}</p>
             </div>
           </div>
         </div>

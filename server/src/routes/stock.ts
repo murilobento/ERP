@@ -39,7 +39,7 @@ stockRoutes.get('/movements', async (c) => {
         select: { id: true, firstName: true, lastName: true },
       },
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
       supply: {
         select: { id: true, name: true, unit: true },
@@ -98,7 +98,7 @@ stockRoutes.get('/movements', async (c) => {
             status: true,
             createdAt: true,
             completedAt: true,
-            product: { select: { id: true, name: true, unit: true } },
+            product: { select: { id: true, name: true } },
           },
         })
       : [],
@@ -168,7 +168,7 @@ stockRoutes.get('/adjustments', async (c) => {
       createdAt: true,
       updatedAt: true,
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
       supply: {
         select: { id: true, name: true, unit: true },
@@ -211,7 +211,7 @@ stockRoutes.get('/adjustments/:id', async (c) => {
       createdAt: true,
       updatedAt: true,
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
       supply: {
         select: { id: true, name: true, unit: true },
@@ -299,7 +299,7 @@ stockRoutes.post('/adjustments', requireRole('admin', 'manager'), async (c) => {
       createdAt: true,
       updatedAt: true,
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
       supply: {
         select: { id: true, name: true, unit: true },
@@ -394,7 +394,7 @@ stockRoutes.patch('/adjustments/:id', requireRole('admin', 'manager'), async (c)
       createdAt: true,
       updatedAt: true,
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
       supply: {
         select: { id: true, name: true, unit: true },
@@ -449,7 +449,6 @@ stockRoutes.post('/adjustments/:id/complete', requireRole('admin', 'manager'), a
       ? {
           id: existing.productId || '',
           name: existing.product?.name || 'Produto',
-          unit: existing.product?.unit || 'un',
         }
       : {
           id: existing.supplyId || '',
@@ -486,7 +485,7 @@ stockRoutes.post('/adjustments/:id/complete', requireRole('admin', 'manager'), a
       createdAt: true,
       updatedAt: true,
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
       supply: {
         select: { id: true, name: true, unit: true },
@@ -554,7 +553,6 @@ stockRoutes.post('/adjustments/:id/reverse', requireRole('admin', 'manager'), as
       ? {
           id: existing.productId || '',
           name: existing.product?.name || 'Produto',
-          unit: existing.product?.unit || 'un',
         }
       : {
           id: existing.supplyId || '',
@@ -592,7 +590,7 @@ stockRoutes.post('/adjustments/:id/reverse', requireRole('admin', 'manager'), as
       createdAt: true,
       updatedAt: true,
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
       supply: {
         select: { id: true, name: true, unit: true },
@@ -635,7 +633,6 @@ stockRoutes.get('/balances', async (c) => {
     select: {
       id: true,
       name: true,
-      unit: true,
     },
   })
 
@@ -659,7 +656,6 @@ stockRoutes.get('/balances', async (c) => {
     type: 'product' as const,
     id: product.id,
     name: product.name,
-    unit: product.unit,
     stock: productStock.get(product.id) ?? 0,
   }))
 

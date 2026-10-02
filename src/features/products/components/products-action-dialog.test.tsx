@@ -39,7 +39,6 @@ const product: Product = {
   id: 'product-1',
   name: 'Bolo Antigo',
   description: '',
-  unit: 'un',
   margin: 20,
   status: 'active',
   categoryId: 'category-1',
@@ -84,15 +83,11 @@ describe('ProductsActionDialog', () => {
   })
 
   it('validates required fields before submitting', async () => {
-    const { getByLabelText, getByRole, getByText } = await renderDialog()
+    const { getByRole, getByText } = await renderDialog()
 
-    await userEvent.clear(getByLabelText(/^Unidade$/i))
     await userEvent.click(getByRole('button', { name: /^Salvar$/i }))
 
     await expect.element(getByText('Nome é obrigatório.')).toBeInTheDocument()
-    await expect
-      .element(getByText('Unidade é obrigatória.'))
-      .toBeInTheDocument()
     await expect
       .element(getByText('Categoria é obrigatória.'))
       .toBeInTheDocument()
@@ -105,8 +100,6 @@ describe('ProductsActionDialog', () => {
 
     await vi.waitFor(() => expect(apiGet).toHaveBeenCalledWith('/categories'))
     await userEvent.type(getByLabelText(/^Nome$/i), 'Bolo de Chocolate')
-    await userEvent.clear(getByLabelText(/^Unidade$/i))
-    await userEvent.type(getByLabelText(/^Unidade$/i), 'un')
     await userEvent.clear(getByLabelText(/^Margem \(%\)$/i))
     await userEvent.type(getByLabelText(/^Margem \(%\)$/i), '35')
     await selectCategory(getByRole, 'Bolos')
@@ -117,7 +110,6 @@ describe('ProductsActionDialog', () => {
       '/products',
       expect.objectContaining({
         name: 'Bolo de Chocolate',
-        unit: 'un',
         margin: 35,
         categoryId: 'category-1',
         status: 'active',

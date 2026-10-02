@@ -61,7 +61,6 @@ describe('ProductSupplyCombobox', () => {
           {
             id: 'product-1',
             name: 'Bolo de Chocolate',
-            unit: 'un',
             status: 'active',
             stock: 12,
           },
@@ -111,7 +110,6 @@ describe('ProductSupplyCombobox', () => {
     expect(onItemChange).toHaveBeenCalledWith({
       id: 'product-1',
       name: 'Bolo de Chocolate',
-      unit: 'un',
       status: 'active',
       stock: 12,
     })

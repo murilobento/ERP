@@ -43,7 +43,6 @@ type CategoryOption = {
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
-  unit: z.string().min(1, 'Unidade é obrigatória.'),
   margin: z.number().min(0, 'Margem deve ser >= 0.'),
   status: z.string().min(1, 'Status é obrigatório.'),
   categoryId: z.string().min(1, 'Categoria é obrigatória.'),
@@ -79,14 +78,12 @@ export function ProductsActionDialog({
     defaultValues: isEdit
       ? {
           name: currentRow.name,
-          unit: currentRow.unit,
           margin: currentRow.margin,
           status: currentRow.status,
           categoryId: currentRow.categoryId,
         }
       : {
           name: '',
-          unit: 'un',
           margin: 0,
           status: 'active',
           categoryId: '',
@@ -204,24 +201,6 @@ export function ProductsActionDialog({
             />
             <FormField
               control={form.control}
-              name='unit'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-end'>Unidade</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='un, kg, lt, m...'
-                      className='col-span-4'
-                      autoComplete='off'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name='margin'
               render={({ field }) => (
                 <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
@@ -251,9 +230,7 @@ export function ProductsActionDialog({
                 <div>
                   <Label className='text-muted-foreground'>Custo</Label>
                   <p className='font-medium'>
-                    {costPrice > 0
-                      ? `R$ ${costPrice.toFixed(2)}/${currentRow.unit}`
-                      : '—'}
+                    {costPrice > 0 ? `R$ ${costPrice.toFixed(2)}` : '—'}
                   </p>
                 </div>
                 <div>
@@ -288,9 +265,6 @@ export function ProductsActionDialog({
                         }}
                         onBlur={() => setLocalSalePrice(null)}
                       />
-                      <span className='text-sm text-muted-foreground'>
-                        /{currentRow.unit}
-                      </span>
                     </div>
                   ) : (
                     <p className='font-medium'>—</p>

@@ -5,7 +5,6 @@ export type ProductionItem = {
   product: {
     id: string
     name: string
-    unit: string
   }
 }
 
@@ -24,7 +23,6 @@ export type Production = {
   product: {
     id: string
     name: string
-    unit: string
   }
   items: ProductionItem[]
 }

@@ -12,7 +12,6 @@ const PRODUCT_SELECT = {
   id: true,
   name: true,
   description: true,
-  unit: true,
   margin: true,
   status: true,
   categoryId: true,
@@ -74,7 +73,6 @@ productRoutes.get('/search', async (c) => {
     select: {
       id: true,
       name: true,
-      unit: true,
       margin: true,
       status: true,
       composition: {
@@ -107,7 +105,7 @@ productRoutes.get('/search', async (c) => {
 
 productRoutes.post('/', async (c) => {
   const body = await c.req.json()
-  const { name, description, unit, margin, status, categoryId } = body
+  const { name, description, margin, status, categoryId } = body
 
   if (!name) {
     return c.json({ error: 'Nome é obrigatório.' }, 400)
@@ -121,7 +119,6 @@ productRoutes.post('/', async (c) => {
     data: {
       name,
       description: description || '',
-      unit: unit || 'un',
       margin: margin ?? 0,
       status: status || 'active',
       categoryId,
@@ -160,17 +157,16 @@ productRoutes.get('/:id', async (c) => {
 productRoutes.patch('/:id', async (c) => {
   const productId = c.req.param('id')
   const body = await c.req.json()
-  const { name, description, unit, margin, status, categoryId } = body
+  const { name, description, margin, status, categoryId } = body
 
   const existing = await prisma.product.findUnique({ where: { id: productId } })
   if (!existing) {
     return c.json({ error: 'Produto não encontrado.' }, 404)
   }
 
-  const data: { name?: string; description?: string; unit?: string; margin?: number; status?: string; categoryId?: string } = {}
+  const data: { name?: string; description?: string; margin?: number; status?: string; categoryId?: string } = {}
   if (name) data.name = name
   if (description !== undefined) data.description = description
-  if (unit) data.unit = unit
   if (margin !== undefined) data.margin = margin
   if (status) data.status = status
   if (categoryId) data.categoryId = categoryId

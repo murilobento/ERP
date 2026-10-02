@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatDateTime } from '@/lib/date-time'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -8,7 +9,6 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
 import { DataTableColumnHeader } from '@/components/data-table'
-import { formatDateInAppTimeZone } from '@/features/shared/filter-date-utils'
 import { purchaseStatusMap, type Purchase } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -145,7 +145,7 @@ export const purchasesColumns: ColumnDef<Purchase>[] = [
     cell: ({ row }) => {
       const value = row.getValue('completedAt') as string | null
       if (!value) return <span className='text-muted-foreground'>—</span>
-      return <div className='text-nowrap'>{formatDateInAppTimeZone(value)}</div>
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
   {
@@ -155,7 +155,7 @@ export const purchasesColumns: ColumnDef<Purchase>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue('createdAt') as string
-      return <div className='text-nowrap'>{formatDateInAppTimeZone(value)}</div>
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
   {

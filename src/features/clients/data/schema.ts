@@ -20,7 +20,6 @@ export type ClientSaleItem = {
   product: {
     id: string
     name: string
-    unit: string
   }
 }
 

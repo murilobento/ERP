@@ -5,7 +5,7 @@ import { AsyncSearchCombobox } from '@/components/async-search-combobox'
 export type ProductSupplySearchItem = {
   id: string
   name: string
-  unit: string
+  unit?: string
   status?: string
   stock?: number
   packageUnit?: string
@@ -83,9 +83,11 @@ export function ProductSupplyCombobox({
       renderItem={(item) => (
         <>
           <span className='truncate'>{item.name}</span>
-          <span className='ms-auto shrink-0 text-xs text-muted-foreground'>
-            {item.unit}
-          </span>
+          {item.unit && (
+            <span className='ms-auto shrink-0 text-xs text-muted-foreground'>
+              {item.unit}
+            </span>
+          )}
         </>
       )}
       getDisplayLabel={(item) => item.name}

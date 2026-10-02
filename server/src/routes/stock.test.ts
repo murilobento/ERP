@@ -72,7 +72,7 @@ describe('stock routes', () => {
       reversalReason: null,
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
-      product: { id: 'product-1', name: 'Produto', unit: 'un' },
+      product: { id: 'product-1', name: 'Produto' },
       supply: null,
       author: { id: 'user-1', firstName: 'Admin', lastName: 'Sistema' },
       completedBy: { id: 'user-1', firstName: 'Admin', lastName: 'Sistema' },

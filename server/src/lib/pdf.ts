@@ -2,7 +2,6 @@ import { generateInvoiceHtml } from './invoice-template.js'
 
 type InvoiceItem = {
   name: string
-  unit: string
   quantity: number
   unitPrice: number
 }

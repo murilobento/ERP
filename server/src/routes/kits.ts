@@ -26,7 +26,6 @@ const KIT_ITEM_SELECT = {
     select: {
       id: true,
       name: true,
-      unit: true,
       status: true,
       margin: true,
       composition: {

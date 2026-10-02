@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Loader2, Pen, RotateCcw, Trash2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import api from '@/lib/api'
+import { formatDateTime } from '@/lib/date-time'
+import { formatUnitPrice } from '@/lib/formatters'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Badge } from '@/components/ui/badge'
@@ -17,7 +19,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { formatDateTimeInAppTimeZone } from '@/features/shared/filter-date-utils'
 import { type Purchase, purchaseStatusMap } from '../data/schema'
 import {
   formatCurrency,
@@ -308,7 +309,7 @@ export function PurchasesDetailDialog() {
                               </span>
                               <span>·</span>
                               <span className='text-nowrap'>
-                                {formatCurrency(unitPrice)}/{item.supply.unit}
+                                {formatUnitPrice(unitPrice)}/{item.supply.unit}
                               </span>
                             </>
                           )}
@@ -348,7 +349,7 @@ export function PurchasesDetailDialog() {
                     Estorno
                   </h4>
                   <p className='text-sm text-muted-foreground'>
-                    {formatDateTimeInAppTimeZone(purchase.reversedAt)}
+                    {formatDateTime(purchase.reversedAt)}
                   </p>
                   {purchase.reversalReason && (
                     <p className='mt-1 text-sm'>
@@ -361,7 +362,7 @@ export function PurchasesDetailDialog() {
               <div>
                 <h4 className='mb-1 text-sm font-medium'>Criada em</h4>
                 <p className='text-sm text-muted-foreground'>
-                  {formatDateTimeInAppTimeZone(purchase.createdAt)}
+                  {formatDateTime(purchase.createdAt)}
                 </p>
               </div>
 
@@ -369,7 +370,7 @@ export function PurchasesDetailDialog() {
                 <div>
                   <h4 className='mb-1 text-sm font-medium'>Concluída em</h4>
                   <p className='text-sm text-muted-foreground'>
-                    {formatDateTimeInAppTimeZone(purchase.completedAt)}
+                    {formatDateTime(purchase.completedAt)}
                   </p>
                 </div>
               )}

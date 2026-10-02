@@ -45,7 +45,7 @@ export function DatePicker({
           )}
         >
           {selected ? (
-            format(selected, 'd MMM yyyy', { locale: ptBR })
+            format(selected, 'dd/MM/yyyy', { locale: ptBR })
           ) : (
             <span>{placeholder}</span>
           )}

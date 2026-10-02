@@ -30,6 +30,13 @@ describe('DatePicker', () => {
     expect(dayButtons().length).toBeGreaterThan(0)
   })
 
+  it('shows the selected date as dd/mm/aaaa', async () => {
+    await renderPicker({ selected: new Date(2026, 0, 5) })
+
+    const trigger = document.body.querySelector('button')!
+    expect(trigger.textContent).toContain('05/01/2026')
+  })
+
   it('closes the calendar after selecting a date', async () => {
     const onSelect = vi.fn()
     await renderPicker({ onSelect })

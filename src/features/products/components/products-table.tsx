@@ -67,7 +67,6 @@ export function ProductsTable({ data, search, navigate }: DataTableProps) {
       labels={{
         name: 'Nome',
         categoryName: 'Categoria',
-        unit: 'Unidade',
         stock: 'Estoque',
         costPrice: 'Custo',
         margin: 'Margem',

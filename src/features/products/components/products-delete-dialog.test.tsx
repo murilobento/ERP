@@ -26,7 +26,6 @@ const product: Product = {
   id: 'product-1',
   name: 'Bolo de Chocolate',
   description: '',
-  unit: 'un',
   margin: 25,
   status: 'active',
   categoryId: 'category-1',

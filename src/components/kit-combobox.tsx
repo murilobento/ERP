@@ -12,7 +12,6 @@ export type KitSearchItem = {
     product: {
       id: string
       name: string
-      unit: string
     }
   }[]
   totalPrice: number

@@ -70,7 +70,6 @@ function getPresetRange(preset: DatePreset) {
 type AggregatedItem = {
   productId: string
   name: string
-  unit: string
   totalQuantity: number
   orderCount: number
   totalRevenue: number
@@ -81,7 +80,6 @@ function aggregateItems(sales: Sale[]): AggregatedItem[] {
     string,
     {
       name: string
-      unit: string
       totalQuantity: number
       totalRevenue: number
       saleIds: Set<string>
@@ -98,7 +96,6 @@ function aggregateItems(sales: Sale[]): AggregatedItem[] {
       } else {
         map.set(item.productId, {
           name: item.product.name,
-          unit: item.product.unit,
           totalQuantity: item.quantity,
           totalRevenue: item.quantity * item.unitPrice,
           saleIds: new Set([sale.id]),
@@ -111,7 +108,6 @@ function aggregateItems(sales: Sale[]): AggregatedItem[] {
     .map(([productId, data]) => ({
       productId,
       name: data.name,
-      unit: data.unit,
       totalQuantity: data.totalQuantity,
       orderCount: data.saleIds.size,
       totalRevenue: data.totalRevenue,
@@ -258,9 +254,6 @@ export function BestSellingDialog({
                         </TableCell>
                         <TableCell className='font-medium'>
                           {item.name}
-                          <span className='ml-1 text-xs text-muted-foreground'>
-                            ({item.unit})
-                          </span>
                         </TableCell>
                         <TableCell className='text-right tabular-nums'>
                           {item.totalQuantity}

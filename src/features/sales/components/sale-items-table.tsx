@@ -29,7 +29,6 @@ type KitForm = {
     productId: string
     productName: string
     quantity: number
-    unit: string
   }[]
 }
 
@@ -103,11 +102,6 @@ export function SaleItemsTable({
                               )
                             }
                           />
-                          {product?.unit && (
-                            <span className='text-xs text-muted-foreground'>
-                              {product.unit}
-                            </span>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
@@ -141,10 +135,7 @@ export function SaleItemsTable({
                         <span className='text-xs text-muted-foreground'>
                           (
                           {kit.kitItems
-                            .map(
-                              (ki) =>
-                                `${ki.quantity} ${ki.unit} de ${ki.productName}`
-                            )
+                            .map((ki) => `${ki.quantity} de ${ki.productName}`)
                             .join(', ')}
                           )
                         </span>
@@ -221,11 +212,6 @@ export function SaleItemsTable({
                             )
                           }
                         />
-                        {product?.unit && (
-                          <span className='text-xs text-muted-foreground'>
-                            {product.unit}
-                          </span>
-                        )}
                       </div>
                     </div>
                     <div>
@@ -272,9 +258,7 @@ export function SaleItemsTable({
                 </div>
                 <div className='text-xs text-muted-foreground'>
                   {kit.kitItems
-                    .map(
-                      (ki) => `${ki.quantity} ${ki.unit} de ${ki.productName}`
-                    )
+                    .map((ki) => `${ki.quantity} de ${ki.productName}`)
                     .join(', ')}
                 </div>
                 <div>

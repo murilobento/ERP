@@ -10,7 +10,6 @@ export type SaleItem = {
   product: {
     id: string
     name: string
-    unit: string
     status: string
   }
   kit?: {

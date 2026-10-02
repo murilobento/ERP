@@ -60,9 +60,13 @@ export const stockBalancesColumns: ColumnDef<StockBalance>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Unidade base' />
     ),
-    cell: ({ row }) => (
-      <div className='ps-2 text-nowrap'>{row.getValue('unit')}</div>
-    ),
+    cell: ({ row }) => {
+      const b = row.original
+      if (b.type !== 'supply' || !b.unit) {
+        return <span className='ps-2 text-muted-foreground'>—</span>
+      }
+      return <div className='ps-2 text-nowrap'>{b.unit}</div>
+    },
   },
   {
     accessorKey: 'stock',

@@ -1,4 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatDateTime } from '@/lib/date-time'
+import { formatUnitPrice } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -119,7 +121,7 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
       const unit = row.original.unit
       return (
         <span>
-          R$ {costPrice.toFixed(2)}/{unit}
+          {formatUnitPrice(costPrice)}/{unit}
         </span>
       )
     },
@@ -150,8 +152,8 @@ export const suppliesColumns: ColumnDef<SupplyWithStock>[] = [
       <DataTableColumnHeader column={column} title='Criado em' />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue('createdAt'))
-      return <div className='text-nowrap'>{date.toLocaleDateString()}</div>
+      const value = row.getValue('createdAt') as string
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
   {

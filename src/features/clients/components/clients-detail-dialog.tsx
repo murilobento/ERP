@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Pen } from 'lucide-react'
 import api from '@/lib/api'
+import { formatDate, formatDateTime } from '@/lib/date-time'
 import { queryKeys } from '@/lib/query-keys'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -114,15 +115,11 @@ export function ClientsDetailDialog({
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>
               <p className='text-xs text-muted-foreground'>Criado em</p>
-              <p className='text-sm'>
-                {new Date(client.createdAt).toLocaleString()}
-              </p>
+              <p className='text-sm'>{formatDateTime(client.createdAt)}</p>
             </div>
             <div>
               <p className='text-xs text-muted-foreground'>Atualizado em</p>
-              <p className='text-sm'>
-                {new Date(client.updatedAt).toLocaleString()}
-              </p>
+              <p className='text-sm'>{formatDateTime(client.updatedAt)}</p>
             </div>
           </div>
 
@@ -171,13 +168,11 @@ export function ClientsDetailDialog({
                               </Badge>
                             </TableCell>
                             <TableCell className='text-nowrap'>
-                              {new Date(sale.createdAt).toLocaleDateString()}
+                              {formatDateTime(sale.createdAt)}
                             </TableCell>
                             <TableCell className='text-nowrap'>
                               {sale.deliveryDate
-                                ? new Date(
-                                    sale.deliveryDate
-                                  ).toLocaleDateString()
+                                ? formatDate(sale.deliveryDate)
                                 : '—'}
                             </TableCell>
                             <TableCell>
@@ -199,7 +194,7 @@ export function ClientsDetailDialog({
                                           {item.product.name}
                                         </span>
                                         <span className='font-medium'>
-                                          {item.quantity} {item.product.unit} ×{' '}
+                                          {item.quantity} ×{' '}
                                           {formatCurrency(item.unitPrice)}
                                         </span>
                                       </div>
@@ -243,9 +238,7 @@ export function ClientsDetailDialog({
                           </span>
                         </div>
                         <div className='flex items-center justify-between text-xs text-muted-foreground'>
-                          <span>
-                            {new Date(sale.createdAt).toLocaleDateString()}
-                          </span>
+                          <span>{formatDateTime(sale.createdAt)}</span>
                           <span>
                             {sale.items.length}{' '}
                             {sale.items.length === 1 ? 'item' : 'itens'}
@@ -262,7 +255,7 @@ export function ClientsDetailDialog({
                                   {item.product.name}
                                 </span>
                                 <span>
-                                  {item.quantity} {item.product.unit} ×{' '}
+                                  {item.quantity} ×{' '}
                                   {formatCurrency(item.unitPrice)}
                                 </span>
                               </div>

@@ -91,7 +91,6 @@ export function KitsActionDialog({
             {
               id: i.product.id,
               name: i.product.name,
-              unit: i.product.unit,
               status: i.product.status,
               salePrice:
                 i.product.composition.reduce(
@@ -372,11 +371,6 @@ export function KitsActionDialog({
                                     )
                                   }
                                 />
-                                {product?.unit && (
-                                  <span className='text-xs text-muted-foreground'>
-                                    {product.unit}
-                                  </span>
-                                )}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -453,11 +447,6 @@ export function KitsActionDialog({
                                   )
                                 }
                               />
-                              {product?.unit && (
-                                <span className='text-xs text-muted-foreground'>
-                                  {product.unit}
-                                </span>
-                              )}
                             </div>
                           </div>
                           <div>

@@ -234,7 +234,7 @@ async function commitMovements(
 type SaleMovementItem = {
   productId: string
   quantity: number
-  product: { name: string; unit: string }
+  product: { name: string }
 }
 
 export async function recordSaleDelivery(
@@ -253,7 +253,7 @@ export async function recordSaleDelivery(
     quantity: -item.quantity,
     type: MOVEMENT_TYPE.SALE_DELIVERY,
     referenceId: input.saleId,
-    notes: `Venda para ${input.customer} — entrega de ${item.quantity} ${item.product.unit} de ${item.product.name}`,
+    notes: `Venda para ${input.customer} — entrega de ${item.quantity} de ${item.product.name}`,
   }))
 
   await commitMovements(tx, input.authorId, pending, {
@@ -280,7 +280,7 @@ export async function recordSaleReversal(
     quantity: item.quantity,
     type: MOVEMENT_TYPE.SALE_REVERSAL,
     referenceId: input.saleId,
-    notes: `Estorno da venda para ${input.customer} — devolução de ${item.quantity} ${item.product.unit} de ${item.product.name} | Motivo: ${input.reason}`,
+    notes: `Estorno da venda para ${input.customer} — devolução de ${item.quantity} de ${item.product.name} | Motivo: ${input.reason}`,
   }))
 
   await commitMovements(tx, input.authorId, pending)
@@ -344,7 +344,6 @@ type ProductionMovementItem = {
   quantity: number
   product: {
     name: string
-    unit: string
     composition: CompositionRow[]
   }
 }
@@ -364,7 +363,7 @@ export async function recordProductionCompletion(
     quantity: item.quantity,
     type: MOVEMENT_TYPE.PRODUCTION_OUTPUT,
     referenceId: input.productionId,
-    notes: `Produção #${input.productionId} — ${item.quantity} ${item.product.unit} de ${item.product.name}`,
+    notes: `Produção #${input.productionId} — ${item.quantity} de ${item.product.name}`,
   }))
 
   for (const [supplyId, consumed] of expandConsumption(input.items)) {
@@ -402,7 +401,7 @@ export async function recordProductionReversal(
     quantity: -item.quantity,
     type: MOVEMENT_TYPE.PRODUCTION_REVERSAL,
     referenceId: input.productionId,
-    notes: `Estorno da produção #${input.productionId} — ${item.quantity} ${item.product.unit} de ${item.product.name} | Motivo: ${input.reason}`,
+    notes: `Estorno da produção #${input.productionId} — ${item.quantity} de ${item.product.name} | Motivo: ${input.reason}`,
   }))
 
   for (const [supplyId, returned] of expandConsumption(input.items)) {
@@ -420,10 +419,15 @@ export async function recordProductionReversal(
   await commitMovements(tx, input.authorId, pending)
 }
 
+function formatQuantity(quantity: number, unit?: string): string {
+  const sign = quantity > 0 ? '+' : ''
+  return unit ? `${sign}${quantity} ${unit}` : `${sign}${quantity}`
+}
+
 type AdjustmentItem = {
   id: string
   name: string
-  unit: string
+  unit?: string
 }
 
 export async function recordAdjustment(
@@ -445,7 +449,7 @@ export async function recordAdjustment(
       quantity: input.quantity,
       type: MOVEMENT_TYPE.ADJUSTMENT,
       referenceId: input.adjustmentId,
-      notes: `Acerto de estoque — ${input.item.name}: ${input.quantity > 0 ? '+' : ''}${input.quantity} ${input.item.unit} | Motivo: ${input.reason}`,
+      notes: `Acerto de estoque — ${input.item.name}: ${formatQuantity(input.quantity, input.item.unit)} | Motivo: ${input.reason}`,
     },
   ])
 }
@@ -472,7 +476,7 @@ export async function recordAdjustmentReversal(
       quantity: reversed,
       type: MOVEMENT_TYPE.ADJUSTMENT_REVERSAL,
       referenceId: input.adjustmentId,
-      notes: `Estorno do acerto — ${input.item.name}: ${reversed > 0 ? '+' : ''}${reversed} ${input.item.unit} | Motivo: ${input.reason} | Autor: ${input.authorName}`,
+      notes: `Estorno do acerto — ${input.item.name}: ${formatQuantity(reversed, input.item.unit)} | Motivo: ${input.reason} | Autor: ${input.authorName}`,
     },
   ])
 }

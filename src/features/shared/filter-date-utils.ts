@@ -1,3 +1,5 @@
+import { APP_TIME_ZONE, formatDate } from '@/lib/date-time'
+
 export type DatePreset =
   'today' | 'tomorrow' | 'yesterday' | 'this_month' | 'last_month'
 
@@ -5,8 +7,6 @@ export type DatePresetOption = {
   value: DatePreset
   label: string
 }
-
-export const APP_TIME_ZONE = 'America/Sao_Paulo'
 
 const datePartsFormatter = new Intl.DateTimeFormat('en-US', {
   timeZone: APP_TIME_ZONE,
@@ -31,16 +31,6 @@ export function formatDateInAppTimeZone(value: Date | string) {
   if (Number.isNaN(date.getTime())) return ''
   const parts = getDateParts(date)
   return `${parts.year}-${parts.month}-${parts.day}`
-}
-
-export function formatDateTimeInAppTimeZone(value: Date | string) {
-  const date = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  return new Intl.DateTimeFormat('pt-BR', {
-    timeZone: APP_TIME_ZONE,
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(date)
 }
 
 export function formatDateTimeLocalInAppTimeZone(date: Date) {
@@ -149,9 +139,11 @@ export function getDatePresetLabel(from: string, to: string) {
 export function getDateRangeLabel(from: string, to: string) {
   const presetLabel = getDatePresetLabel(from, to)
   if (presetLabel) return presetLabel
-  if (from && to) return `${from} até ${to}`
-  if (from) return `A partir de ${from}`
-  if (to) return `Até ${to}`
+  const fromLabel = formatDate(from)
+  const toLabel = formatDate(to)
+  if (fromLabel && toLabel) return `${fromLabel} até ${toLabel}`
+  if (fromLabel) return `A partir de ${fromLabel}`
+  if (toLabel) return `Até ${toLabel}`
   return ''
 }
 

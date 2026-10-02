@@ -89,6 +89,11 @@ export function AdjustmentsActionDialog({
 
   const currentStock = selectedItem?.stock ?? 0
   const nextStock = currentStock + (Number.isFinite(quantity) ? quantity : 0)
+  const unit = itemType === 'supply' ? selectedItem?.unit : undefined
+
+  function formatStock(value: number, unit?: string) {
+    return unit ? `${value} ${unit}` : `${value}`
+  }
 
   async function onSubmit(values: AdjustmentForm) {
     await run({
@@ -220,15 +225,11 @@ export function AdjustmentsActionDialog({
             <div className='grid gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm sm:grid-cols-3'>
               <div>
                 <Label className='text-muted-foreground'>Estoque atual</Label>
-                <p className='font-medium'>
-                  {currentStock} {selectedItem?.unit || ''}
-                </p>
+                <p className='font-medium'>{formatStock(currentStock, unit)}</p>
               </div>
               <div>
                 <Label className='text-muted-foreground'>Após acerto</Label>
-                <p className='font-medium'>
-                  {nextStock} {selectedItem?.unit || ''}
-                </p>
+                <p className='font-medium'>{formatStock(nextStock, unit)}</p>
               </div>
               <div>
                 <Label className='text-muted-foreground'>Movimento</Label>

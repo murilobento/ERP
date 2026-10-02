@@ -84,14 +84,12 @@ describe('SalesKanban', () => {
             type: 'product',
             id: 'product-1',
             name: 'Bolo de Chocolate',
-            unit: 'un',
             stock: 17,
           },
           {
             type: 'product',
             id: 'product-2',
             name: 'Torta de Limão',
-            unit: 'un',
             stock: 5,
           },
         ],
@@ -128,7 +126,6 @@ describe('SalesKanban', () => {
           product: {
             id: 'product-1',
             name: 'Bolo de Chocolate',
-            unit: 'un',
             status: 'active',
           },
         },
@@ -146,7 +143,6 @@ describe('SalesKanban', () => {
           product: {
             id: 'product-1',
             name: 'Bolo de Chocolate',
-            unit: 'un',
             status: 'active',
           },
         },
@@ -159,7 +155,6 @@ describe('SalesKanban', () => {
           product: {
             id: 'product-2',
             name: 'Torta de Limão',
-            unit: 'un',
             status: 'active',
           },
         },
@@ -199,7 +194,6 @@ describe('SalesKanban', () => {
           product: {
             id: 'product-1',
             name: 'Bolo de Chocolate',
-            unit: 'un',
             status: 'active',
           },
         },

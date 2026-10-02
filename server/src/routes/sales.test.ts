@@ -152,7 +152,7 @@ describe('sale routes', () => {
         {
           productId: 'product-1',
           quantity: 5,
-          product: { id: 'product-1', name: 'Bolo', unit: 'un' },
+          product: { id: 'product-1', name: 'Bolo' },
         },
       ],
     })
@@ -180,7 +180,7 @@ describe('sale routes', () => {
           {
             productId: 'product-1',
             quantity: 2,
-            product: { id: 'product-1', name: 'Bolo', unit: 'un' },
+            product: { id: 'product-1', name: 'Bolo' },
           },
         ],
       })
@@ -272,7 +272,7 @@ describe('sale routes', () => {
           {
             productId: 'product-1',
             quantity: 2,
-            product: { id: 'product-1', name: 'Bolo', unit: 'un' },
+            product: { id: 'product-1', name: 'Bolo' },
           },
         ],
       })

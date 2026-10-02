@@ -13,7 +13,7 @@ const CLIENT_SALES_SELECT = {
       quantity: true,
       unitPrice: true,
       product: {
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true },
       },
     },
   },

@@ -1,5 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { PackageCheck } from 'lucide-react'
+import { formatDate, formatDateTime } from '@/lib/date-time'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -9,7 +10,6 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
 import { DataTableColumnHeader } from '@/components/data-table'
-import { formatDateInAppTimeZone } from '@/features/shared/filter-date-utils'
 import {
   formatCurrency,
   getSaleTotal,
@@ -108,8 +108,7 @@ export const salesColumns: ColumnDef<Sale>[] = [
                           {item.product.name}
                         </span>
                         <span className='font-medium'>
-                          {item.quantity} {item.product.unit} ×{' '}
-                          {formatCurrency(item.unitPrice)}
+                          {item.quantity} × {formatCurrency(item.unitPrice)}
                         </span>
                       </div>
                     ))}
@@ -128,8 +127,7 @@ export const salesColumns: ColumnDef<Sale>[] = [
                               {item.product.name}
                             </span>
                             <span className='font-medium'>
-                              {item.quantity} {item.product.unit} ×{' '}
-                              {formatCurrency(item.unitPrice)}
+                              {item.quantity} × {formatCurrency(item.unitPrice)}
                             </span>
                           </div>
                         ))}
@@ -181,7 +179,7 @@ export const salesColumns: ColumnDef<Sale>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue('createdAt') as string
-      return <div className='text-nowrap'>{formatDateInAppTimeZone(value)}</div>
+      return <div className='text-nowrap'>{formatDateTime(value)}</div>
     },
   },
   {
@@ -192,7 +190,7 @@ export const salesColumns: ColumnDef<Sale>[] = [
     cell: ({ row }) => {
       const value = row.getValue('deliveryDate') as string | null
       if (!value) return <span className='text-muted-foreground'>—</span>
-      return <div className='text-nowrap'>{formatDateInAppTimeZone(value)}</div>
+      return <div className='text-nowrap'>{formatDate(value)}</div>
     },
   },
   {
