@@ -18,6 +18,9 @@ const prisma = vi.hoisted(() => ({
   client: {
     findUnique: vi.fn(),
   },
+  company: {
+    findUnique: vi.fn(),
+  },
   product: {
     findMany: vi.fn(),
   },
@@ -40,10 +43,39 @@ vi.mock('../lib/prisma', () => ({
   default: prisma,
 }))
 
+const generateInvoicePdf = vi.hoisted(() =>
+  vi.fn(async () => Buffer.from('%PDF-1.4 fatura'))
+)
+
+vi.mock('../lib/pdf', () => ({
+  generateInvoicePdf,
+}))
+
 const app = createApp({ enableLogger: false })
 const authHeaders = {
   'Content-Type': 'application/json',
   Cookie: `access_token=${signAccessToken('user-1')}`,
+}
+
+const invoiceSale = {
+  id: 'sale-1',
+  clientId: 'client-1',
+  customer: 'Cliente Uno',
+  status: 'completed',
+  createdAt: new Date('2026-01-05T12:00:00.000Z'),
+  deliveryDate: null,
+  paymentMethod: 'pix',
+  paidAt: new Date('2026-01-05T15:00:00.000Z'),
+  paymentNotes: '',
+  notes: '',
+  items: [
+    {
+      name: 'Bolo',
+      quantity: 2,
+      unitPrice: 10,
+      product: { name: 'Bolo' },
+    },
+  ],
 }
 
 describe('sale routes', () => {
@@ -362,6 +394,106 @@ describe('sale routes', () => {
       error: 'Venda não encontrada.',
     })
     expect(prisma.sale.delete).not.toHaveBeenCalled()
+  })
+
+  it('generates the invoice even without a company record', async () => {
+    prisma.sale.findUnique.mockResolvedValue(invoiceSale)
+    prisma.client.findUnique.mockResolvedValue(null)
+    prisma.company.findUnique.mockResolvedValue(null)
+
+    const response = await app.request('/api/sales/sale-1/invoice', {
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('application/pdf')
+    expect(response.headers.get('content-disposition')).toBe(
+      'attachment; filename="fatura-SALE-1.pdf"'
+    )
+    // Cabeçalho em branco, mas venda, cliente e itens continuam no PDF.
+    expect(generateInvoicePdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        company: {
+          name: '',
+          tradeName: '',
+          cnpj: '',
+          email: '',
+          phone: '',
+          logoUrl: '',
+          street: '',
+          number: '',
+          complement: '',
+          neighborhood: '',
+          city: '',
+          state: '',
+          website: '',
+          whatsapp: '',
+        },
+        client: expect.objectContaining({ name: 'Cliente Uno' }),
+        items: [{ name: 'Bolo', quantity: 2, unitPrice: 10 }],
+      })
+    )
+  })
+
+  it('includes the company data on the invoice when configured', async () => {
+    prisma.sale.findUnique.mockResolvedValue(invoiceSale)
+    prisma.client.findUnique.mockResolvedValue({
+      name: 'Cliente',
+      phone: '11999999999',
+      street: 'Rua A',
+      number: '10',
+      complement: '',
+      neighborhood: 'Centro',
+      city: 'São Paulo',
+      state: 'SP',
+    })
+    prisma.company.findUnique.mockResolvedValue({
+      name: 'Doces da Ana',
+      tradeName: 'Aninha Doces',
+      cnpj: '12345678000199',
+      email: 'contato@doces.com.br',
+      phone: '1144444444',
+      logoUrl: '',
+      street: 'Rua B',
+      number: '20',
+      complement: '',
+      neighborhood: 'Bela Vista',
+      city: 'São Paulo',
+      state: 'SP',
+      website: '',
+      whatsapp: '',
+    })
+
+    const response = await app.request('/api/sales/sale-1/invoice', {
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(200)
+    expect(generateInvoicePdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        company: expect.objectContaining({
+          name: 'Doces da Ana',
+          tradeName: 'Aninha Doces',
+          cnpj: '12345678000199',
+          city: 'São Paulo',
+        }),
+        client: expect.objectContaining({ name: 'Cliente', state: 'SP' }),
+      })
+    )
+  })
+
+  it('returns 404 when generating the invoice of a missing sale', async () => {
+    prisma.sale.findUnique.mockResolvedValue(null)
+
+    const response = await app.request('/api/sales/missing/invoice', {
+      headers: authHeaders,
+    })
+
+    expect(response.status).toBe(404)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Venda não encontrada.',
+    })
+    expect(generateInvoicePdf).not.toHaveBeenCalled()
   })
 
   it('blocks operators from deleting sales', async () => {

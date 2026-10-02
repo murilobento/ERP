@@ -562,13 +562,12 @@ saleRoutes.get("/:id/invoice", async (c) => {
 		return c.json({ error: "Venda não encontrada." }, 404);
 	}
 
+	// A fatura não exige empresa cadastrada: sem ela o cabeçalho sai em branco,
+	// mas venda, cliente, itens e totais continuam válidos. Antes isso barrava a
+	// geração com 400 e o usuário não recebia nenhuma mensagem na tela.
 	const company = await prisma.company.findUnique({
 		where: { singletonKey: "default" },
 	});
-
-	if (!company) {
-		return c.json({ error: "Dados da empresa não configurados." }, 400);
-	}
 
 	const client = await prisma.client.findUnique({
 		where: { id: sale.clientId },
@@ -600,20 +599,20 @@ saleRoutes.get("/:id/invoice", async (c) => {
 			unitPrice: item.unitPrice,
 		})),
 		company: {
-			name: company.name,
-			tradeName: company.tradeName,
-			cnpj: company.cnpj,
-			email: company.email,
-			phone: company.phone,
-			logoUrl: company.logoUrl,
-			street: company.street,
-			number: company.number,
-			complement: company.complement,
-			neighborhood: company.neighborhood,
-			city: company.city,
-			state: company.state,
-			website: company.website,
-			whatsapp: company.whatsapp,
+			name: company?.name ?? "",
+			tradeName: company?.tradeName ?? "",
+			cnpj: company?.cnpj ?? "",
+			email: company?.email ?? "",
+			phone: company?.phone ?? "",
+			logoUrl: company?.logoUrl ?? "",
+			street: company?.street ?? "",
+			number: company?.number ?? "",
+			complement: company?.complement ?? "",
+			neighborhood: company?.neighborhood ?? "",
+			city: company?.city ?? "",
+			state: company?.state ?? "",
+			website: company?.website ?? "",
+			whatsapp: company?.whatsapp ?? "",
 		},
 		client: client || {
 			name: sale.customer,

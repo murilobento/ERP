@@ -119,6 +119,18 @@ export function generateInvoiceHtml(data: InvoiceData): string {
 	const clientAddress = escapeHtml(buildAddress(data.client))
 	const shortId = data.saleId.slice(-8).toUpperCase()
 
+	// A fatura pode ser gerada sem empresa cadastrada: nesses casos o bloco do
+	// cabeçalho é omitido inteiro, em vez de sobrar círculo e <h1> vazios.
+	const hasCompanyIdentity = Boolean(
+		data.company.name || data.company.logoUrl
+	)
+	const hasCompanyDetails = Boolean(
+		data.company.cnpj ||
+		companyAddress ||
+		data.company.email ||
+		data.company.phone
+	)
+
 	const e = escapeHtml
 
 	return `<!DOCTYPE html>
@@ -256,21 +268,25 @@ export function generateInvoiceHtml(data: InvoiceData): string {
 
   <div class="header">
     <div class="header-left">
-      <div class="logo">
+      ${hasCompanyIdentity
+				? `<div class="logo">
         ${data.company.logoUrl
 					? `<img src="${escapeHtml(data.company.logoUrl)}" alt="Logo"/>`
 					: `<span>${e(data.company.name).charAt(0).toUpperCase()}</span>`}
-      </div>
+      </div>`
+				: ''}
       <div class="company-info">
-        <h1>${e(data.company.name)}</h1>
+        ${data.company.name ? `<h1>${e(data.company.name)}</h1>` : ''}
         ${data.company.tradeName ? `<div class="trade-name">${e(data.company.tradeName)}</div>` : ''}
-        <div class="details">
+        ${hasCompanyDetails
+				? `<div class="details">
           ${data.company.cnpj ? `CNPJ: ${e(data.company.cnpj)}<br/>` : ''}
           ${companyAddress ? `${companyAddress}<br/>` : ''}
           ${data.company.email ? `${e(data.company.email)}` : ''}
           ${data.company.email && data.company.phone ? ' · ' : ''}
           ${data.company.phone ? `${e(data.company.phone)}` : ''}
-        </div>
+        </div>`
+				: ''}
       </div>
     </div>
     <div class="header-right">

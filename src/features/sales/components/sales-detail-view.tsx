@@ -10,6 +10,7 @@ import {
   Truck,
 } from 'lucide-react'
 import { formatDate, formatDateTime } from '@/lib/date-time'
+import { handleServerError } from '@/lib/handle-server-error'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
@@ -51,6 +52,8 @@ export function SalesDetailView({
     setIsInvoiceLoading(true)
     try {
       await downloadInvoice(sale.id, sale.customer)
+    } catch (error) {
+      handleServerError(error)
     } finally {
       setIsInvoiceLoading(false)
     }

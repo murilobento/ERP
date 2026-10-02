@@ -143,7 +143,6 @@ productionRoutes.get('/:id', async (c) => {
         select: {
           id: true,
           name: true,
-          unit: true,
           composition: {
             select: {
               id: true,
