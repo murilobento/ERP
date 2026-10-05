@@ -469,5 +469,5 @@ export function buildInvoiceDocument(data: InvoiceData): jsPDF {
 }
 
 export function generateInvoicePdf(data: InvoiceData): Uint8Array {
-	return buildInvoiceDocument(data).output('arraybuffer') as Uint8Array
+	return new Uint8Array(buildInvoiceDocument(data).output('arraybuffer'))
 }
