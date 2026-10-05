@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { type Row } from '@tanstack/react-table'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { type SupplyWithStock } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
 import { SuppliesDialogs } from './supplies-dialogs'
@@ -73,10 +73,10 @@ describe('supplies row history entry point', () => {
 
     await userEvent.click(getByRole('button', { name: 'Histórico de compras' }))
 
-    await expect.element(getByText('Total gasto')).toBeInTheDocument()
+    expect(getByText('Total gasto')).toBeInTheDocument()
     await vi.waitFor(() =>
       expect(apiGet).toHaveBeenCalledWith('/supplies/supply-1/purchases')
     )
-    await expect.element(getByText('Fornecedor Bom')).toBeInTheDocument()
+    expect(getByText('Fornecedor Bom')).toBeInTheDocument()
   })
 })

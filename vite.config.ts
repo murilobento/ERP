@@ -2,7 +2,6 @@ import path from 'path'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
-import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
 
 const apiPort = Number(process.env.API_PORT) || 3001
@@ -82,14 +81,10 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['server/**'],
+    environment: 'jsdom',
+    setupFiles: ['./src/test-utils/setup.ts'],
     silent: 'passed-only',
     unstubEnvs: true,
-    fileParallelism: false,
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      instances: [{ browser: 'chromium' }],
-    },
     coverage: {
       exclude: [
         'src/components/ui/**',

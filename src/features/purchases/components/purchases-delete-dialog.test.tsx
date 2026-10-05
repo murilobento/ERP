@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { queryKeys } from '@/lib/query-keys'
 import { type Purchase } from '../data/schema'
 import { PurchasesDeleteDialog } from './purchases-delete-dialog'
@@ -70,7 +70,7 @@ describe('PurchasesDeleteDialog', () => {
       await renderDialog()
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    await expect.element(confirm).toBeEnabled()
+    expect(confirm).toBeEnabled()
 
     // nenhum campo de digitação para confirmar a exclusão
     expect(
@@ -80,7 +80,7 @@ describe('PurchasesDeleteDialog', () => {
     ).toBeNull()
 
     // o nome do fornecedor continua identificando o registro na pergunta
-    await expect.element(getByText(/Moinho Central/)).toBeInTheDocument()
+    expect(getByText(/Moinho Central/)).toBeInTheDocument()
 
     await userEvent.click(confirm)
 

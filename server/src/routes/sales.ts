@@ -583,8 +583,10 @@ saleRoutes.get("/:id/invoice", async (c) => {
 		},
 	});
 
-	const { generateInvoicePdf } = await import("../lib/pdf.js");
-	const pdfBuffer = await generateInvoicePdf({
+	// Import dinâmico: o jsPDF só pesa na function de quem realmente emite uma
+	// fatura. O PDF sai com texto de verdade — nenhuma imagem, nenhum browser.
+	const { generateInvoicePdf } = await import("../lib/invoice-pdf.js");
+	const pdfBytes = generateInvoicePdf({
 		saleId: sale.id,
 		status: sale.status,
 		createdAt: sale.createdAt.toISOString(),
@@ -633,7 +635,7 @@ saleRoutes.get("/:id/invoice", async (c) => {
 		`attachment; filename="fatura-${shortId}.pdf"`,
 	);
 
-	return c.body(pdfBuffer);
+	return c.body(Buffer.from(pdfBytes));
 });
 
 export { saleRoutes };

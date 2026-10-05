@@ -34,9 +34,6 @@ jobs:
       - name: Run Prettier check
         run: bun run format:check
 
-      - name: Install browsers
-        run: bun run test:browser:install
-
       - name: Run tests
         run: bun run test
 

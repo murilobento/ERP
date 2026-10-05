@@ -29,8 +29,5 @@ dist-ssr
 # Test coverage
 /coverage
 
-# Vitest artifacts (browser screenshots/attachments)
-**/__screenshots__/
-.vitest-attachments/
 .vercel
 .env*

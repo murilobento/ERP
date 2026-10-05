@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { type Supply } from '../data/schema'
 import { SuppliesActionDialog } from './supplies-action-dialog'
 
@@ -70,7 +70,7 @@ describe('SuppliesActionDialog', () => {
     await userEvent.clear(getByLabelText(/^Nome$/i))
     await userEvent.click(getByRole('button', { name: /^Salvar$/i }))
 
-    await expect.element(getByText('Nome é obrigatório.')).toBeInTheDocument()
+    expect(getByText('Nome é obrigatório.')).toBeInTheDocument()
     expect(apiPost).not.toHaveBeenCalled()
   })
 
@@ -88,7 +88,7 @@ describe('SuppliesActionDialog', () => {
     await userEvent.clear(getByLabelText(/^Qtd por embalagem$/i))
     await userEvent.type(getByLabelText(/^Qtd por embalagem$/i), '5')
 
-    await expect.element(getByText('1 embalagem = 5 g')).toBeInTheDocument()
+    expect(getByText('1 embalagem = 5 g')).toBeInTheDocument()
 
     await userEvent.click(getByRole('button', { name: /^Salvar$/i }))
 

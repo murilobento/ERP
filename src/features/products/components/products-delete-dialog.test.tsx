@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { type Product } from '../data/schema'
 import { ProductsDeleteDialog } from './products-delete-dialog'
 
@@ -74,10 +74,10 @@ describe('ProductsDeleteDialog', () => {
     const { getByRole } = await rendered
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    await expect.element(confirm).toBeDisabled()
+    expect(confirm).toBeDisabled()
 
     await userEvent.type(confirmationInput(), 'Outro Produto')
-    await expect.element(confirm).toBeDisabled()
+    expect(confirm).toBeDisabled()
   })
 
   it('deletes the product and invalidates the products query', async () => {

@@ -44,10 +44,10 @@ vi.mock('../lib/prisma', () => ({
 }))
 
 const generateInvoicePdf = vi.hoisted(() =>
-  vi.fn(async () => Buffer.from('%PDF-1.4 fatura'))
-)
+  vi.fn(() => new TextEncoder().encode('%PDF-1.3 fatura')),
+);
 
-vi.mock('../lib/pdf', () => ({
+vi.mock('../lib/invoice-pdf.js', () => ({
   generateInvoicePdf,
 }))
 
@@ -405,12 +405,16 @@ describe('sale routes', () => {
       headers: authHeaders,
     })
 
-    expect(response.status).toBe(200)
+expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toBe('application/pdf')
     expect(response.headers.get('content-disposition')).toBe(
-      'attachment; filename="fatura-SALE-1.pdf"'
+      'attachment; filename="fatura-SALE-1.pdf"',
     )
-    // Cabeçalho em branco, mas venda, cliente e itens continuam no PDF.
+    await expect(response.arrayBuffer()).resolves.toHaveProperty(
+      'byteLength',
+      15,
+    )
+    // Cabeçalho em branco, mas venda, cliente e itens continuam na fatura.
     expect(generateInvoicePdf).toHaveBeenCalledWith(
       expect.objectContaining({
         company: {

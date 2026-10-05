@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { VendorCombobox } from './vendor-combobox'
 
 const apiGet = vi.hoisted(() => vi.fn())
@@ -69,21 +69,21 @@ describe('VendorCombobox', () => {
   })
 
   it('supports custom placeholder and does not fetch until the user types', async () => {
-    const { getByRole, getByText } = await renderCombobox({
+    const { findByText, getByRole } = await renderCombobox({
       placeholder: 'Escolha um fornecedor',
     })
 
     expect(getComboboxButton().textContent).toContain('Escolha um fornecedor')
 
     await userEvent.click(getByRole('combobox'))
-    await expect.element(getByText('Digite para buscar.')).toBeInTheDocument()
+    expect(await findByText('Digite para buscar.')).toBeInTheDocument()
     expect(apiGet).not.toHaveBeenCalled()
   })
 
   it('searches vendors with the expected params and selects a result', async () => {
     const onValueChange = vi.fn()
     const onVendorChange = vi.fn()
-    const { getByRole, getByText } = await renderCombobox({
+    const { findByText, getByRole } = await renderCombobox({
       onValueChange,
       onVendorChange,
       status: 'all',
@@ -99,7 +99,7 @@ describe('VendorCombobox', () => {
       })
     )
 
-    await userEvent.click(getByText('Fornecedor Bom'))
+    await userEvent.click(await findByText('Fornecedor Bom'))
 
     expect(onValueChange).toHaveBeenCalledWith('vendor-1')
     expect(onVendorChange).toHaveBeenCalledWith({
@@ -112,23 +112,23 @@ describe('VendorCombobox', () => {
 
   it('shows the API error state', async () => {
     apiGet.mockRejectedValueOnce(new Error('network'))
-    const { getByRole, getByText } = await renderCombobox()
+    const { findByText, getByRole } = await renderCombobox()
 
     await userEvent.click(getByRole('combobox'))
     await userEvent.type(getSearchInput(), 'erro')
 
-    await expect.element(getByText('Falha ao buscar.')).toBeInTheDocument()
+    expect(await findByText('Falha ao buscar.')).toBeInTheDocument()
   })
 
   it('shows the empty state when there are no results', async () => {
     apiGet.mockResolvedValueOnce({ data: { vendors: [] } })
-    const { getByRole, getByText } = await renderCombobox()
+    const { findByText, getByRole } = await renderCombobox()
 
     await userEvent.click(getByRole('combobox'))
     await userEvent.type(getSearchInput(), 'vazio')
 
-    await expect
-      .element(getByText('Nenhum fornecedor encontrado.'))
-      .toBeInTheDocument()
+    expect(
+      await findByText('Nenhum fornecedor encontrado.')
+    ).toBeInTheDocument()
   })
 })

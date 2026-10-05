@@ -1,0 +1,10 @@
+# O Bun autoinstala peers opcionais por conta própria, e é por aí que o
+# Playwright voltava mesmo fora do package.json: `vitest` declara
+# `@vitest/browser-playwright` como peer opcional, o provider declara `playwright`
+# como peer obrigatório, e o Bun instala os dois — mais o download do Chromium.
+# Como o projeto não usa browser mode, `peer = false` corta esse caminho: o
+# Playwright some de vez e o build da Vercel para de depender de download de
+# browser. Peer que a aplicação realmente usa (react, react-dom) continua
+# declarado no package.json, então não é afetado.
+[install]
+peer = false

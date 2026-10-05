@@ -51,7 +51,7 @@ export function SalesDetailView({
   async function handleInvoice() {
     setIsInvoiceLoading(true)
     try {
-      await downloadInvoice(sale.id, sale.customer)
+      await downloadInvoice(sale.id)
     } catch (error) {
       handleServerError(error)
     } finally {

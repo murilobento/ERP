@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
 import { type Supply, type SupplyPurchaseHistory } from '../data/schema'
 import { SuppliesHistoryDialog } from './supplies-history-dialog'
 
@@ -84,26 +84,26 @@ describe('SuppliesHistoryDialog', () => {
   })
 
   it('loads the purchase history and shows summary and item values', async () => {
-    const { getByText } = await renderDialog()
+    const { findByText } = await renderDialog()
 
-    await expect.element(getByText(/Farinha/)).toBeInTheDocument()
+    expect(await findByText(/Farinha/)).toBeInTheDocument()
     await vi.waitFor(() =>
       expect(apiGet).toHaveBeenCalledWith('/supplies/supply-1/purchases')
     )
 
     // resumo: total gasto, compras concluídas, preço médio e custo atual
-    await expect.element(getByText('Total gasto')).toBeInTheDocument()
-    await expect
-      .element(getByText('Compras concluídas', { exact: true }))
-      .toBeInTheDocument()
-    await expect.element(getByText('Preço médio')).toBeInTheDocument()
-    await expect.element(getByText('Custo atual')).toBeInTheDocument()
+    expect(await findByText('Total gasto')).toBeInTheDocument()
+    expect(
+      await findByText('Compras concluídas', { exact: true })
+    ).toBeInTheDocument()
+    expect(await findByText('Preço médio')).toBeInTheDocument()
+    expect(await findByText('Custo atual')).toBeInTheDocument()
 
     // detalhe da compra: fornecedor, quantidade, preço da embalagem e unitário
-    await expect.element(getByText('Fornecedor Bom')).toBeInTheDocument()
-    await expect.element(getByText(/3 saco\(s\) = 15 kg/)).toBeInTheDocument()
-    await expect.element(getByText(/10,50\/saco/)).toBeInTheDocument()
-    await expect.element(getByText(/Unit. R\$\s2,10\/kg/)).toBeInTheDocument()
+    expect(await findByText('Fornecedor Bom')).toBeInTheDocument()
+    expect(await findByText(/3 saco\(s\) = 15 kg/)).toBeInTheDocument()
+    expect(await findByText(/10,50\/saco/)).toBeInTheDocument()
+    expect(await findByText(/Unit. R\$\s2,10\/kg/)).toBeInTheDocument()
 
     // o mesmo total aparece no resumo e na linha da compra
     expect(textOccurrences('31,50')).toBeGreaterThanOrEqual(2)
@@ -118,10 +118,10 @@ describe('SuppliesHistoryDialog', () => {
       },
     })
 
-    const { getByText } = await renderDialog()
+    const { findByText } = await renderDialog()
 
-    await expect
-      .element(getByText('Nenhuma compra registrada para este insumo.'))
-      .toBeInTheDocument()
+    expect(
+      await findByText('Nenhuma compra registrada para este insumo.')
+    ).toBeInTheDocument()
   })
 })

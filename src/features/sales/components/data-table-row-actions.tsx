@@ -31,7 +31,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   async function handleInvoice() {
     try {
-      await downloadInvoice(sale.id, sale.customer)
+      await downloadInvoice(sale.id)
     } catch (error: unknown) {
       handleServerError(error)
     }

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { queryKeys } from '@/lib/query-keys'
 import { type Sale } from '../data/schema'
 import { SalesDeleteDialog } from './sales-delete-dialog'
@@ -72,7 +72,7 @@ describe('SalesDeleteDialog', () => {
     const { getByRole } = await rendered
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    await expect.element(confirm).toBeDisabled()
+    expect(confirm).toBeDisabled()
 
     await userEvent.type(confirmationInput(), 'Padaria Sol')
     await userEvent.click(confirm)

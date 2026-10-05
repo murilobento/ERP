@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { type Category } from '../data/schema'
 import { CategoriesDeleteDialog } from './categories-delete-dialog'
 
@@ -67,9 +67,9 @@ describe('CategoriesDeleteDialog', () => {
     const { getByRole } = await rendered
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    await expect.element(confirm).toBeDisabled()
+    expect(confirm).toBeDisabled()
     await userEvent.type(confirmationInput(), 'Tortas')
-    await expect.element(confirm).toBeDisabled()
+    expect(confirm).toBeDisabled()
   })
 
   it('deletes the category and invalidates the categories query', async () => {

@@ -1,6 +1,6 @@
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { SignOutDialog } from './sign-out-dialog'
 
 const navigate = vi.fn()
@@ -37,9 +37,7 @@ describe('SignOutDialog', () => {
   })
 
   it('calls auth.reset and navigates to sign-in with current location as redirect', async () => {
-    const { getByRole } = await render(
-      <SignOutDialog open onOpenChange={vi.fn()} />
-    )
+    const { getByRole } = render(<SignOutDialog open onOpenChange={vi.fn()} />)
 
     await userEvent.click(getByRole('button', { name: /^Sair$/i }))
 
@@ -53,9 +51,7 @@ describe('SignOutDialog', () => {
   })
 
   it('does not call reset or navigate when Cancel is clicked', async () => {
-    const { getByRole } = await render(
-      <SignOutDialog open onOpenChange={vi.fn()} />
-    )
+    const { getByRole } = render(<SignOutDialog open onOpenChange={vi.fn()} />)
 
     await userEvent.click(getByRole('button', { name: /^Cancelar$/i }))
 

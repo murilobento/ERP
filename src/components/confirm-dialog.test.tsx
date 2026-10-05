@@ -1,12 +1,12 @@
 import type { SubmitEvent } from 'react'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { ConfirmDialog } from './confirm-dialog'
 
 describe('ConfirmDialog', () => {
   it('renders title, description, and default buttons', async () => {
-    const { getByRole, getByText } = await render(
+    const { getByRole, getByText } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -16,23 +16,15 @@ describe('ConfirmDialog', () => {
       />
     )
 
-    await expect
-      .element(getByRole('heading', { name: 'Delete item' }))
-      .toBeInTheDocument()
-    await expect
-      .element(getByText('This action cannot be undone.'))
-      .toBeInTheDocument()
-    await expect
-      .element(getByRole('button', { name: 'Cancelar' }))
-      .toBeInTheDocument()
-    await expect
-      .element(getByRole('button', { name: 'Continuar' }))
-      .toBeInTheDocument()
+    expect(getByRole('heading', { name: 'Delete item' })).toBeInTheDocument()
+    expect(getByText('This action cannot be undone.')).toBeInTheDocument()
+    expect(getByRole('button', { name: 'Cancelar' })).toBeInTheDocument()
+    expect(getByRole('button', { name: 'Continuar' })).toBeInTheDocument()
   })
 
   it('calls handleConfirm when the confirm button is clicked', async () => {
     const handleConfirm = vi.fn()
-    const { getByRole } = await render(
+    const { getByRole } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -49,7 +41,7 @@ describe('ConfirmDialog', () => {
 
   it('disables confirm when disabled is true', async () => {
     const handleConfirm = vi.fn()
-    const { getByRole } = await render(
+    const { getByRole } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -61,13 +53,13 @@ describe('ConfirmDialog', () => {
     )
 
     const confirm = getByRole('button', { name: 'Continuar' })
-    await expect.element(confirm).toBeDisabled()
+    expect(confirm).toBeDisabled()
     expect(handleConfirm).not.toHaveBeenCalled()
   })
 
   it('when isLoading is true, disables cancel and confirm', async () => {
     const handleConfirm = vi.fn()
-    const { getByRole } = await render(
+    const { getByRole } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -78,16 +70,12 @@ describe('ConfirmDialog', () => {
       />
     )
 
-    await expect
-      .element(getByRole('button', { name: 'Cancelar' }))
-      .toBeDisabled()
-    await expect
-      .element(getByRole('button', { name: 'Continuar' }))
-      .toBeDisabled()
+    expect(getByRole('button', { name: 'Cancelar' })).toBeDisabled()
+    expect(getByRole('button', { name: 'Continuar' })).toBeDisabled()
   })
 
   it('supports custom button texts', async () => {
-    const { getByRole } = await render(
+    const { getByRole } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -99,16 +87,12 @@ describe('ConfirmDialog', () => {
       />
     )
 
-    await expect
-      .element(getByRole('button', { name: 'No' }))
-      .toBeInTheDocument()
-    await expect
-      .element(getByRole('button', { name: 'Yes' }))
-      .toBeInTheDocument()
+    expect(getByRole('button', { name: 'No' })).toBeInTheDocument()
+    expect(getByRole('button', { name: 'Yes' })).toBeInTheDocument()
   })
 
   it('renders confirm as submit button linked to desc form when `form` is set', async () => {
-    const { getByRole } = await render(
+    const { getByRole } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -125,10 +109,8 @@ describe('ConfirmDialog', () => {
     )
 
     const deleteBtn = getByRole('button', { name: 'Delete' })
-    await expect.element(deleteBtn).toHaveAttribute('type', 'submit')
-    await expect
-      .element(deleteBtn)
-      .toHaveAttribute('form', 'tasks-multi-delete-form')
+    expect(deleteBtn).toHaveAttribute('type', 'submit')
+    expect(deleteBtn).toHaveAttribute('form', 'tasks-multi-delete-form')
   })
 
   it('submits the desc form when confirm is clicked (form prop, no handleConfirm)', async () => {
@@ -136,7 +118,7 @@ describe('ConfirmDialog', () => {
       e.preventDefault()
     })
 
-    const { getByRole } = await render(
+    const { getByRole } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -166,7 +148,7 @@ describe('ConfirmDialog', () => {
       e.preventDefault()
     })
 
-    const { getByPlaceholder } = await render(
+    const { getByPlaceholderText } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -186,7 +168,7 @@ describe('ConfirmDialog', () => {
       />
     )
 
-    await userEvent.fill(getByPlaceholder('username'), 'test')
+    await userEvent.type(getByPlaceholderText('username'), 'test')
     await userEvent.keyboard('{Enter}')
     expect(handleFormSubmit).toHaveBeenCalledOnce()
   })
@@ -196,7 +178,7 @@ describe('ConfirmDialog', () => {
       e.preventDefault()
     })
 
-    const { getByRole } = await render(
+    const { getByRole } = render(
       <ConfirmDialog
         open
         onOpenChange={vi.fn()}
@@ -214,7 +196,7 @@ describe('ConfirmDialog', () => {
     )
 
     const deleteBtn = getByRole('button', { name: 'Delete' })
-    await expect.element(deleteBtn).toBeDisabled()
+    expect(deleteBtn).toBeDisabled()
     expect(handleFormSubmit).not.toHaveBeenCalled()
   })
 })

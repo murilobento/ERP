@@ -40,9 +40,9 @@ cookies de autenticação.
 - Hono e `@hono/node-server`
 - PostgreSQL e Prisma 6
 - JWT em cookies `httpOnly`
-- Puppeteer local e Chromium serverless para PDFs
+- jsPDF no servidor para a fatura em PDF
 - Bun como gerenciador de dependências
-- Vitest e Playwright para testes
+- Vitest, Testing Library e jsdom para testes
 
 ## Pré-requisitos
 
@@ -50,7 +50,6 @@ Instale os seguintes componentes:
 
 - [Bun](https://bun.sh/)
 - PostgreSQL local ou uma instância PostgreSQL hospedada
-- Chromium do Playwright para executar os testes de frontend
 
 Confira as versões disponíveis:
 
@@ -167,12 +166,6 @@ bun run prisma:migrate:deploy  # Aplica migrations existentes
 bun run seed:admin             # Cria o administrador inicial
 ```
 
-Para executar os testes de frontend pela primeira vez, instale o navegador:
-
-```bash
-bun run test:browser:install
-```
-
 ## Variáveis de ambiente
 
 | Variável                | Obrigatória | Uso                                                       |
@@ -220,7 +213,6 @@ DATABASE_URL=<url-pooled-do-neon>
 DIRECT_URL=<url-direta-do-neon>
 JWT_SECRET=<segredo-aleatorio-forte>
 CORS_ORIGIN=https://seu-dominio.vercel.app
-PUPPETEER_SKIP_DOWNLOAD=true
 ```
 
 O arquivo `vercel.json` já configura:
@@ -306,7 +298,7 @@ prisma/                 Schema e migrations do PostgreSQL
 scripts/                Scripts operacionais, incluindo seed do admin
 server/src/app.ts       Aplicação Hono reutilizável
 server/src/index.ts     Servidor local long-running
-server/src/lib/         Prisma, autenticação, estoque, preço e PDF
+server/src/lib/         Prisma, autenticação, estoque, preço e template da fatura
 server/src/routes/      Rotas da API
 src/                    Frontend React e rotas do TanStack Router
 vercel.json             Configuração de build e roteamento da Vercel
@@ -342,9 +334,10 @@ bun run test
 
 - O rate limit de login ainda é mantido em memória. Em múltiplas functions da
   Vercel, a proteção não é compartilhada entre instâncias.
-- O PDF usa Chromium serverless e pode exceder os 10 segundos do plano Hobby
-  em cold starts. Se isso ocorrer, avalie `@sparticuz/chromium-min`, um serviço
-  externo de browser ou um backend long-running.
+- A fatura é gerada com jsPDF usando as fontes padrão, em WinAnsi (Latin-1).
+  Acento do português sai correto, mas cliente com nome em outro alfabeto — CJK,
+  emoji, cirílico — vira `?` no PDF. Embeddar uma fonte Unicode resolveria, ao
+  custo de ~300KB e um bundle maior.
 - O seed é uma operação manual e não deve ser executado no boot da aplicação.
 - Migrations devem ser executadas pelo workflow de banco, nunca durante uma
   requisição da API.

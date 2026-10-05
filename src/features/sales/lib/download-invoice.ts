@@ -1,5 +1,11 @@
 import api from '@/lib/api'
 
+/**
+ * A fatura é gerada no servidor, com texto de verdade: a rota
+ * `GET /sales/:id/invoice` responde `application/pdf` e o cliente só baixa o
+ * arquivo. Nada de browser, canvas ou lib de PDF aqui no bundle.
+ */
+
 type ErrorWithResponse = {
   response?: { data?: unknown }
 }
@@ -22,7 +28,7 @@ async function withReadableError(error: unknown): Promise<unknown> {
   return error
 }
 
-export async function downloadInvoice(saleId: string, _customerName?: string) {
+export async function downloadInvoice(saleId: string) {
   let response
   try {
     response = await api.get(`/sales/${saleId}/invoice`, {
@@ -33,7 +39,7 @@ export async function downloadInvoice(saleId: string, _customerName?: string) {
   }
 
   const contentDisposition = response.headers['content-disposition']
-  let filename = `fatura-${saleId.slice(-8)}.pdf`
+  let filename = `fatura-${saleId.slice(-8).toUpperCase()}.pdf`
   if (contentDisposition) {
     const match = contentDisposition.match(/filename="?([^"]+)"?/)
     if (match) filename = match[1]

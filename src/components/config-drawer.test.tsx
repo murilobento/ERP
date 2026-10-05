@@ -1,7 +1,7 @@
 import { clearCookies } from '@/test-utils/cookies'
+import { render, type RenderResult, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, type RenderResult } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { getCookie, setCookie } from '@/lib/cookies'
 import { DirectionProvider } from '@/context/direction-provider'
 import { LayoutProvider } from '@/context/layout-provider'
@@ -15,7 +15,7 @@ async function renderConfigDrawer({
 }: {
   sidebarDefaultOpen?: boolean
 } = {}) {
-  return await render(
+  return render(
     <DirectionProvider>
       <ThemeProvider>
         <PaletteProvider>
@@ -34,9 +34,7 @@ async function openDrawer(screen: RenderResult) {
   await userEvent.click(
     screen.getByRole('button', { name: /^Abrir configurações de tema$/i })
   )
-  await expect
-    .element(screen.getByText(/^Configurações de Tema$/i))
-    .toBeInTheDocument()
+  expect(screen.getByText(/^Configurações de Tema$/i)).toBeInTheDocument()
 }
 
 describe('ConfigDrawer (integration)', () => {
@@ -55,26 +53,23 @@ describe('ConfigDrawer (integration)', () => {
 
     await openDrawer(screen)
 
-    const drawer = screen.getByRole('dialog', {
+    const dialog = screen.getByRole('dialog', {
       name: /configurações de tema/i,
     })
+    expect(dialog).toBeInTheDocument()
 
-    await expect.element(drawer).toBeInTheDocument()
+    const drawer = within(dialog)
 
-    await expect.element(drawer.getByText(/^Tema$/i)).toBeInTheDocument()
-    await expect.element(drawer.getByText(/^Paleta$/i)).toBeInTheDocument()
-    await expect.element(drawer.getByText(/^Layout$/i)).toBeInTheDocument()
-    await expect
-      .element(drawer.getByText(/^Barra lateral$/i).first())
-      .toBeInTheDocument()
-    await expect.element(drawer.getByText(/^Direção$/i)).toBeInTheDocument()
-    await expect
-      .element(
-        screen.getByRole('button', {
-          name: /restaurar todas as configurações para os valores padrão/i,
-        })
-      )
-      .toBeInTheDocument()
+    expect(drawer.getByText(/^Tema$/i)).toBeInTheDocument()
+    expect(drawer.getByText(/^Paleta$/i)).toBeInTheDocument()
+    expect(drawer.getByText(/^Layout$/i)).toBeInTheDocument()
+    expect(drawer.getAllByText(/^Barra lateral$/i)[0]).toBeInTheDocument()
+    expect(drawer.getByText(/^Direção$/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: /restaurar todas as configurações para os valores padrão/i,
+      })
+    ).toBeInTheDocument()
   })
 
   describe('theme preference', () => {
@@ -341,9 +336,9 @@ describe('ConfigDrawer (integration)', () => {
 
     await openDrawer(screen)
 
-    await expect
-      .element(screen.getByRole('radio', { name: /selecionar padrão/i }))
-      .toHaveAttribute('data-state', 'checked')
+    expect(
+      screen.getByRole('radio', { name: /selecionar padrão/i })
+    ).toHaveAttribute('data-state', 'checked')
 
     await userEvent.click(
       screen.getByRole('radio', { name: /selecionar compacto/i })

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { type ProductSupplySearchItem } from '@/components/product-supply-combobox'
 import { type VendorSearchItem } from '@/components/vendor-combobox'
 import { type Purchase } from '../data/schema'
@@ -282,14 +282,14 @@ describe('PurchasesActionDialog', () => {
 
     await userEvent.click(buttonByText('Selecione o fornecedor'))
     await addSupplyItem()
-    const table = getByRole('table')
+    const table = within(getByRole('table'))
     const rowQuantityInput = numberInput(2)
     expect(rowQuantityInput.value).toBe('3')
-    await expect.element(table.getByText('= 15 kg')).toBeInTheDocument()
+    expect(table.getByText('= 15 kg')).toBeInTheDocument()
 
     await userEvent.clear(rowQuantityInput)
     await userEvent.type(rowQuantityInput, '5')
-    await expect.element(table.getByText('= 25 kg')).toBeInTheDocument()
+    expect(table.getByText('= 25 kg')).toBeInTheDocument()
 
     await userEvent.click(getByRole('button', { name: /^Criar Compra$/i }))
 
@@ -308,12 +308,10 @@ describe('PurchasesActionDialog', () => {
     await addSupplyItem()
 
     // 3 embalagens de 5 kg a R$ 10,50 => R$ 2,10/kg e total de R$ 31,50
-    const table = getByRole('table')
-    await expect.element(table.getByText(/2,10/)).toBeInTheDocument()
-    await expect.element(table.getByText(/31,50/)).toBeInTheDocument()
-    await expect
-      .element(getByText(/Total da compra \(1 item\)/))
-      .toBeInTheDocument()
+    const table = within(getByRole('table'))
+    expect(table.getByText(/2,10/)).toBeInTheDocument()
+    expect(table.getByText(/31,50/)).toBeInTheDocument()
+    expect(getByText(/Total da compra \(1 item\)/)).toBeInTheDocument()
   })
 
   it('blocks submit when an item has invalid quantity', async () => {

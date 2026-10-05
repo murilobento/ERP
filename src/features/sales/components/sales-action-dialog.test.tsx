@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { page, userEvent } from 'vitest/browser'
 import { type ClientSearchItem } from '@/components/client-combobox'
 import { type ProductSupplySearchItem } from '@/components/product-supply-combobox'
 import { type Sale } from '../data/schema'
@@ -392,7 +392,7 @@ describe('SalesActionDialog', () => {
   })
 
   it('edits the quantity of an added item from the table and recalculates the total', async () => {
-    const { getByRole, getByText } = await renderDialog()
+    const { getAllByText, getByRole } = await renderDialog()
 
     await selectClientAndDate()
     await addSaleItem('2', '30')
@@ -402,11 +402,11 @@ describe('SalesActionDialog', () => {
     )
     const rowQuantityInput = allNumberInputs[allNumberInputs.length - 1]
     expect(rowQuantityInput.value).toBe('2')
-    expect(getByText('R$ 60,00')).toBeTruthy()
+    expect(getAllByText('R$ 60,00')[0]).toBeInTheDocument()
 
     await userEvent.clear(rowQuantityInput)
     await userEvent.type(rowQuantityInput, '5')
-    expect(getByText('R$ 150,00')).toBeTruthy()
+    expect(getAllByText('R$ 150,00')[0]).toBeInTheDocument()
 
     await userEvent.click(getByRole('button', { name: /^Criar Venda$/i }))
 
@@ -439,30 +439,25 @@ describe('SalesActionDialog', () => {
     expect(apiPost).not.toHaveBeenCalled()
   })
 
-  it('renders stacked item cards on mobile and hides the table', async () => {
-    await page.viewport(375, 720)
-    try {
-      await renderDialog()
+  it('renders stacked item cards alongside the table it hides', async () => {
+    await renderDialog()
 
-      await selectClientAndDate()
-      await addSaleItem('2', '30')
+    await selectClientAndDate()
+    await addSaleItem('2', '30')
 
-      const card = document.body.querySelector('.sm\\:hidden')
-      expect(card).toBeTruthy()
-      expect(card?.textContent).toContain('Bolo de Chocolate')
-      expect(card?.textContent).toContain('60,00')
-      const cardQuantityInput = card?.querySelector<HTMLInputElement>(
-        'input[type="number"]'
-      )
-      expect(cardQuantityInput?.value).toBe('2')
+    const card = document.body.querySelector('.sm\\:hidden')
+    expect(card).toBeTruthy()
+    expect(card?.textContent).toContain('Bolo de Chocolate')
+    expect(card?.textContent).toContain('60,00')
+    const cardQuantityInput = card?.querySelector<HTMLInputElement>(
+      'input[type="number"]'
+    )
+    expect(cardQuantityInput?.value).toBe('2')
 
-      const tableContainer = document.body.querySelector(
-        'table[data-slot="table"]'
-      )
-      const tableWrapper = tableContainer?.parentElement?.parentElement
-      expect(tableWrapper?.className ?? '').toContain('hidden')
-    } finally {
-      await page.viewport(1280, 720)
-    }
+    const tableContainer = document.body.querySelector(
+      'table[data-slot="table"]'
+    )
+    const tableWrapper = tableContainer?.parentElement?.parentElement
+    expect(tableWrapper?.className ?? '').toContain('hidden')
   })
 })

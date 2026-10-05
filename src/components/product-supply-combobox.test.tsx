@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { ProductSupplyCombobox } from './product-supply-combobox'
 
 const apiGet = vi.hoisted(() => vi.fn())
@@ -82,7 +82,7 @@ describe('ProductSupplyCombobox', () => {
   it('searches products with includeStock, status and limit, then selects a result', async () => {
     const onValueChange = vi.fn()
     const onItemChange = vi.fn()
-    const { getByRole, getByText } = await renderCombobox({
+    const { findByText, getByRole } = await renderCombobox({
       onValueChange,
       onItemChange,
       includeStock: true,
@@ -104,7 +104,7 @@ describe('ProductSupplyCombobox', () => {
       })
     )
 
-    await userEvent.click(getByText('Bolo de Chocolate'))
+    await userEvent.click(await findByText('Bolo de Chocolate'))
 
     expect(onValueChange).toHaveBeenCalledWith('product-1')
     expect(onItemChange).toHaveBeenCalledWith({
@@ -117,7 +117,7 @@ describe('ProductSupplyCombobox', () => {
 
   it('searches supplies on the supply endpoint and shows a custom empty message', async () => {
     apiGet.mockResolvedValueOnce({ data: { supplies: [] } })
-    const { getByRole, getByText } = await renderCombobox({
+    const { findByText, getByRole } = await renderCombobox({
       type: 'supply',
       emptyMessage: 'Nada encontrado no estoque.',
     })
@@ -136,14 +136,12 @@ describe('ProductSupplyCombobox', () => {
       })
     )
 
-    await expect
-      .element(getByText('Nada encontrado no estoque.'))
-      .toBeInTheDocument()
+    expect(await findByText('Nada encontrado no estoque.')).toBeInTheDocument()
   })
 
   it('shows the default prompt and error state', async () => {
     apiGet.mockRejectedValueOnce(new Error('network'))
-    const { getByRole, getByText } = await renderCombobox({
+    const { findByText, getByRole } = await renderCombobox({
       type: 'supply',
       value: '',
     })
@@ -151,9 +149,9 @@ describe('ProductSupplyCombobox', () => {
     expect(getComboboxButton().textContent).toContain('Selecione o insumo')
 
     await userEvent.click(getByRole('combobox'))
-    await expect.element(getByText('Digite para buscar.')).toBeInTheDocument()
+    expect(await findByText('Digite para buscar.')).toBeInTheDocument()
     await userEvent.type(getSearchInput('Buscar insumo...'), 'erro')
 
-    await expect.element(getByText('Falha ao buscar.')).toBeInTheDocument()
+    expect(await findByText('Falha ao buscar.')).toBeInTheDocument()
   })
 })

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { type Product } from '../data/schema'
 import { ProductsActionDialog } from './products-action-dialog'
 
@@ -87,10 +87,8 @@ describe('ProductsActionDialog', () => {
 
     await userEvent.click(getByRole('button', { name: /^Salvar$/i }))
 
-    await expect.element(getByText('Nome é obrigatório.')).toBeInTheDocument()
-    await expect
-      .element(getByText('Categoria é obrigatória.'))
-      .toBeInTheDocument()
+    expect(getByText('Nome é obrigatório.')).toBeInTheDocument()
+    expect(getByText('Categoria é obrigatória.')).toBeInTheDocument()
     expect(apiPost).not.toHaveBeenCalled()
   })
 

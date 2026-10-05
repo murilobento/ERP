@@ -27,7 +27,7 @@ describe('downloadInvoice', () => {
     vi.restoreAllMocks()
   })
 
-  it('saves the file using the name sent by the server', async () => {
+  it('salva o PDF com o nome enviado pelo servidor', async () => {
     let downloaded: { name: string; href: string } | undefined
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
       this: HTMLAnchorElement
@@ -36,7 +36,7 @@ describe('downloadInvoice', () => {
     })
 
     apiGet.mockResolvedValue({
-      data: new Blob(['%PDF-1.4']),
+      data: new Blob(['%PDF-1.3']),
       headers: {
         'content-disposition': 'attachment; filename="fatura-SALE-1.pdf"',
       },
@@ -51,8 +51,25 @@ describe('downloadInvoice', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake')
   })
 
+  // A rota monta o nome a partir do id da venda; o cliente só precisa de um
+  // nome razoável quando o servidor não manda o cabeçalho.
+  it('usa o short id do sale quando não vem Content-Disposition', async () => {
+    const clicks: string[] = []
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement
+    ) {
+      clicks.push(this.download)
+    })
+
+    apiGet.mockResolvedValue({ data: new Blob(['%PDF-1.3']), headers: {} })
+
+    await downloadInvoice('sale-abcdef12')
+
+    expect(clicks).toEqual(['fatura-ABCDEF12.pdf'])
+  })
+
   // Sem isso, o toast cairia no "Algo deu errado!" genérico.
-  it('reads the error message when the body arrives as a blob', async () => {
+  it('lê a mensagem de erro quando o corpo chega como blob', async () => {
     apiGet.mockRejectedValue(
       blobError(
         404,
@@ -67,7 +84,7 @@ describe('downloadInvoice', () => {
     })
   })
 
-  it('keeps the original error when the body is not JSON', async () => {
+  it('mantém o erro original quando o corpo não é JSON', async () => {
     const error = blobError(
       502,
       new Blob(['<html>bad gateway</html>'], { type: 'text/html' })
