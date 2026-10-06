@@ -100,14 +100,13 @@ export const sidebarData: SidebarData = {
 export function moduleForPath(pathname: string): Module | undefined {
   const firstSegment = `/${pathname.split('/')[1]}`
 
-  const matchedModule = Object.entries(
-    sidebarData.navGroupsByModule
-  ).find(([, groups]) =>
-    groups.some((group) =>
-      group.items.some(
-        (item) => item.url === pathname || item.url === firstSegment
+  const matchedModule = Object.entries(sidebarData.navGroupsByModule).find(
+    ([, groups]) =>
+      groups.some((group) =>
+        group.items.some(
+          (item) => item.url === pathname || item.url === firstSegment
+        )
       )
-    )
   )
 
   return sidebarData.modules.find(
