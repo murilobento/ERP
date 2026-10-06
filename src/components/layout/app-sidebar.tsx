@@ -35,7 +35,7 @@ export function AppSidebar() {
   )
 
   const activeModule =
-    manual?.for === locationModule
+    manual && manual.for === locationModule
       ? manual.module
       : (locationModule ?? sidebarData.modules[0])
   const { auth } = useAuthStore()

@@ -18,7 +18,7 @@ import {
   ScrollText,
   BarChart3,
 } from 'lucide-react'
-import { type SidebarData } from '../types'
+import { type Module, type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
