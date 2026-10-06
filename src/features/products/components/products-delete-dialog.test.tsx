@@ -40,12 +40,6 @@ const product: Product = {
   salePrice: 20,
 }
 
-function confirmationInput() {
-  return document.querySelector<HTMLInputElement>(
-    'input[placeholder="Digite o nome para confirmar a exclusão."]'
-  )!
-}
-
 function renderDialog(
   props: Partial<React.ComponentProps<typeof ProductsDeleteDialog>> = {}
 ) {
@@ -71,15 +65,19 @@ describe('ProductsDeleteDialog', () => {
     apiDelete.mockResolvedValue({ data: { ok: true } })
   })
 
-  it('keeps delete disabled until the product name matches', async () => {
+  it('confirms with a single button click, without typing the product name', async () => {
     const { rendered } = renderDialog()
     const { getByRole } = await rendered
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    expect(confirm).toBeDisabled()
+    expect(confirm).toBeEnabled()
 
-    await userEvent.type(confirmationInput(), 'Outro Produto')
-    expect(confirm).toBeDisabled()
+    // nenhum campo de digitação para confirmar a exclusão
+    expect(
+      document.querySelector(
+        'input[placeholder="Digite o nome para confirmar a exclusão."]'
+      )
+    ).toBeNull()
   })
 
   it('deletes the product and invalidates the products query', async () => {
@@ -87,7 +85,6 @@ describe('ProductsDeleteDialog', () => {
     const { rendered, invalidateQueries } = renderDialog({ onOpenChange })
     const { getByRole } = await rendered
 
-    await userEvent.type(confirmationInput(), 'Bolo de Chocolate')
     await userEvent.click(getByRole('button', { name: 'Excluir' }))
 
     await vi.waitFor(() =>
@@ -106,7 +103,6 @@ describe('ProductsDeleteDialog', () => {
     const { rendered, invalidateQueries } = renderDialog({ onOpenChange })
     const { getByRole } = await rendered
 
-    await userEvent.type(confirmationInput(), 'Bolo de Chocolate')
     await userEvent.click(getByRole('button', { name: 'Excluir' }))
 
     await vi.waitFor(() =>

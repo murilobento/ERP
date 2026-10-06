@@ -48,19 +48,13 @@ const sale: Sale = {
   items: [],
 }
 
-function confirmationInput() {
-  return document.querySelector<HTMLInputElement>(
-    'input[placeholder="Digite o nome para confirmar a exclusão."]'
-  )!
-}
-
 describe('SalesDeleteDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     apiDelete.mockResolvedValue({ data: { ok: true } })
   })
 
-  it('confirms with the customer name and deletes the sale', async () => {
+  it('confirms with a single button click, without typing the customer name', async () => {
     const onOpenChange = vi.fn()
     const queryClient = new QueryClient()
     const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
@@ -69,12 +63,21 @@ describe('SalesDeleteDialog', () => {
         <SalesDeleteDialog open onOpenChange={onOpenChange} currentRow={sale} />
       </QueryClientProvider>
     )
-    const { getByRole } = await rendered
+    const { getByRole, getByText } = await rendered
+
+    // o nome do cliente continua identificando o registro na pergunta
+    expect(getByText(/Padaria Sol/)).toBeInTheDocument()
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    expect(confirm).toBeDisabled()
+    expect(confirm).toBeEnabled()
 
-    await userEvent.type(confirmationInput(), 'Padaria Sol')
+    // nenhum campo de digitação para confirmar a exclusão
+    expect(
+      document.querySelector(
+        'input[placeholder="Digite o nome para confirmar a exclusão."]'
+      )
+    ).toBeNull()
+
     await userEvent.click(confirm)
 
     await vi.waitFor(() =>

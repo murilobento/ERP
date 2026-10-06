@@ -31,12 +31,6 @@ const category: Category = {
   _count: { products: 2 },
 }
 
-function confirmationInput() {
-  return document.querySelector<HTMLInputElement>(
-    'input[placeholder="Digite o nome para confirmar a exclusão."]'
-  )!
-}
-
 function renderDialog(
   props: Partial<React.ComponentProps<typeof CategoriesDeleteDialog>> = {}
 ) {
@@ -62,14 +56,19 @@ describe('CategoriesDeleteDialog', () => {
     apiDelete.mockResolvedValue({ data: { ok: true } })
   })
 
-  it('keeps delete disabled until the category name matches', async () => {
+  it('confirms with a single button click, without typing the category name', async () => {
     const { rendered } = renderDialog()
     const { getByRole } = await rendered
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    expect(confirm).toBeDisabled()
-    await userEvent.type(confirmationInput(), 'Tortas')
-    expect(confirm).toBeDisabled()
+    expect(confirm).toBeEnabled()
+
+    // nenhum campo de digitação para confirmar a exclusão
+    expect(
+      document.querySelector(
+        'input[placeholder="Digite o nome para confirmar a exclusão."]'
+      )
+    ).toBeNull()
   })
 
   it('deletes the category and invalidates the categories query', async () => {
@@ -77,7 +76,6 @@ describe('CategoriesDeleteDialog', () => {
     const { rendered, invalidateQueries } = renderDialog({ onOpenChange })
     const { getByRole } = await rendered
 
-    await userEvent.type(confirmationInput(), 'Bolos')
     await userEvent.click(getByRole('button', { name: 'Excluir' }))
 
     await vi.waitFor(() =>
@@ -94,7 +92,6 @@ describe('CategoriesDeleteDialog', () => {
     const { rendered, invalidateQueries } = renderDialog({ onOpenChange })
     const { getByRole } = await rendered
 
-    await userEvent.type(confirmationInput(), 'Bolos')
     await userEvent.click(getByRole('button', { name: 'Excluir' }))
 
     await vi.waitFor(() =>

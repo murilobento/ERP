@@ -38,12 +38,6 @@ const client: Client = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 }
 
-function confirmationInput() {
-  return document.querySelector<HTMLInputElement>(
-    'input[placeholder="Digite o nome para confirmar a exclusão."]'
-  )!
-}
-
 function renderDialog(
   props: Partial<React.ComponentProps<typeof ClientsDeleteDialog>> = {}
 ) {
@@ -69,16 +63,20 @@ describe('ClientsDeleteDialog', () => {
     apiDelete.mockResolvedValue({ data: { ok: true } })
   })
 
-  it('keeps delete disabled until the client name matches', async () => {
+  it('confirms with a single button click, without typing the client name', async () => {
     const { rendered } = renderDialog()
     const { getByRole } = await rendered
 
     const confirm = getByRole('button', { name: 'Excluir' })
-    expect(confirm).toBeDisabled()
-
-    await userEvent.type(confirmationInput(), 'Outro Cliente')
-    expect(confirm).toBeDisabled()
+    expect(confirm).toBeEnabled()
     expect(apiDelete).not.toHaveBeenCalled()
+
+    // nenhum campo de digitação para confirmar a exclusão
+    expect(
+      document.querySelector(
+        'input[placeholder="Digite o nome para confirmar a exclusão."]'
+      )
+    ).toBeNull()
   })
 
   it('deletes the client, invalidates cache and closes the dialog', async () => {
@@ -86,7 +84,6 @@ describe('ClientsDeleteDialog', () => {
     const { rendered, invalidateQueries } = renderDialog({ onOpenChange })
     const { getByRole } = await rendered
 
-    await userEvent.type(confirmationInput(), 'Cliente Bom')
     await userEvent.click(getByRole('button', { name: 'Excluir' }))
 
     await vi.waitFor(() =>
@@ -105,7 +102,6 @@ describe('ClientsDeleteDialog', () => {
     const { rendered, invalidateQueries } = renderDialog({ onOpenChange })
     const { getByRole } = await rendered
 
-    await userEvent.type(confirmationInput(), 'Cliente Bom')
     await userEvent.click(getByRole('button', { name: 'Excluir' }))
 
     await vi.waitFor(() =>

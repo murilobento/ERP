@@ -22,7 +22,6 @@ export function PurchasesDeleteDialog({
       queryKey={queryKeys.purchases}
       entityLabel='Compra'
       displayLabel={currentRow.supplier}
-      confirmMode='simple'
       successMessage='Compra excluída com sucesso.'
       formId='purchases-delete-form'
     />
