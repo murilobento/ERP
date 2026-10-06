@@ -69,11 +69,15 @@ function getProductionItems(production: Production | ProductionDetail) {
 export function ProductionsDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = useProductions()
   const { run, isLoading } = useEntityMutation()
-  const [confirmAction, setConfirmAction] = useState<
+  const [localConfirmAction, setLocalConfirmAction] = useState<
     'complete' | 'cancel' | 'reverse' | null
   >(null)
   const [reverseReason, setReverseReason] = useState('')
   const queryClient = useQueryClient()
+  const directAction =
+    open === 'complete' || open === 'cancel' || open === 'reverse' ? open : null
+  const confirmAction = directAction ?? localConfirmAction
+  const isDialogOpen = open === 'view' || directAction !== null
 
   const { data: detail } = useQuery({
     queryKey: queryKeys.production(currentRow?.id ?? ''),
@@ -149,7 +153,7 @@ export function ProductionsDetailDialog() {
       ],
       successMessage: messages[action],
       onSuccess: () => {
-        setConfirmAction(null)
+        setLocalConfirmAction(null)
         setOpen(null)
         setCurrentRow(null)
       },
@@ -174,7 +178,7 @@ export function ProductionsDetailDialog() {
       ],
       successMessage: 'Estorno realizado. Estoque revertido.',
       onSuccess: () => {
-        setConfirmAction(null)
+        setLocalConfirmAction(null)
         setReverseReason('')
         setOpen(null)
         setCurrentRow(null)
@@ -182,12 +186,21 @@ export function ProductionsDetailDialog() {
     })
   }
 
+  function cancelConfirmAction() {
+    setLocalConfirmAction(null)
+    setReverseReason('')
+    if (directAction) {
+      setOpen(null)
+      setCurrentRow(null)
+    }
+  }
+
   return (
     <Dialog
-      open={open === 'view'}
+      open={isDialogOpen}
       onOpenChange={(state) => {
         if (!state) {
-          setConfirmAction(null)
+          setLocalConfirmAction(null)
           setReverseReason('')
           setOpen(null)
           setTimeout(() => setCurrentRow(null), 300)
@@ -197,7 +210,15 @@ export function ProductionsDetailDialog() {
       <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
-            <DialogTitle>Detalhes da Produção</DialogTitle>
+            <DialogTitle>
+              {directAction === 'complete'
+                ? 'Concluir Produção'
+                : directAction === 'cancel'
+                  ? 'Cancelar Produção'
+                  : directAction === 'reverse'
+                    ? 'Estornar Produção'
+                    : 'Detalhes da Produção'}
+            </DialogTitle>
             <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
           </div>
           <DialogDescription>
@@ -221,7 +242,7 @@ export function ProductionsDetailDialog() {
               <DialogFooter className='gap-2'>
                 <Button
                   variant='outline'
-                  onClick={() => setConfirmAction(null)}
+                  onClick={cancelConfirmAction}
                   disabled={isLoading}
                 >
                   Voltar
@@ -254,7 +275,7 @@ export function ProductionsDetailDialog() {
               <DialogFooter className='gap-2'>
                 <Button
                   variant='outline'
-                  onClick={() => setConfirmAction(null)}
+                  onClick={cancelConfirmAction}
                   disabled={isLoading}
                 >
                   Voltar
@@ -301,8 +322,7 @@ export function ProductionsDetailDialog() {
                 <Button
                   variant='outline'
                   onClick={() => {
-                    setConfirmAction(null)
-                    setReverseReason('')
+                    cancelConfirmAction()
                   }}
                   disabled={isLoading}
                 >
@@ -424,7 +444,7 @@ export function ProductionsDetailDialog() {
                 {status === 'in_production' && (
                   <>
                     <Button
-                      onClick={() => setConfirmAction('complete')}
+                      onClick={() => setLocalConfirmAction('complete')}
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -436,7 +456,7 @@ export function ProductionsDetailDialog() {
                     </Button>
                     <Button
                       variant='destructive'
-                      onClick={() => setConfirmAction('cancel')}
+                      onClick={() => setLocalConfirmAction('cancel')}
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -452,7 +472,7 @@ export function ProductionsDetailDialog() {
                   <>
                     <Button
                       variant='destructive'
-                      onClick={() => setConfirmAction('reverse')}
+                      onClick={() => setLocalConfirmAction('reverse')}
                     >
                       <RotateCcw size={16} className='me-1' />
                       Estornar

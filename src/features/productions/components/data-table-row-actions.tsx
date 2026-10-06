@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Eye } from 'lucide-react'
+import { CheckCircle2, Eye, RotateCcw, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useProductions()
+  const production = row.original
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -32,7 +33,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       <DropdownMenuContent align='end' className='w-40'>
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(row.original)
+            setCurrentRow(production)
             setOpen('view')
           }}
         >
@@ -41,6 +42,47 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             <Eye size={16} />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
+        {production.status === 'in_production' && (
+          <>
+            <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(production)
+                setOpen('complete')
+              }}
+            >
+              Concluir
+              <DropdownMenuShortcut>
+                <CheckCircle2 size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(production)
+                setOpen('cancel')
+              }}
+              className='text-red-500!'
+            >
+              Cancelar
+              <DropdownMenuShortcut>
+                <XCircle size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </>
+        )}
+        {production.status === 'completed' && (
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(production)
+              setOpen('reverse')
+            }}
+            className='text-red-500!'
+          >
+            Estornar
+            <DropdownMenuShortcut>
+              <RotateCcw size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

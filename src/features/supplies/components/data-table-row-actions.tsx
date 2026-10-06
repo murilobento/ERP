@@ -1,6 +1,8 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { History, Trash2, Pen } from 'lucide-react'
+import { History, Trash2, Pen, Power } from 'lucide-react'
+import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,6 +12,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useStatusToggleAction } from '@/features/shared/use-status-toggle-action'
 import { type Supply } from '../data/schema'
 import { useSupplies } from './supplies-provider'
 
@@ -19,6 +22,12 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useSupplies()
+  const statusAction = useStatusToggleAction({
+    entityLabel: 'Insumo',
+    status: row.original.status,
+    invalidate: [queryKeys.supplies],
+    onToggle: (status) => api.patch(`/supplies/${row.original.id}`, { status }),
+  })
 
   function openHistory() {
     setCurrentRow(row.original)
@@ -55,6 +64,18 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
+            onClick={statusAction.openConfirmation}
+            className={
+              statusAction.isActive ? 'text-red-500!' : 'text-green-600!'
+            }
+          >
+            {statusAction.actionLabel}
+            <DropdownMenuShortcut>
+              <Power size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
             onClick={() => {
               setCurrentRow(row.original)
               setOpen('edit')
@@ -80,6 +101,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {statusAction.confirmationDialog}
     </div>
   )
 }

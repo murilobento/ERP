@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Eye, Pen, Trash2 } from 'lucide-react'
+import { CheckCircle2, Eye, Pen, RotateCcw, Trash2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import {
@@ -50,15 +50,42 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuShortcut>
         </DropdownMenuItem>
         {purchase.status === 'pending' && (
+          <>
+            <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(purchase)
+                setOpen('edit')
+              }}
+            >
+              Editar
+              <DropdownMenuShortcut>
+                <Pen size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(purchase)
+                setOpen('complete')
+              }}
+            >
+              Concluir
+              <DropdownMenuShortcut>
+                <CheckCircle2 size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </>
+        )}
+        {purchase.status === 'completed' && (
           <DropdownMenuItem
             onClick={() => {
               setCurrentRow(purchase)
-              setOpen('edit')
+              setOpen('reverse')
             }}
+            className='text-red-500!'
           >
-            Editar
+            Estornar
             <DropdownMenuShortcut>
-              <Pen size={16} />
+              <RotateCcw size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         )}

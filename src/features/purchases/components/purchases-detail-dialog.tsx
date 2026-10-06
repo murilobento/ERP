@@ -43,6 +43,11 @@ export function PurchasesDetailDialog() {
   const [isEditing, setIsEditing] = useState(false)
   const queryClient = useQueryClient()
   const currentRowId = currentRow?.id
+  const isDirectComplete = open === 'complete'
+  const isDirectReverse = open === 'reverse'
+  const isDialogOpen = open === 'view' || isDirectComplete || isDirectReverse
+  const showCompleteConfirmation = confirmComplete || isDirectComplete
+  const showReverseConfirmation = showReverse || isDirectReverse
 
   const { data: detail } = useQuery({
     queryKey: queryKeys.purchase(currentRowId!),
@@ -156,6 +161,23 @@ export function PurchasesDetailDialog() {
     setOpen('delete')
   }
 
+  function cancelComplete() {
+    setConfirmComplete(false)
+    if (isDirectComplete) {
+      setOpen(null)
+      setCurrentRow(null)
+    }
+  }
+
+  function cancelReverse() {
+    setShowReverse(false)
+    setReverseReason('')
+    if (isDirectReverse) {
+      setOpen(null)
+      setCurrentRow(null)
+    }
+  }
+
   function handleClose(state: boolean) {
     if (!state) {
       setShowReverse(false)
@@ -163,17 +185,28 @@ export function PurchasesDetailDialog() {
       setConfirmComplete(false)
       setIsEditing(false)
       setOpen(null)
-      setTimeout(() => setCurrentRow(null), 300)
+      const closingPurchaseId = currentRow?.id
+      if (closingPurchaseId) {
+        setTimeout(() => {
+          setCurrentRow((row) => (row?.id === closingPurchaseId ? null : row))
+        }, 300)
+      }
     }
   }
 
   return (
-    <Dialog open={open === 'view'} onOpenChange={handleClose}>
+    <Dialog open={isDialogOpen} onOpenChange={handleClose}>
       <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
             <DialogTitle>
-              {isEditing ? 'Editar Compra' : 'Detalhes da Compra'}
+              {isEditing
+                ? 'Editar Compra'
+                : isDirectComplete
+                  ? 'Concluir Compra'
+                  : isDirectReverse
+                    ? 'Estornar Compra'
+                    : 'Detalhes da Compra'}
             </DialogTitle>
             <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
           </div>
@@ -192,7 +225,7 @@ export function PurchasesDetailDialog() {
             />
           )}
 
-          {!isEditing && confirmComplete && (
+          {!isEditing && showCompleteConfirmation && (
             <>
               <div className='rounded-md border border-green-600/50 bg-green-600/10 px-4 py-3 text-sm'>
                 <p className='font-medium text-green-600 dark:text-green-400'>
@@ -206,7 +239,7 @@ export function PurchasesDetailDialog() {
               <DialogFooter className='gap-2'>
                 <Button
                   variant='outline'
-                  onClick={() => setConfirmComplete(false)}
+                  onClick={cancelComplete}
                   disabled={isLoading}
                 >
                   Voltar
@@ -223,7 +256,7 @@ export function PurchasesDetailDialog() {
             </>
           )}
 
-          {!isEditing && showReverse && (
+          {!isEditing && showReverseConfirmation && (
             <>
               <div className='rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm'>
                 <p className='font-medium text-destructive'>
@@ -247,10 +280,7 @@ export function PurchasesDetailDialog() {
               <DialogFooter className='gap-2'>
                 <Button
                   variant='outline'
-                  onClick={() => {
-                    setShowReverse(false)
-                    setReverseReason('')
-                  }}
+                  onClick={cancelReverse}
                   disabled={isLoading}
                 >
                   Cancelar
@@ -271,165 +301,174 @@ export function PurchasesDetailDialog() {
             </>
           )}
 
-          {!isEditing && !confirmComplete && !showReverse && (
-            <>
-              <div>
-                <h4 className='mb-2 text-sm font-medium'>Itens</h4>
-                <div className='space-y-1'>
-                  {purchase.items.map((item) => {
-                    const hasPrice = item.packageCost > 0
-                    const unitPrice = itemUnitPrice(
-                      item.packageCost,
-                      item.supply.packageQuantity
-                    )
-                    return (
-                      <div
-                        key={item.id}
-                        className='rounded-md border px-3 py-2 text-sm'
-                      >
-                        <div className='flex items-center justify-between gap-2'>
-                          <span className='font-medium'>
-                            {item.supply.name}
-                          </span>
-                          <strong className='text-nowrap'>
-                            {hasPrice ? formatCurrency(itemTotal(item)) : '—'}
-                          </strong>
-                        </div>
-                        <div className='mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground'>
-                          <span>
-                            {item.packages} {item.supply.packageUnit || 'emb.'}
-                            (s)
-                          </span>
-                          {hasPrice && (
-                            <>
-                              <span>×</span>
-                              <span className='text-nowrap'>
-                                {formatCurrency(item.packageCost)} por{' '}
-                                {item.supply.packageUnit || 'emb.'}
-                              </span>
-                              <span>·</span>
-                              <span className='text-nowrap'>
-                                {formatUnitPrice(unitPrice)}/{item.supply.unit}
-                              </span>
-                            </>
-                          )}
-                          <span>=</span>
-                          <span>
-                            {item.quantity} {item.supply.unit}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                <div className='flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm'>
-                  <span className='text-muted-foreground'>
-                    Total da compra ({purchase.items.length}{' '}
-                    {purchase.items.length === 1 ? 'item' : 'itens'})
-                  </span>
-                  <span className='font-semibold'>
-                    {formatCurrency(purchaseTotal(purchase.items))}
-                  </span>
-                </div>
-              </div>
-
-              {purchase.notes && (
+          {!isEditing &&
+            !showCompleteConfirmation &&
+            !showReverseConfirmation && (
+              <>
                 <div>
-                  <h4 className='mb-1 text-sm font-medium'>Observação</h4>
-                  <p className='text-sm text-muted-foreground'>
-                    {purchase.notes}
-                  </p>
-                </div>
-              )}
+                  <h4 className='mb-2 text-sm font-medium'>Itens</h4>
+                  <div className='space-y-1'>
+                    {purchase.items.map((item) => {
+                      const hasPrice = item.packageCost > 0
+                      const unitPrice = itemUnitPrice(
+                        item.packageCost,
+                        item.supply.packageQuantity
+                      )
+                      return (
+                        <div
+                          key={item.id}
+                          className='rounded-md border px-3 py-2 text-sm'
+                        >
+                          <div className='flex items-center justify-between gap-2'>
+                            <span className='font-medium'>
+                              {item.supply.name}
+                            </span>
+                            <strong className='text-nowrap'>
+                              {hasPrice ? formatCurrency(itemTotal(item)) : '—'}
+                            </strong>
+                          </div>
+                          <div className='mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground'>
+                            <span>
+                              {item.packages}{' '}
+                              {item.supply.packageUnit || 'emb.'}(s)
+                            </span>
+                            {hasPrice && (
+                              <>
+                                <span>×</span>
+                                <span className='text-nowrap'>
+                                  {formatCurrency(item.packageCost)} por{' '}
+                                  {item.supply.packageUnit || 'emb.'}
+                                </span>
+                                <span>·</span>
+                                <span className='text-nowrap'>
+                                  {formatUnitPrice(unitPrice)}/
+                                  {item.supply.unit}
+                                </span>
+                              </>
+                            )}
+                            <span>=</span>
+                            <span>
+                              {item.quantity} {item.supply.unit}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
 
-              {purchase.reversedAt && (
-                <div className='rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2'>
-                  <h4 className='mb-1 text-sm font-medium text-destructive'>
-                    Estorno
-                  </h4>
-                  <p className='text-sm text-muted-foreground'>
-                    {formatDateTime(purchase.reversedAt)}
-                  </p>
-                  {purchase.reversalReason && (
-                    <p className='mt-1 text-sm'>
-                      Motivo: {purchase.reversalReason}
+                  <div className='flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm'>
+                    <span className='text-muted-foreground'>
+                      Total da compra ({purchase.items.length}{' '}
+                      {purchase.items.length === 1 ? 'item' : 'itens'})
+                    </span>
+                    <span className='font-semibold'>
+                      {formatCurrency(purchaseTotal(purchase.items))}
+                    </span>
+                  </div>
+                </div>
+
+                {purchase.notes && (
+                  <div>
+                    <h4 className='mb-1 text-sm font-medium'>Observação</h4>
+                    <p className='text-sm text-muted-foreground'>
+                      {purchase.notes}
                     </p>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
 
-              <div>
-                <h4 className='mb-1 text-sm font-medium'>Criada em</h4>
-                <p className='text-sm text-muted-foreground'>
-                  {formatDateTime(purchase.createdAt)}
-                </p>
-              </div>
+                {purchase.reversedAt && (
+                  <div className='rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2'>
+                    <h4 className='mb-1 text-sm font-medium text-destructive'>
+                      Estorno
+                    </h4>
+                    <p className='text-sm text-muted-foreground'>
+                      {formatDateTime(purchase.reversedAt)}
+                    </p>
+                    {purchase.reversalReason && (
+                      <p className='mt-1 text-sm'>
+                        Motivo: {purchase.reversalReason}
+                      </p>
+                    )}
+                  </div>
+                )}
 
-              {purchase.completedAt && (
                 <div>
-                  <h4 className='mb-1 text-sm font-medium'>Concluída em</h4>
+                  <h4 className='mb-1 text-sm font-medium'>Criada em</h4>
                   <p className='text-sm text-muted-foreground'>
-                    {formatDateTime(purchase.completedAt)}
+                    {formatDateTime(purchase.createdAt)}
                   </p>
                 </div>
-              )}
 
-              <DialogFooter className='gap-2'>
-                {canEdit && (
-                  <Button
-                    onClick={() => setIsEditing(true)}
-                    disabled={isLoading}
-                  >
-                    <Pen size={16} className='me-1' />
-                    Editar
-                  </Button>
+                {purchase.completedAt && (
+                  <div>
+                    <h4 className='mb-1 text-sm font-medium'>Concluída em</h4>
+                    <p className='text-sm text-muted-foreground'>
+                      {formatDateTime(purchase.completedAt)}
+                    </p>
+                  </div>
                 )}
-                {purchase.status === 'pending' && (
-                  <>
+
+                <DialogFooter className='gap-2'>
+                  {canEdit && (
                     <Button
-                      onClick={() => setConfirmComplete(true)}
+                      onClick={() => setIsEditing(true)}
                       disabled={isLoading}
                     >
-                      {isLoading ? (
-                        <Loader2 className='animate-spin' />
-                      ) : (
-                        <CheckCircle2 size={16} className='me-1' />
-                      )}
-                      Concluir
+                      <Pen size={16} className='me-1' />
+                      Editar
                     </Button>
-                    {canDelete && (
+                  )}
+                  {purchase.status === 'pending' && (
+                    <>
                       <Button
-                        variant='destructive'
-                        onClick={requestDelete}
+                        onClick={() => setConfirmComplete(true)}
                         disabled={isLoading}
                       >
-                        <Trash2 size={16} className='me-1' />
-                        Excluir
+                        {isLoading ? (
+                          <Loader2 className='animate-spin' />
+                        ) : (
+                          <CheckCircle2 size={16} className='me-1' />
+                        )}
+                        Concluir
                       </Button>
-                    )}
-                    <Button variant='outline' onClick={() => setOpen(null)}>
-                      Fechar
-                    </Button>
-                  </>
-                )}
-                {purchase.status === 'completed' && (
-                  <>
-                    <Button
-                      variant='destructive'
-                      onClick={() => setShowReverse(true)}
-                    >
-                      <RotateCcw size={16} className='me-1' />
-                      Estornar
-                    </Button>
-                    <Button variant='outline' onClick={() => setOpen(null)}>
-                      Fechar
-                    </Button>
-                  </>
-                )}
-              </DialogFooter>
-            </>
-          )}
+                      {canDelete && (
+                        <Button
+                          variant='destructive'
+                          onClick={requestDelete}
+                          disabled={isLoading}
+                        >
+                          <Trash2 size={16} className='me-1' />
+                          Excluir
+                        </Button>
+                      )}
+                      <Button
+                        variant='outline'
+                        onClick={() => handleClose(false)}
+                      >
+                        Fechar
+                      </Button>
+                    </>
+                  )}
+                  {purchase.status === 'completed' && (
+                    <>
+                      <Button
+                        variant='destructive'
+                        onClick={() => setShowReverse(true)}
+                      >
+                        <RotateCcw size={16} className='me-1' />
+                        Estornar
+                      </Button>
+                      <Button
+                        variant='outline'
+                        onClick={() => handleClose(false)}
+                      >
+                        Fechar
+                      </Button>
+                    </>
+                  )}
+                </DialogFooter>
+              </>
+            )}
         </div>
       </DialogContent>
     </Dialog>

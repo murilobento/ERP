@@ -33,9 +33,26 @@ export function SalesDetailDialog() {
   const { open, setOpen, currentRow, setCurrentRow } = useSales()
   const { auth } = useAuthStore()
   const { run, isLoading } = useEntityMutation()
-  const [confirmAction, setConfirmAction] =
+  const [localConfirmAction, setLocalConfirmAction] =
     useState<SalesDetailConfirmAction>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const directAction: SalesDetailConfirmAction =
+    open === 'ready-for-delivery' ||
+    open === 'deliver' ||
+    open === 'complete' ||
+    open === 'reverse'
+      ? open
+      : null
+  const directActionTitle: Record<
+    Exclude<SalesDetailConfirmAction, null>,
+    string
+  > = {
+    'ready-for-delivery': 'Marcar pronta para entrega',
+    deliver: 'Confirmar entrega',
+    complete: 'Concluir venda',
+    reverse: 'Estornar venda',
+  }
+  const confirmAction = directAction ?? localConfirmAction
   const queryClient = useQueryClient()
   const currentRowId = currentRow?.id
 
@@ -60,7 +77,11 @@ export function SalesDetailDialog() {
     (auth.user?.role === 'admin' || auth.user?.role === 'manager')
 
   function resetActionState() {
-    setConfirmAction(null)
+    setLocalConfirmAction(null)
+    if (directAction) {
+      setOpen(null)
+      setCurrentRow(null)
+    }
   }
 
   function exitEditMode() {
@@ -145,17 +166,29 @@ export function SalesDetailDialog() {
       resetActionState()
       exitEditMode()
       setOpen(null)
-      setTimeout(() => setCurrentRow(null), 300)
+      const closingSaleId = currentRow?.id
+      if (closingSaleId) {
+        setTimeout(() => {
+          setCurrentRow((sale) => (sale?.id === closingSaleId ? null : sale))
+        }, 300)
+      }
     }
   }
 
   return (
-    <Dialog open={open === 'view'} onOpenChange={handleClose}>
+    <Dialog
+      open={open === 'view' || directAction !== null}
+      onOpenChange={handleClose}
+    >
       <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
           <div className='flex items-center justify-between'>
             <DialogTitle>
-              {isEditing ? 'Editar Venda' : 'Detalhes da Venda'}
+              {isEditing
+                ? 'Editar Venda'
+                : directAction
+                  ? directActionTitle[directAction]
+                  : 'Detalhes da Venda'}
             </DialogTitle>
             <SalesStatusBadge sale={sale} />
           </div>
@@ -217,7 +250,7 @@ export function SalesDetailDialog() {
               isLoading={isLoading}
               onEdit={() => setIsEditing(true)}
               onDelete={requestDelete}
-              onConfirmAction={setConfirmAction}
+              onConfirmAction={setLocalConfirmAction}
               onClose={() => handleClose(false)}
             />
           )}

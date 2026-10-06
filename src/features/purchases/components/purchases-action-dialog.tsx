@@ -50,63 +50,52 @@ type ItemForm = {
 }
 
 type PurchasesActionDialogProps = {
+  mode: 'add' | 'edit'
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function PurchasesActionDialog({
+  mode,
   open,
   onOpenChange,
 }: PurchasesActionDialogProps) {
   const { run, isLoading } = useEntityMutation()
-  const [vendorId, setVendorId] = useState('')
+  const { currentRow } = usePurchases()
+  const initialPurchase = mode === 'edit' ? currentRow : null
+  const [vendorId, setVendorId] = useState(initialPurchase?.vendorId || '')
   const [selectedVendor, setSelectedVendor] = useState<VendorSearchItem | null>(
-    null
+    initialPurchase?.vendor || null
   )
   const [vendorDialogOpen, setVendorDialogOpen] = useState(false)
   const [supplyDialogOpen, setSupplyDialogOpen] = useState(false)
-  const [notes, setNotes] = useState('')
+  const [notes, setNotes] = useState(initialPurchase?.notes || '')
   const [draftItem, setDraftItem] = useState<ItemForm>({
     supplyId: '',
     packages: 1,
     packageCost: 0,
   })
-  const [items, setItems] = useState<ItemForm[]>([])
+  const [items, setItems] = useState<ItemForm[]>(
+    () =>
+      initialPurchase?.items.map((item) => ({
+        supplyId: item.supplyId,
+        packages: item.packages,
+        packageCost: item.packageCost,
+      })) || []
+  )
   const [selectedSupplies, setSelectedSupplies] = useState<
     Record<string, ProductSupplySearchItem>
-  >({})
-  const { currentRow } = usePurchases()
+  >(() =>
+    initialPurchase
+      ? Object.fromEntries(
+          initialPurchase.items.map((item) => [item.supplyId, item.supply])
+        )
+      : {}
+  )
 
-  const isEdit = !!currentRow && open
-
-  function initWithCurrentRow() {
-    if (currentRow && isEdit) {
-      setVendorId(currentRow.vendorId || '')
-      setSelectedVendor(currentRow.vendor)
-      setNotes(currentRow.notes)
-      setDraftItem({ supplyId: '', packages: 1, packageCost: 0 })
-      setItems(
-        currentRow.items.map((i) => ({
-          supplyId: i.supplyId,
-          packages: i.packages,
-          packageCost: i.packageCost,
-        }))
-      )
-      setSelectedSupplies(
-        Object.fromEntries(currentRow.items.map((i) => [i.supplyId, i.supply]))
-      )
-    } else {
-      setVendorId('')
-      setSelectedVendor(null)
-      setNotes('')
-      setDraftItem({ supplyId: '', packages: 1, packageCost: 0 })
-      setItems([])
-      setSelectedSupplies({})
-    }
-  }
+  const isEdit = mode === 'edit'
 
   function handleOpenChange(state: boolean) {
-    if (state) initWithCurrentRow()
     onOpenChange(state)
   }
 

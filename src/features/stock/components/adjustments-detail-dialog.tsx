@@ -31,6 +31,11 @@ export function AdjustmentsDetailDialog() {
   const [showReverse, setShowReverse] = useState(false)
   const [reverseReason, setReverseReason] = useState('')
   const currentRowId = currentRow?.id
+  const isDirectComplete = open === 'complete'
+  const isDirectReverse = open === 'reverse'
+  const isDialogOpen = open === 'view' || isDirectComplete || isDirectReverse
+  const showCompleteConfirmation = confirmComplete || isDirectComplete
+  const showReverseConfirmation = showReverse || isDirectReverse
 
   const { data: detail } = useQuery({
     queryKey: queryKeys.stock.adjustment(currentRowId ?? ''),
@@ -51,6 +56,17 @@ export function AdjustmentsDetailDialog() {
     setConfirmComplete(false)
     setShowReverse(false)
     setReverseReason('')
+  }
+
+  function cancelComplete() {
+    setConfirmComplete(false)
+    if (isDirectComplete) handleClose()
+  }
+
+  function cancelReverse() {
+    setShowReverse(false)
+    setReverseReason('')
+    if (isDirectReverse) handleClose()
   }
 
   async function handleComplete() {
@@ -95,14 +111,20 @@ export function AdjustmentsDetailDialog() {
 
   return (
     <Dialog
-      open={open === 'view'}
+      open={isDialogOpen}
       onOpenChange={(state) => {
         if (!state) handleClose()
       }}
     >
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
-          <DialogTitle>Detalhes do Acerto</DialogTitle>
+          <DialogTitle>
+            {isDirectComplete
+              ? 'Concluir Acerto'
+              : isDirectReverse
+                ? 'Estornar Acerto'
+                : 'Detalhes do Acerto'}
+          </DialogTitle>
           <DialogDescription>
             Informações do acerto de estoque.
           </DialogDescription>
@@ -110,111 +132,113 @@ export function AdjustmentsDetailDialog() {
 
         {adjustment && (
           <div className='space-y-4'>
-            <div className='grid grid-cols-2 gap-4 text-sm'>
-              <div>
-                <Label className='text-muted-foreground'>Item</Label>
-                <p className='font-medium'>{itemName}</p>
-              </div>
-              <div>
-                <Label className='text-muted-foreground'>Tipo</Label>
-                <p className='font-medium'>
-                  {adjustment.itemType === 'product' ? 'Produto' : 'Insumo'}
-                </p>
-              </div>
-              <div>
-                <Label className='text-muted-foreground'>Quantidade</Label>
-                <p
-                  className={`font-medium ${adjustment.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {adjustment.quantity > 0 ? '+' : ''}
-                  {itemUnit
-                    ? `${adjustment.quantity} ${itemUnit}`
-                    : adjustment.quantity}
-                </p>
-              </div>
-              <div>
-                <Label className='text-muted-foreground'>Status</Label>
-                <div className='mt-0.5'>
-                  {statusConfig && (
-                    <Badge variant={statusConfig.variant}>
-                      {statusConfig.label}
-                    </Badge>
-                  )}
+            {!isDirectComplete && !isDirectReverse && (
+              <div className='grid grid-cols-2 gap-4 text-sm'>
+                <div>
+                  <Label className='text-muted-foreground'>Item</Label>
+                  <p className='font-medium'>{itemName}</p>
                 </div>
+                <div>
+                  <Label className='text-muted-foreground'>Tipo</Label>
+                  <p className='font-medium'>
+                    {adjustment.itemType === 'product' ? 'Produto' : 'Insumo'}
+                  </p>
+                </div>
+                <div>
+                  <Label className='text-muted-foreground'>Quantidade</Label>
+                  <p
+                    className={`font-medium ${adjustment.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    {adjustment.quantity > 0 ? '+' : ''}
+                    {itemUnit
+                      ? `${adjustment.quantity} ${itemUnit}`
+                      : adjustment.quantity}
+                  </p>
+                </div>
+                <div>
+                  <Label className='text-muted-foreground'>Status</Label>
+                  <div className='mt-0.5'>
+                    {statusConfig && (
+                      <Badge variant={statusConfig.variant}>
+                        {statusConfig.label}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className='col-span-2'>
+                  <Label className='text-muted-foreground'>Motivo</Label>
+                  <p className='font-medium'>{adjustment.reason || '—'}</p>
+                </div>
+                <div>
+                  <Label className='text-muted-foreground'>Autor</Label>
+                  <p className='font-medium'>
+                    {adjustment.author
+                      ? `${adjustment.author.firstName} ${adjustment.author.lastName}`
+                      : '—'}
+                  </p>
+                </div>
+                <div>
+                  <Label className='text-muted-foreground'>Criado em</Label>
+                  <p className='font-medium'>
+                    {formatDateTime(adjustment.createdAt)}
+                  </p>
+                </div>
+                {adjustment.completedAt && (
+                  <>
+                    <div>
+                      <Label className='text-muted-foreground'>
+                        Concluído em
+                      </Label>
+                      <p className='font-medium'>
+                        {formatDateTime(adjustment.completedAt)}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className='text-muted-foreground'>
+                        Concluído por
+                      </Label>
+                      <p className='font-medium'>
+                        {adjustment.completedBy
+                          ? `${adjustment.completedBy.firstName} ${adjustment.completedBy.lastName}`
+                          : '—'}
+                      </p>
+                    </div>
+                  </>
+                )}
+                {adjustment.reversedAt && (
+                  <>
+                    <div>
+                      <Label className='text-muted-foreground'>
+                        Estornado em
+                      </Label>
+                      <p className='font-medium'>
+                        {formatDateTime(adjustment.reversedAt)}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className='text-muted-foreground'>
+                        Estornado por
+                      </Label>
+                      <p className='font-medium'>
+                        {adjustment.reversedBy
+                          ? `${adjustment.reversedBy.firstName} ${adjustment.reversedBy.lastName}`
+                          : '—'}
+                      </p>
+                    </div>
+                    <div className='col-span-2'>
+                      <Label className='text-muted-foreground'>
+                        Motivo do estorno
+                      </Label>
+                      <p className='font-medium'>
+                        {adjustment.reversalReason || '—'}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className='col-span-2'>
-                <Label className='text-muted-foreground'>Motivo</Label>
-                <p className='font-medium'>{adjustment.reason || '—'}</p>
-              </div>
-              <div>
-                <Label className='text-muted-foreground'>Autor</Label>
-                <p className='font-medium'>
-                  {adjustment.author
-                    ? `${adjustment.author.firstName} ${adjustment.author.lastName}`
-                    : '—'}
-                </p>
-              </div>
-              <div>
-                <Label className='text-muted-foreground'>Criado em</Label>
-                <p className='font-medium'>
-                  {formatDateTime(adjustment.createdAt)}
-                </p>
-              </div>
-              {adjustment.completedAt && (
-                <>
-                  <div>
-                    <Label className='text-muted-foreground'>
-                      Concluído em
-                    </Label>
-                    <p className='font-medium'>
-                      {formatDateTime(adjustment.completedAt)}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className='text-muted-foreground'>
-                      Concluído por
-                    </Label>
-                    <p className='font-medium'>
-                      {adjustment.completedBy
-                        ? `${adjustment.completedBy.firstName} ${adjustment.completedBy.lastName}`
-                        : '—'}
-                    </p>
-                  </div>
-                </>
-              )}
-              {adjustment.reversedAt && (
-                <>
-                  <div>
-                    <Label className='text-muted-foreground'>
-                      Estornado em
-                    </Label>
-                    <p className='font-medium'>
-                      {formatDateTime(adjustment.reversedAt)}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className='text-muted-foreground'>
-                      Estornado por
-                    </Label>
-                    <p className='font-medium'>
-                      {adjustment.reversedBy
-                        ? `${adjustment.reversedBy.firstName} ${adjustment.reversedBy.lastName}`
-                        : '—'}
-                    </p>
-                  </div>
-                  <div className='col-span-2'>
-                    <Label className='text-muted-foreground'>
-                      Motivo do estorno
-                    </Label>
-                    <p className='font-medium'>
-                      {adjustment.reversalReason || '—'}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+            )}
 
-            {adjustment.status === 'pending' && !confirmComplete && (
+            {adjustment.status === 'pending' && !showCompleteConfirmation && (
               <div className='flex justify-end gap-2'>
                 <Button
                   onClick={() => setConfirmComplete(true)}
@@ -226,7 +250,7 @@ export function AdjustmentsDetailDialog() {
               </div>
             )}
 
-            {adjustment.status === 'pending' && confirmComplete && (
+            {adjustment.status === 'pending' && showCompleteConfirmation && (
               <div className='space-y-3 rounded-md border bg-muted/40 p-3'>
                 <p className='text-sm font-medium'>
                   Confirmar conclusão do acerto? O estoque será atualizado.
@@ -234,7 +258,7 @@ export function AdjustmentsDetailDialog() {
                 <div className='flex justify-end gap-2'>
                   <Button
                     variant='outline'
-                    onClick={() => setConfirmComplete(false)}
+                    onClick={cancelComplete}
                     disabled={isLoading}
                   >
                     Cancelar
@@ -247,7 +271,7 @@ export function AdjustmentsDetailDialog() {
               </div>
             )}
 
-            {adjustment.status === 'completed' && !showReverse && (
+            {adjustment.status === 'completed' && !showReverseConfirmation && (
               <div className='flex justify-end'>
                 <Button
                   variant='destructive'
@@ -260,7 +284,7 @@ export function AdjustmentsDetailDialog() {
               </div>
             )}
 
-            {adjustment.status === 'completed' && showReverse && (
+            {adjustment.status === 'completed' && showReverseConfirmation && (
               <div className='space-y-3 rounded-md border bg-destructive/10 p-3'>
                 <Label htmlFor='reverse-reason'>Motivo do estorno</Label>
                 <Input
@@ -272,10 +296,7 @@ export function AdjustmentsDetailDialog() {
                 <div className='flex justify-end gap-2'>
                   <Button
                     variant='outline'
-                    onClick={() => {
-                      setShowReverse(false)
-                      setReverseReason('')
-                    }}
+                    onClick={cancelReverse}
                     disabled={isLoading}
                   >
                     Cancelar

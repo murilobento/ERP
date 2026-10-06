@@ -51,11 +51,13 @@ const adjustmentSchema = z.object({
 type AdjustmentForm = z.infer<typeof adjustmentSchema>
 
 type AdjustmentsActionDialogProps = {
+  mode: 'add' | 'edit'
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function AdjustmentsActionDialog({
+  mode,
   open,
   onOpenChange,
 }: AdjustmentsActionDialogProps) {
@@ -63,7 +65,7 @@ export function AdjustmentsActionDialog({
   const [selectedItem, setSelectedItem] =
     useState<ProductSupplySearchItem | null>(null)
   const { currentRow } = useAdjustments()
-  const isEdit = !!currentRow && open
+  const isEdit = mode === 'edit' && !!currentRow
 
   const form = useForm<AdjustmentForm>({
     resolver: zodResolver(adjustmentSchema),

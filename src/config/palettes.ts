@@ -25,6 +25,12 @@ export const palettes = [
   'supabase',
   'clean-green',
   'gold-blue',
+  'vercel',
+  'light-green',
+  'astro-vista',
+  'whatsapp',
+  'fresh-blue',
+  'sage-mist',
 ] as const
 
 export type Palette = (typeof palettes)[number]
@@ -48,4 +54,10 @@ export const paletteLabels: Record<Palette, string> = {
   supabase: 'Supabase',
   'clean-green': 'Clean Green',
   'gold-blue': 'Gold Blue',
+  vercel: 'Vercel',
+  'light-green': 'Light Green',
+  'astro-vista': 'Astro Vista',
+  whatsapp: 'WhatsApp',
+  'fresh-blue': 'Fresh Blue',
+  'sage-mist': 'Sage Mist',
 }

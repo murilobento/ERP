@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Eye, Pen, Trash2 } from 'lucide-react'
+import { CheckCircle2, Eye, Pen, RotateCcw, Trash2 } from 'lucide-react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
@@ -69,6 +69,17 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               </DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(adjustment)
+                setOpen('complete')
+              }}
+            >
+              Concluir
+              <DropdownMenuShortcut>
+                <CheckCircle2 size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem
               onClick={handleDelete}
               className='text-destructive focus:text-destructive'
             >
@@ -78,6 +89,20 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               </DropdownMenuShortcut>
             </DropdownMenuItem>
           </>
+        )}
+        {adjustment.status === 'completed' && (
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(adjustment)
+              setOpen('reverse')
+            }}
+            className='text-red-500!'
+          >
+            Estornar
+            <DropdownMenuShortcut>
+              <RotateCcw size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

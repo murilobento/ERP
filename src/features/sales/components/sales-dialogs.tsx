@@ -34,6 +34,7 @@ export function SalesDialogs() {
       {open === 'add' ? (
         <SalesActionDialog
           key='sale-add'
+          mode='add'
           open
           onOpenChange={(state) => setOpen(state ? 'add' : null)}
         />
@@ -41,11 +42,21 @@ export function SalesDialogs() {
       {open === 'edit' ? (
         <SalesActionDialog
           key={`sale-edit-${currentRow?.id ?? 'none'}-open`}
+          mode='edit'
           open
-          onOpenChange={(state) => setOpen(state ? 'edit' : null)}
+          onOpenChange={(state) => {
+            setOpen(state ? 'edit' : null)
+            if (!state) setCurrentRow(null)
+          }}
         />
       ) : null}
-      {open === 'view' ? <SalesDetailDialog /> : null}
+      {open === 'view' ||
+      open === 'ready-for-delivery' ||
+      open === 'deliver' ||
+      open === 'complete' ||
+      open === 'reverse' ? (
+        <SalesDetailDialog />
+      ) : null}
       {open === 'delete' && currentRow ? (
         <SalesDeleteDialog
           open

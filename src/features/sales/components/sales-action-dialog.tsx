@@ -51,16 +51,18 @@ type KitForm = {
 }
 
 type SalesActionDialogProps = {
+  mode: 'add' | 'edit'
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function SalesActionDialog({
+  mode,
   open,
   onOpenChange,
 }: SalesActionDialogProps) {
   const { currentRow } = useSales()
-  const isEdit = !!currentRow && open
+  const isEdit = mode === 'edit' && !!currentRow
   const { run, isLoading } = useEntityMutation()
   const [clientId, setClientId] = useState(isEdit ? currentRow.clientId : '')
   const [selectedClient, setSelectedClient] = useState<ClientSearchItem | null>(

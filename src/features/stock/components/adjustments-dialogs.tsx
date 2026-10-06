@@ -3,18 +3,23 @@ import { AdjustmentsDetailDialog } from './adjustments-detail-dialog'
 import { useAdjustments } from './adjustments-provider'
 
 export function AdjustmentsDialogs() {
-  const { open, setOpen } = useAdjustments()
+  const { open, setOpen, setCurrentRow } = useAdjustments()
   return (
     <>
       <AdjustmentsActionDialog
         key='adjustment-add'
+        mode='add'
         open={open === 'add'}
         onOpenChange={(state) => setOpen(state ? 'add' : null)}
       />
       <AdjustmentsActionDialog
         key='adjustment-edit'
+        mode='edit'
         open={open === 'edit'}
-        onOpenChange={(state) => setOpen(state ? 'edit' : null)}
+        onOpenChange={(state) => {
+          setOpen(state ? 'edit' : null)
+          if (!state) setCurrentRow(null)
+        }}
       />
       <AdjustmentsDetailDialog />
     </>

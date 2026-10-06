@@ -1,6 +1,15 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Eye, FileText, Pen, Trash2 } from 'lucide-react'
+import {
+  CheckCircle2,
+  Eye,
+  FileText,
+  PackageCheck,
+  Pen,
+  RotateCcw,
+  Trash2,
+  Truck,
+} from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { handleServerError } from '@/lib/handle-server-error'
 import { Button } from '@/components/ui/button'
@@ -70,6 +79,59 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             Editar
             <DropdownMenuShortcut>
               <Pen size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+        {sale.status === 'in_preparation' && (
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(sale)
+              setOpen('ready-for-delivery')
+            }}
+          >
+            Pronto para Entrega
+            <DropdownMenuShortcut>
+              <Truck size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+        {sale.status === 'ready_for_delivery' && (
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(sale)
+              setOpen('deliver')
+            }}
+          >
+            Entregar
+            <DropdownMenuShortcut>
+              <PackageCheck size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+        {sale.status === 'delivered' && (
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(sale)
+              setOpen('complete')
+            }}
+          >
+            Concluir
+            <DropdownMenuShortcut>
+              <CheckCircle2 size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+        {sale.status === 'completed' && (
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(sale)
+              setOpen('reverse')
+            }}
+            className='text-red-500!'
+          >
+            Estornar
+            <DropdownMenuShortcut>
+              <RotateCcw size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         )}

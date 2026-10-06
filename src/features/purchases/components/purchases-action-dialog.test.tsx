@@ -145,7 +145,12 @@ function renderDialog(
   const queryClient = new QueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
-      <PurchasesActionDialog open onOpenChange={vi.fn()} {...props} />
+      <PurchasesActionDialog
+        mode='add'
+        open
+        onOpenChange={vi.fn()}
+        {...props}
+      />
     </QueryClientProvider>
   )
 }
@@ -226,6 +231,16 @@ describe('PurchasesActionDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
+  it('opens a new purchase form even when a previous purchase is selected', async () => {
+    purchasesState.currentRow = purchase
+    const { getByRole, getByText } = await renderDialog()
+
+    expect(getByText('Nova Compra')).toBeInTheDocument()
+    expect(getByRole('button', { name: /^Criar Compra$/i })).toBeInTheDocument()
+    expect(getByText('Selecione o fornecedor')).toBeInTheDocument()
+    expect(textInput('Opcional').value).toBe('')
+  })
+
   it('blocks duplicated supplies before saving', async () => {
     await renderDialog()
 
@@ -239,21 +254,20 @@ describe('PurchasesActionDialog', () => {
   it('updates purchases with patch when editing', async () => {
     const onOpenChange = vi.fn()
     purchasesState.currentRow = purchase
-    const { getByRole, getByText } = await renderDialog({
+    const { getByRole } = await renderDialog({
+      mode: 'edit',
       onOpenChange,
     })
 
-    await userEvent.click(getByText('Selecione o fornecedor'))
     await userEvent.clear(textInput('Opcional'))
     await userEvent.type(textInput('Opcional'), 'Compra revisada')
-    await addSupplyItem()
     await userEvent.click(getByRole('button', { name: /^Salvar Alterações$/i }))
 
     await vi.waitFor(() => expect(apiPatch).toHaveBeenCalledOnce())
     expect(apiPatch).toHaveBeenCalledWith('/purchases/purchase-1', {
       vendorId: 'vendor-1',
       notes: 'Compra revisada',
-      items: [{ supplyId: 'supply-1', packages: 3, packageCost: 10.5 }],
+      items: [{ supplyId: 'supply-1', packages: 2, packageCost: 12 }],
     })
     expect(toastSuccess).toHaveBeenCalledWith('Compra atualizada com sucesso.')
     expect(onOpenChange).toHaveBeenCalledWith(false)

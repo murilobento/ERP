@@ -2,7 +2,16 @@ import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { type Sale, type SaleStatus } from '../data/schema'
 
-type SalesDialogType = 'add' | 'view' | 'edit' | 'delete' | 'best-selling'
+type SalesDialogType =
+  | 'add'
+  | 'view'
+  | 'edit'
+  | 'delete'
+  | 'best-selling'
+  | 'ready-for-delivery'
+  | 'deliver'
+  | 'complete'
+  | 'reverse'
 export type SalesKanbanAction = {
   sale: Sale
   targetStatus: SaleStatus

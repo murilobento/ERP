@@ -7,16 +7,22 @@ export function PurchasesDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = usePurchases()
   return (
     <>
-      <PurchasesActionDialog
-        key='purchase-add'
-        open={open === 'add'}
-        onOpenChange={(state) => setOpen(state ? 'add' : null)}
-      />
-      <PurchasesActionDialog
-        key='purchase-edit'
-        open={open === 'edit'}
-        onOpenChange={(state) => setOpen(state ? 'edit' : null)}
-      />
+      {open === 'add' && (
+        <PurchasesActionDialog
+          key='purchase-add'
+          mode='add'
+          open
+          onOpenChange={(state) => setOpen(state ? 'add' : null)}
+        />
+      )}
+      {open === 'edit' && (
+        <PurchasesActionDialog
+          key='purchase-edit'
+          mode='edit'
+          open
+          onOpenChange={(state) => setOpen(state ? 'edit' : null)}
+        />
+      )}
       <PurchasesDetailDialog />
       {currentRow && (
         <PurchasesDeleteDialog

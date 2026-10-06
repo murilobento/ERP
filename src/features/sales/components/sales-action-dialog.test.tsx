@@ -171,7 +171,7 @@ function renderDialog(
   const queryClient = new QueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
-      <SalesActionDialog open onOpenChange={vi.fn()} {...props} />
+      <SalesActionDialog mode='add' open onOpenChange={vi.fn()} {...props} />
     </QueryClientProvider>
   )
 }
@@ -351,10 +351,21 @@ describe('SalesActionDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
+  it('opens a new sale form when a previous sale is still selected', async () => {
+    salesState.currentRow = sale
+    const { getByRole, getByText } = await renderDialog()
+
+    expect(getByText('Nova Venda')).toBeInTheDocument()
+    expect(getByRole('button', { name: /^Criar Venda$/i })).toBeInTheDocument()
+    expect(getByText('Selecione o cliente')).toBeInTheDocument()
+    expect(textInput('Opcional').value).toBe('')
+  })
+
   it('updates sales with patch when editing', async () => {
     const onOpenChange = vi.fn()
     salesState.currentRow = sale
     const { getByRole } = await renderDialog({
+      mode: 'edit',
       onOpenChange,
     })
 

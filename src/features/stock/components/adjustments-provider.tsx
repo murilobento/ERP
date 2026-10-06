@@ -1,7 +1,7 @@
 import { createEntityProvider } from '@/features/shared/create-entity-provider'
 import { type StockAdjustment } from '../data/schema'
 
-type AdjustmentsDialogType = 'add' | 'view' | 'edit'
+type AdjustmentsDialogType = 'add' | 'view' | 'edit' | 'complete' | 'reverse'
 
 const { Provider: AdjustmentsProvider, useEntity: useAdjustments } =
   createEntityProvider<StockAdjustment, AdjustmentsDialogType>('Adjustments')
