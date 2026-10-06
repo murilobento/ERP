@@ -24,4 +24,5 @@ export type ContactConfig = {
   formId: string
   namePlaceholder: string
   entityPlural: string
+  responseKey: string
 }

@@ -1,16 +1,6 @@
-import { queryKeys } from '@/lib/query-keys'
+import { vendorConfig } from '@/features/shared/contact-configs'
 import { ContactPrimaryButtons } from '@/features/shared/contact-primary-buttons'
 import { useVendors } from './vendors-provider'
-
-const vendorConfig = {
-  entityLabel: 'Fornecedor',
-  entityLabelLower: 'fornecedor',
-  endpoint: 'vendors',
-  queryKey: queryKeys.vendors,
-  formId: 'vendor-form',
-  namePlaceholder: 'Fornecedor Exemplo',
-  entityPlural: 'fornecedores',
-} as const
 
 export function VendorsPrimaryButtons() {
   const { setOpen } = useVendors()

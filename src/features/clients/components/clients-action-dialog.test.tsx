@@ -113,6 +113,39 @@ describe('ClientsActionDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
+  it('notifies the created client through onEntityCreated', async () => {
+    apiPost.mockResolvedValue({
+      data: { client: { ...client, name: 'Cliente Rápido' } },
+    })
+    const onEntityCreated = vi.fn()
+    const { getByLabelText, getByRole } = await renderDialog({
+      onEntityCreated,
+    })
+
+    await userEvent.type(getByLabelText(/^Nome$/i), 'Cliente Rápido')
+    await userEvent.click(getByRole('button', { name: /salvar alterações/i }))
+
+    await vi.waitFor(() =>
+      expect(onEntityCreated).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'client-1', name: 'Cliente Rápido' })
+      )
+    )
+  })
+
+  it('does not notify onEntityCreated when editing', async () => {
+    const onEntityCreated = vi.fn()
+    const { getByLabelText, getByRole } = await renderDialog({
+      currentRow: client,
+      onEntityCreated,
+    })
+
+    await userEvent.type(getByLabelText(/^Nome$/i), ' Cliente Editado')
+    await userEvent.click(getByRole('button', { name: /salvar alterações/i }))
+
+    await vi.waitFor(() => expect(apiPatch).toHaveBeenCalledOnce())
+    expect(onEntityCreated).not.toHaveBeenCalled()
+  })
+
   it('updates existing clients with patch', async () => {
     const onOpenChange = vi.fn()
     const { getByLabelText, getByRole } = await renderDialog({

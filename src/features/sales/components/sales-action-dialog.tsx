@@ -25,6 +25,8 @@ import {
   ProductSupplyCombobox,
   type ProductSupplySearchItem,
 } from '@/components/product-supply-combobox'
+import { ClientsActionDialog } from '@/features/clients/components/clients-action-dialog'
+import { ProductsActionDialog } from '@/features/products/components/products-action-dialog'
 import { parseFilterDate } from '@/features/shared/filter-date-utils'
 import { formatCurrency } from '../data/schema'
 import { SaleItemsTable } from './sale-items-table'
@@ -64,6 +66,8 @@ export function SalesActionDialog({
   const [selectedClient, setSelectedClient] = useState<ClientSearchItem | null>(
     isEdit ? currentRow.client : null
   )
+  const [clientDialogOpen, setClientDialogOpen] = useState(false)
+  const [productDialogOpen, setProductDialogOpen] = useState(false)
   const [notes, setNotes] = useState(isEdit ? currentRow.notes : '')
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(
     isEdit && currentRow.deliveryDate
@@ -277,7 +281,31 @@ export function SalesActionDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
-          <DialogTitle>{isEdit ? 'Editar Venda' : 'Nova Venda'}</DialogTitle>
+          <div className='flex items-center justify-between pe-10'>
+            <DialogTitle>{isEdit ? 'Editar Venda' : 'Nova Venda'}</DialogTitle>
+            <div className='flex items-center gap-2'>
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                className='shrink-0'
+                onClick={() => setClientDialogOpen(true)}
+              >
+                <Plus className='size-4' />
+                Cliente
+              </Button>
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                className='me-1 shrink-0'
+                onClick={() => setProductDialogOpen(true)}
+              >
+                <Plus className='size-4' />
+                Produto
+              </Button>
+            </div>
+          </div>
           <DialogDescription>
             {isEdit
               ? 'Atualize os dados da venda.'
@@ -471,6 +499,39 @@ export function SalesActionDialog({
             {isEdit ? 'Salvar Alterações' : 'Criar Venda'}
           </Button>
         </DialogFooter>
+        <ClientsActionDialog
+          open={clientDialogOpen}
+          onOpenChange={setClientDialogOpen}
+          onEntityCreated={(client) => {
+            setClientId(client.id)
+            setSelectedClient({
+              id: client.id,
+              name: client.name,
+              phone: client.phone,
+              status: client.status,
+            })
+          }}
+        />
+        <ProductsActionDialog
+          open={productDialogOpen}
+          onOpenChange={setProductDialogOpen}
+          onEntityCreated={(product) => {
+            setDraftItem((current) => ({
+              ...current,
+              productId: product.id,
+              unitPrice: 0,
+            }))
+            setSelectedProducts((current) => ({
+              ...current,
+              [product.id]: {
+                id: product.id,
+                name: product.name,
+                status: product.status,
+                salePrice: 0,
+              },
+            }))
+          }}
+        />
       </DialogContent>
     </Dialog>
   )

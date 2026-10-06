@@ -43,11 +43,12 @@ const formSchema = z.object({
 
 type ContactForm = z.infer<typeof formSchema>
 
-type ContactActionDialogProps = {
+export type ContactActionDialogProps = {
   config: ContactConfig
   currentRow?: Contact
   open: boolean
   onOpenChange: (open: boolean) => void
+  onEntityCreated?: (contact: Contact) => void
 }
 
 export function ContactActionDialog({
@@ -55,6 +56,7 @@ export function ContactActionDialog({
   currentRow,
   open,
   onOpenChange,
+  onEntityCreated,
 }: ContactActionDialogProps) {
   const isEdit = !!currentRow
   const { run, isLoading } = useEntityMutation()
@@ -94,16 +96,21 @@ export function ContactActionDialog({
     await run({
       mutation: async () => {
         if (isEdit) {
-          await api.patch(`/${config.endpoint}/${currentRow.id}`, values)
-        } else {
-          await api.post(`/${config.endpoint}`, values)
+          const res = await api.patch(
+            `/${config.endpoint}/${currentRow.id}`,
+            values
+          )
+          return res.data[config.responseKey] as Contact
         }
+        const res = await api.post(`/${config.endpoint}`, values)
+        return res.data[config.responseKey] as Contact
       },
       invalidate: [config.queryKey],
       successMessage: isEdit
         ? `${config.entityLabel} atualizado com sucesso.`
         : `${config.entityLabel} criado com sucesso.`,
-      onSuccess: () => {
+      onSuccess: (contact) => {
+        if (!isEdit) onEntityCreated?.(contact)
         form.reset()
         onOpenChange(false)
       },

@@ -1,16 +1,6 @@
-import { queryKeys } from '@/lib/query-keys'
+import { clientConfig } from '@/features/shared/contact-configs'
 import { ContactPrimaryButtons } from '@/features/shared/contact-primary-buttons'
 import { useClients } from './clients-provider'
-
-const clientConfig = {
-  entityLabel: 'Cliente',
-  entityLabelLower: 'cliente',
-  endpoint: 'clients',
-  queryKey: queryKeys.clients,
-  formId: 'client-form',
-  namePlaceholder: 'João Silva',
-  entityPlural: 'clientes',
-} as const
 
 export function ClientsPrimaryButtons() {
   const { setOpen } = useClients()

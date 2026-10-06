@@ -64,12 +64,14 @@ type ProductActionDialogProps = {
   currentRow?: Product
   open: boolean
   onOpenChange: (open: boolean) => void
+  onEntityCreated?: (product: Product) => void
 }
 
 export function ProductsActionDialog({
   currentRow,
   open,
   onOpenChange,
+  onEntityCreated,
 }: ProductActionDialogProps) {
   const isEdit = !!currentRow
   const { run, isLoading } = useEntityMutation()
@@ -108,16 +110,18 @@ export function ProductsActionDialog({
     await run({
       mutation: async () => {
         if (isEdit) {
-          await api.patch(`/products/${currentRow.id}`, values)
-        } else {
-          await api.post('/products', values)
+          const res = await api.patch(`/products/${currentRow.id}`, values)
+          return res.data.product as Product
         }
+        const res = await api.post('/products', values)
+        return res.data.product as Product
       },
       invalidate: [queryKeys.products],
       successMessage: isEdit
         ? 'Produto atualizado com sucesso.'
         : 'Produto criado com sucesso.',
-      onSuccess: () => {
+      onSuccess: (product) => {
+        if (!isEdit) onEntityCreated?.(product)
         form.reset()
         onOpenChange(false)
       },

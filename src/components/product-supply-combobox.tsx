@@ -47,6 +47,7 @@ export function ProductSupplyCombobox({
   const itemsRef = useRef<ProductSupplySearchItem[]>([])
   const entityLabel = type === 'product' ? 'produto' : 'insumo'
   const endpoint = type === 'product' ? '/products/search' : '/supplies/search'
+  const resourceKey = type === 'product' ? 'products' : 'supplies'
 
   function handleValueChange(newId: string) {
     onValueChange(newId)
@@ -73,7 +74,7 @@ export function ProductSupplyCombobox({
       onValueChange={handleValueChange}
       fetchFn={fetchFn}
       queryKey={[
-        type,
+        resourceKey,
         'search',
         endpoint,
         status || 'active',

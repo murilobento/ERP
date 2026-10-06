@@ -76,12 +76,14 @@ type SupplyActionDialogProps = {
   currentRow?: Supply
   open: boolean
   onOpenChange: (open: boolean) => void
+  onEntityCreated?: (supply: Supply) => void
 }
 
 export function SuppliesActionDialog({
   currentRow,
   open,
   onOpenChange,
+  onEntityCreated,
 }: SupplyActionDialogProps) {
   const isEdit = !!currentRow
   const { run, isLoading } = useEntityMutation()
@@ -109,16 +111,18 @@ export function SuppliesActionDialog({
     await run({
       mutation: async () => {
         if (isEdit) {
-          await api.patch(`/supplies/${currentRow.id}`, values)
-        } else {
-          await api.post('/supplies', values)
+          const res = await api.patch(`/supplies/${currentRow.id}`, values)
+          return res.data.supply as Supply
         }
+        const res = await api.post('/supplies', values)
+        return res.data.supply as Supply
       },
       invalidate: [queryKeys.supplies],
       successMessage: isEdit
         ? 'Insumo atualizado com sucesso.'
         : 'Insumo criado com sucesso.',
-      onSuccess: () => {
+      onSuccess: (supply) => {
+        if (!isEdit) onEntityCreated?.(supply)
         form.reset()
         onOpenChange(false)
       },

@@ -141,6 +141,41 @@ describe('ProductsActionDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
+  it('notifies the created product through onEntityCreated', async () => {
+    apiPost.mockResolvedValue({
+      data: { product: { ...product, name: 'Bolo Rápido' } },
+    })
+    const onEntityCreated = vi.fn()
+    const { getByLabelText, getByRole } = await renderDialog({
+      onEntityCreated,
+    })
+
+    await vi.waitFor(() => expect(apiGet).toHaveBeenCalledWith('/categories'))
+    await userEvent.type(getByLabelText(/^Nome$/i), 'Bolo Rápido')
+    await selectCategory(getByRole, 'Bolos')
+    await userEvent.click(getByRole('button', { name: /^Salvar$/i }))
+
+    await vi.waitFor(() =>
+      expect(onEntityCreated).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'product-1', name: 'Bolo Rápido' })
+      )
+    )
+  })
+
+  it('does not notify onEntityCreated when editing', async () => {
+    const onEntityCreated = vi.fn()
+    const { getByLabelText, getByRole } = await renderDialog({
+      currentRow: product,
+      onEntityCreated,
+    })
+
+    await userEvent.type(getByLabelText(/^Nome$/i), ' Editado')
+    await userEvent.click(getByRole('button', { name: /^Salvar$/i }))
+
+    await vi.waitFor(() => expect(apiPatch).toHaveBeenCalledOnce())
+    expect(onEntityCreated).not.toHaveBeenCalled()
+  })
+
   it('shows API errors without closing the dialog', async () => {
     const onOpenChange = vi.fn()
     apiPost.mockRejectedValue({

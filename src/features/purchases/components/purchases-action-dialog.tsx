@@ -32,6 +32,8 @@ import {
   VendorCombobox,
   type VendorSearchItem,
 } from '@/components/vendor-combobox'
+import { SuppliesActionDialog } from '@/features/supplies/components/supplies-action-dialog'
+import { VendorsActionDialog } from '@/features/vendors/components/vendors-action-dialog'
 import {
   formatCurrency,
   itemQuantity,
@@ -61,6 +63,8 @@ export function PurchasesActionDialog({
   const [selectedVendor, setSelectedVendor] = useState<VendorSearchItem | null>(
     null
   )
+  const [vendorDialogOpen, setVendorDialogOpen] = useState(false)
+  const [supplyDialogOpen, setSupplyDialogOpen] = useState(false)
   const [notes, setNotes] = useState('')
   const [draftItem, setDraftItem] = useState<ItemForm>({
     supplyId: '',
@@ -171,7 +175,33 @@ export function PurchasesActionDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-2xl'>
         <DialogHeader className='text-start'>
-          <DialogTitle>{isEdit ? 'Editar Compra' : 'Nova Compra'}</DialogTitle>
+          <div className='flex items-center justify-between pe-10'>
+            <DialogTitle>
+              {isEdit ? 'Editar Compra' : 'Nova Compra'}
+            </DialogTitle>
+            <div className='flex items-center gap-2'>
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                className='shrink-0'
+                onClick={() => setVendorDialogOpen(true)}
+              >
+                <Plus className='size-4' />
+                Fornecedor
+              </Button>
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                className='me-1 shrink-0'
+                onClick={() => setSupplyDialogOpen(true)}
+              >
+                <Plus className='size-4' />
+                Insumo
+              </Button>
+            </div>
+          </div>
           <DialogDescription>
             {isEdit
               ? 'Atualize os dados da compra.'
@@ -491,6 +521,38 @@ export function PurchasesActionDialog({
             {isEdit ? 'Salvar Alterações' : 'Criar Compra'}
           </Button>
         </DialogFooter>
+        <VendorsActionDialog
+          open={vendorDialogOpen}
+          onOpenChange={setVendorDialogOpen}
+          onEntityCreated={(vendor) => {
+            setVendorId(vendor.id)
+            setSelectedVendor({
+              id: vendor.id,
+              name: vendor.name,
+              phone: vendor.phone,
+              status: vendor.status,
+            })
+          }}
+        />
+        <SuppliesActionDialog
+          open={supplyDialogOpen}
+          onOpenChange={setSupplyDialogOpen}
+          onEntityCreated={(supply) => {
+            setDraftItem((current) => ({ ...current, supplyId: supply.id }))
+            setSelectedSupplies((current) => ({
+              ...current,
+              [supply.id]: {
+                id: supply.id,
+                name: supply.name,
+                unit: supply.unit,
+                status: supply.status,
+                packageUnit: supply.packageUnit,
+                packageQuantity: supply.packageQuantity,
+                costPrice: supply.costPrice,
+              },
+            }))
+          }}
+        />
       </DialogContent>
     </Dialog>
   )
