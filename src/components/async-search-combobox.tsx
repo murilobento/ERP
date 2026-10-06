@@ -59,7 +59,6 @@ export function AsyncSearchCombobox<T extends SearchItem>({
     data: items = [],
     isFetching,
     isError,
-     
   } = useQuery({
     queryKey: [...queryKey, debouncedSearch],
     queryFn: () => fetchFn(debouncedSearch),
