@@ -29,15 +29,13 @@ export type Kit = {
   finalPrice: number
 }
 
+import { computeProductSalePrice } from '@/lib/pricing'
+
 export function computeKitSalePrice(items: KitItem[]) {
-  return items.reduce((sum, item) => {
-    const costPrice = item.product.composition.reduce(
-      (s, c) => s + c.quantity * c.supply.costPrice,
-      0
-    )
-    const salePrice = costPrice * (1 + item.product.margin / 100)
-    return sum + salePrice * item.quantity
-  }, 0)
+  return items.reduce(
+    (sum, item) => sum + computeProductSalePrice(item.product) * item.quantity,
+    0
+  )
 }
 
 export function computeKitDiscount(

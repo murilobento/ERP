@@ -3,6 +3,8 @@ export type Product = {
   name: string
   description: string
   margin: number
+  freightCost: number
+  packagingCost: number
   status: string
   categoryId: string
   createdAt: string

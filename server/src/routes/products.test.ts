@@ -72,7 +72,7 @@ describe('product routes', () => {
           id: 'product-1',
           stock: 4,
           costPrice: 25,
-          salePrice: 37.5,
+          salePrice: 50,
         }),
       ],
     })
@@ -156,7 +156,7 @@ describe('product routes', () => {
         expect.objectContaining({
           id: 'product-1',
           costPrice: 25,
-          salePrice: 37.5,
+          salePrice: 50,
         }),
       ],
     })

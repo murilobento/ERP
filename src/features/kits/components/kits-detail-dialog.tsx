@@ -1,4 +1,5 @@
 import { Pen } from 'lucide-react'
+import { computeProductSalePrice } from '@/lib/pricing'
 import { formatDateTime } from '@/lib/date-time'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -104,12 +105,7 @@ export function KitsDetailDialog({
                 </TableHeader>
                 <TableBody>
                   {currentRow.items.map((item) => {
-                    const costPrice = item.product.composition.reduce(
-                      (sum, c) => sum + c.quantity * c.supply.costPrice,
-                      0
-                    )
-                    const salePrice =
-                      costPrice * (1 + item.product.margin / 100)
+                    const salePrice = computeProductSalePrice(item.product)
                     const total = salePrice * item.quantity
                     return (
                       <TableRow key={item.id}>

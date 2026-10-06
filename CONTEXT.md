@@ -33,10 +33,12 @@ Use este vocabulário ao falar do código — não os nomes de arquivo/handler.
 
 ## Preço
 
-- **Pricing (Formação de Preço)** — módulo profundo (`server/src/lib/pricing.ts`)
+- **Pricing (Formação de Preço)** — módulo profundo (`server/src/lib/pricing.ts`
+  + espelho `src/lib/pricing.ts`)
   dono da derivação de preço a partir de custo e margem. Centraliza:
-  `computeProductCost` (soma da composição × `Supply.costPrice`),
-  `computeProductSalePrice`/`computeProductPrices` (custo × `(1 + margin/100)`),
+  `computeProductCost` (soma da composição + `freightCost` + `packagingCost`),
+  `computeProductSalePrice`/`computeProductPrices` (margem sobre preço de venda:
+  `custo ÷ (1 - margin/100)`; margem >= 100 é impossível e validada nas rotas),
   `computeKitPricing` (total do kit, desconto fixo/percentual, preço final) e
   `expandKitIntoSaleItems` (expande um kit em itens de venda com preço
   proporcional). Rotas de Products, Kits e Sales chamam-no e nunca reescrevem a

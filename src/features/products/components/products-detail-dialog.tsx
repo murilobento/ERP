@@ -101,6 +101,14 @@ export function ProductsDetailDialog({
               </p>
             </div>
             <div>
+              <p className='text-xs text-muted-foreground'>Frete + Embal.</p>
+              <p className='text-sm font-medium'>
+                {currentRow.freightCost + currentRow.packagingCost
+                  ? formatCurrency(currentRow.freightCost + currentRow.packagingCost)
+                  : '—'}
+              </p>
+            </div>
+            <div>
               <p className='text-xs text-muted-foreground'>Margem</p>
               <p className='text-sm font-medium'>{currentRow.margin}%</p>
             </div>

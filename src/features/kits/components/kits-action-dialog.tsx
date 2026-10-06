@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
+import { computeProductSalePrice } from '@/lib/pricing'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -92,12 +93,7 @@ export function KitsActionDialog({
               id: i.product.id,
               name: i.product.name,
               status: i.product.status,
-              salePrice:
-                i.product.composition.reduce(
-                  (sum, c) => sum + c.quantity * c.supply.costPrice,
-                  0
-                ) *
-                (1 + i.product.margin / 100),
+              salePrice: computeProductSalePrice(i.product),
             } as ProductSupplySearchItem,
           ])
         )

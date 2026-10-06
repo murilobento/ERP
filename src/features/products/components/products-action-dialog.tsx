@@ -7,6 +7,11 @@ import { Loader2 } from 'lucide-react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
+import {
+  computeMarginFromSalePrice,
+  computeProductCost,
+  computeSalePriceFromMargin,
+} from '@/lib/pricing'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -43,7 +48,12 @@ type CategoryOption = {
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
-  margin: z.number().min(0, 'Margem deve ser >= 0.'),
+  margin: z
+    .number()
+    .min(0, 'Margem deve ser >= 0.')
+    .refine((m) => m < 100, 'Margem deve ser < 100%.'),
+  freightCost: z.number().min(0, 'Frete deve ser >= 0.'),
+  packagingCost: z.number().min(0, 'Embalagem deve ser >= 0.'),
   status: z.string().min(1, 'Status é obrigatório.'),
   categoryId: z.string().min(1, 'Categoria é obrigatória.'),
 })
@@ -79,12 +89,16 @@ export function ProductsActionDialog({
       ? {
           name: currentRow.name,
           margin: currentRow.margin,
+          freightCost: currentRow.freightCost ?? 0,
+          packagingCost: currentRow.packagingCost ?? 0,
           status: currentRow.status,
           categoryId: currentRow.categoryId,
         }
       : {
           name: '',
           margin: 0,
+          freightCost: 0,
+          packagingCost: 0,
           status: 'active',
           categoryId: '',
         },
@@ -112,9 +126,20 @@ export function ProductsActionDialog({
 
   const statusValue = useWatch({ control: form.control, name: 'status' })
   const marginValue = useWatch({ control: form.control, name: 'margin' })
+  const freightValue = useWatch({ control: form.control, name: 'freightCost' })
+  const packagingValue = useWatch({ control: form.control, name: 'packagingCost' })
 
-  const costPrice = isEdit ? currentRow.costPrice : 0
-  const salePrice = costPrice * (1 + (marginValue ?? 0) / 100)
+  const compositionCost = isEdit
+    ? computeProductCost({
+        margin: 0,
+        composition: currentRow.composition.map((item) => ({
+          quantity: item.quantity,
+          supply: { costPrice: item.supply.costPrice },
+        })),
+      })
+    : 0
+  const totalCost = compositionCost + (freightValue ?? 0) + (packagingValue ?? 0)
+  const salePrice = computeSalePriceFromMargin(totalCost, marginValue ?? 0)
 
   return (
     <Dialog
@@ -226,11 +251,61 @@ export function ProductsActionDialog({
               )}
             />
             {isEdit && (
+              <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
+                <FormField
+                  control={form.control}
+                  name='freightCost'
+                  render={({ field }) => (
+                    <FormItem className='col-span-3 space-y-1'>
+                      <FormLabel>Frete (R$)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          min='0'
+                          step='0.01'
+                          autoComplete='off'
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            setLocalSalePrice(null)
+                            field.onChange(parseFloat(e.target.value) || 0)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='packagingCost'
+                  render={({ field }) => (
+                    <FormItem className='col-span-3 space-y-1'>
+                      <FormLabel>Embalagem (R$)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          min='0'
+                          step='0.01'
+                          autoComplete='off'
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            setLocalSalePrice(null)
+                            field.onChange(parseFloat(e.target.value) || 0)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            {isEdit && (
               <div className='grid gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm sm:grid-cols-3'>
                 <div>
-                  <Label className='text-muted-foreground'>Custo</Label>
+                  <Label className='text-muted-foreground'>Custo total</Label>
                   <p className='font-medium'>
-                    {costPrice > 0 ? `R$ ${costPrice.toFixed(2)}` : '—'}
+                    {totalCost > 0 ? `R$ ${totalCost.toFixed(2)}` : '—'}
                   </p>
                 </div>
                 <div>
@@ -241,7 +316,7 @@ export function ProductsActionDialog({
                   <Label className='text-muted-foreground'>
                     Preço de venda
                   </Label>
-                  {costPrice > 0 ? (
+                  {totalCost > 0 && marginValue < 100 ? (
                     <div className='flex items-center gap-1'>
                       <span className='text-sm text-muted-foreground'>R$</span>
                       <Input
@@ -250,16 +325,17 @@ export function ProductsActionDialog({
                         step='0.01'
                         className='h-7 font-medium'
                         autoComplete='off'
-                        value={localSalePrice ?? salePrice.toFixed(2)}
+                        value={
+                          localSalePrice ??
+                          (Number.isFinite(salePrice) ? salePrice.toFixed(2) : '')
+                        }
                         onChange={(e) => {
                           setLocalSalePrice(e.target.value)
                           const val = parseFloat(e.target.value)
                           if (!isNaN(val) && val >= 0) {
-                            const newMargin =
-                              Math.round((val / costPrice - 1) * 10000) / 100
                             form.setValue(
                               'margin',
-                              newMargin >= 0 ? newMargin : 0
+                              computeMarginFromSalePrice(totalCost, val)
                             )
                           }
                         }}

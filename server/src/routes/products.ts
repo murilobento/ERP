@@ -13,6 +13,8 @@ const PRODUCT_SELECT = {
   name: true,
   description: true,
   margin: true,
+  freightCost: true,
+  packagingCost: true,
   status: true,
   categoryId: true,
   createdAt: true,
@@ -74,6 +76,8 @@ productRoutes.get('/search', async (c) => {
       id: true,
       name: true,
       margin: true,
+      freightCost: true,
+      packagingCost: true,
       status: true,
       composition: {
         select: { quantity: true, supply: { select: { costPrice: true } } },
@@ -105,7 +109,7 @@ productRoutes.get('/search', async (c) => {
 
 productRoutes.post('/', async (c) => {
   const body = await c.req.json()
-  const { name, description, margin, status, categoryId } = body
+  const { name, description, margin, freightCost, packagingCost, status, categoryId } = body
 
   if (!name) {
     return c.json({ error: 'Nome é obrigatório.' }, 400)
@@ -115,11 +119,17 @@ productRoutes.post('/', async (c) => {
     return c.json({ error: 'Categoria é obrigatória.' }, 400)
   }
 
+  if (margin !== undefined && margin >= 100) {
+    return c.json({ error: 'A margem deve ser menor que 100%.' }, 400)
+  }
+
   const product = await prisma.product.create({
     data: {
       name,
       description: description || '',
       margin: margin ?? 0,
+      freightCost: freightCost ?? 0,
+      packagingCost: packagingCost ?? 0,
       status: status || 'active',
       categoryId,
     },
@@ -157,17 +167,31 @@ productRoutes.get('/:id', async (c) => {
 productRoutes.patch('/:id', async (c) => {
   const productId = c.req.param('id')
   const body = await c.req.json()
-  const { name, description, margin, status, categoryId } = body
+  const { name, description, margin, freightCost, packagingCost, status, categoryId } = body
 
   const existing = await prisma.product.findUnique({ where: { id: productId } })
   if (!existing) {
     return c.json({ error: 'Produto não encontrado.' }, 404)
   }
 
-  const data: { name?: string; description?: string; margin?: number; status?: string; categoryId?: string } = {}
+  if (margin !== undefined && margin >= 100) {
+    return c.json({ error: 'A margem deve ser menor que 100%.' }, 400)
+  }
+
+  const data: {
+    name?: string
+    description?: string
+    margin?: number
+    freightCost?: number
+    packagingCost?: number
+    status?: string
+    categoryId?: string
+  } = {}
   if (name) data.name = name
   if (description !== undefined) data.description = description
   if (margin !== undefined) data.margin = margin
+  if (freightCost !== undefined) data.freightCost = freightCost
+  if (packagingCost !== undefined) data.packagingCost = packagingCost
   if (status) data.status = status
   if (categoryId) data.categoryId = categoryId
 

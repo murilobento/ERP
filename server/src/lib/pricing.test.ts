@@ -13,7 +13,7 @@ const productA = {
 }
 
 const productB = {
-  margin: 100,
+  margin: 20,
   composition: [{ quantity: 1, supply: { costPrice: 4 } }],
 }
 
@@ -22,13 +22,30 @@ describe('product pricing', () => {
     expect(computeProductCost(productA)).toBe(10)
   })
 
-  it('applies the margin to derive the sale price', () => {
-    expect(computeProductSalePrice(productA)).toBe(15)
-    expect(computeProductSalePrice(productB)).toBe(8)
+  it('adds freight and packaging into the total cost', () => {
+    expect(
+      computeProductCost({
+        margin: 50,
+        freightCost: 8,
+        packagingCost: 5,
+        composition: [{ quantity: 2, supply: { costPrice: 5 } }],
+      })
+    ).toBe(23)
+  })
+
+  it('applies the margin on the sale price to derive the sale price', () => {
+    expect(computeProductSalePrice(productA)).toBe(20)
+    expect(computeProductSalePrice(productB)).toBe(5)
+  })
+
+  it('never divides by zero when margin reaches 100', () => {
+    expect(
+      computeProductSalePrice({ margin: 100, composition: productA.composition })
+    ).toBe(Infinity)
   })
 
   it('returns both cost and sale price together', () => {
-    expect(computeProductPrices(productA)).toEqual({ costPrice: 10, salePrice: 15 })
+    expect(computeProductPrices(productA)).toEqual({ costPrice: 10, salePrice: 20 })
   })
 })
 
@@ -40,17 +57,17 @@ describe('kit pricing', () => {
 
   it('totals item prices, applies a fixed discount, and floors at zero', () => {
     expect(computeKitPricing({ discountType: 'fixed', discountValue: 3, items })).toEqual({
-      totalPrice: 31,
+      totalPrice: 30,
       discount: 3,
-      finalPrice: 28,
+      finalPrice: 27,
     })
   })
 
   it('applies a percentage discount', () => {
     expect(computeKitPricing({ discountType: 'percentage', discountValue: 10, items })).toEqual({
-      totalPrice: 31,
-      discount: 3.1,
-      finalPrice: 27.9,
+      totalPrice: 30,
+      discount: 3,
+      finalPrice: 27,
     })
   })
 
@@ -81,10 +98,10 @@ describe('expandKitIntoSaleItems', () => {
 
   it('distributes the discounted kit price proportionally across items', () => {
     const expanded = expandKitIntoSaleItems(kit, 2)
-    expect(expanded[0].unitPrice).toBe(13.55)
-    expect(expanded[1].unitPrice).toBe(7.23)
+    expect(expanded[0].unitPrice).toBe(18)
+    expect(expanded[1].unitPrice).toBe(4.5)
 
     const reconstructed = expanded.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
-    expect(Math.abs(reconstructed - 56)).toBeLessThanOrEqual(0.05)
+    expect(Math.abs(reconstructed - 54)).toBeLessThanOrEqual(0.05)
   })
 })

@@ -27,6 +27,8 @@ const product: Product = {
   name: 'Bolo de Chocolate',
   description: '',
   margin: 25,
+  freightCost: 0,
+  packagingCost: 0,
   status: 'active',
   categoryId: 'category-1',
   createdAt: '2026-01-01T00:00:00.000Z',
