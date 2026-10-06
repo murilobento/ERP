@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma generate && tsc -b && vite build",
+  "buildCommand": "prisma migrate deploy && prisma generate && tsc -b && vite build",
   "outputDirectory": "dist",
   "framework": null,
   "rewrites": [
