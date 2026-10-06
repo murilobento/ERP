@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import './hono-context.js'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { authRoutes } from './routes/auth.js'

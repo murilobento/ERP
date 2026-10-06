@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import type { Prisma } from '@prisma/client'
 import prisma from '../lib/prisma.js'
 import { recordPurchaseCompletion, recordPurchaseReversal } from '../lib/stock.js'
 import { authMiddleware } from '../middleware/auth.js'
@@ -8,7 +9,10 @@ const purchaseRoutes = new Hono()
 
 purchaseRoutes.use('*', authMiddleware)
 
-async function recalcSupplyCostPrice(tx: typeof prisma, supplyId: string) {
+async function recalcSupplyCostPrice(
+  tx: Prisma.TransactionClient,
+  supplyId: string
+) {
   const supply = await tx.supply.findUnique({ where: { id: supplyId } })
   if (!supply) return
 
@@ -212,7 +216,9 @@ purchaseRoutes.patch('/:id', requireRole('admin', 'manager', 'operator'), async 
       const supplies = await tx.supply.findMany({
         where: { id: { in: supplyIds } },
       })
-      const supplyMap = new Map(supplies.map((s) => [s.id, s]))
+      const supplyMap = new Map(
+        supplies.map((supply) => [supply.id, supply] as const)
+      )
 
       const itemsWithQuantity = items.map((item) => ({
         purchaseId,
@@ -236,7 +242,7 @@ purchaseRoutes.patch('/:id', requireRole('admin', 'manager', 'operator'), async 
 
 purchaseRoutes.post('/:id/complete', requireRole('admin', 'manager', 'operator'), async (c) => {
   const purchaseId = c.req.param('id')
-  const userId = c.get('userId') as string
+  const userId = c.get('userId')
 
   const existing = await prisma.purchase.findUnique({
     where: { id: purchaseId },
@@ -301,7 +307,7 @@ purchaseRoutes.post('/:id/complete', requireRole('admin', 'manager', 'operator')
 
 purchaseRoutes.post('/:id/reverse', requireRole('admin', 'manager', 'operator'), async (c) => {
   const purchaseId = c.req.param('id')
-  const userId = c.get('userId') as string
+  const userId = c.get('userId')
   const body = await c.req.json()
   const { reason } = body as { reason: string }
 

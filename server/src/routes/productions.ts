@@ -285,7 +285,7 @@ productionRoutes.patch('/:id', requireRole('admin', 'manager', 'operator'), asyn
 
 productionRoutes.post('/:id/complete', requireRole('admin', 'manager', 'operator'), async (c) => {
   const productionId = c.req.param('id')
-  const userId = c.get('userId') as string
+  const userId = c.get('userId')
 
   const existing = await prisma.production.findUnique({
     where: { id: productionId },
@@ -387,7 +387,7 @@ productionRoutes.post('/:id/cancel', requireRole('admin', 'manager', 'operator')
 
 productionRoutes.post('/:id/reverse', requireRole('admin', 'manager', 'operator'), async (c) => {
   const productionId = c.req.param('id')
-  const userId = c.get('userId') as string
+  const userId = c.get('userId')
   const body = await c.req.json()
   const { reason } = body as { reason: string }
 

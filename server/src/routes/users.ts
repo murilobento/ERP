@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import type { Prisma } from '@prisma/client'
 import prisma from '../lib/prisma.js'
 import { hashPassword } from '../lib/auth.js'
 import { authMiddleware } from '../middleware/auth.js'
@@ -22,8 +23,8 @@ const USER_SELECT = {
 function buildChanges(
   existing: Record<string, unknown> | null,
   updates: Record<string, unknown>
-): Record<string, { old: unknown; new: unknown }> {
-  const changes: Record<string, { old: unknown; new: unknown }> = {}
+): Prisma.InputJsonObject {
+  const changes: Record<string, Prisma.InputJsonValue> = {}
   for (const [key, value] of Object.entries(updates)) {
     if (value === undefined) continue
     const oldValue = existing ? existing[key] : null
@@ -31,11 +32,22 @@ function buildChanges(
       if (key === 'password') {
         changes[key] = { old: '•••••••', new: '•••••••' }
       } else {
-        changes[key] = { old: oldValue, new: value }
+        changes[key] = {
+          old: toJsonValue(oldValue),
+          new: toJsonValue(value),
+        }
       }
     }
   }
   return changes
+}
+
+function toJsonValue(value: unknown): Prisma.InputJsonValue | null {
+  if (value === null) return null
+  if (typeof value === 'string') return value
+  if (typeof value === 'number') return value
+  if (typeof value === 'boolean') return value
+  return String(value)
 }
 
 userRoutes.get('/', requireRole('admin'), async (c) => {
@@ -47,7 +59,7 @@ userRoutes.get('/', requireRole('admin'), async (c) => {
 })
 
 userRoutes.post('/', requireRole('admin'), async (c) => {
-  const authorId = c.get('userId') as string
+  const authorId = c.get('userId')
   const body = await c.req.json()
   const { email, password, firstName, lastName, role } = body
 
@@ -85,7 +97,7 @@ userRoutes.post('/', requireRole('admin'), async (c) => {
 })
 
 userRoutes.patch('/:id', requireRole('admin'), async (c) => {
-  const authorId = c.get('userId') as string
+  const authorId = c.get('userId')
   const userId = c.req.param('id')
 
   const body = await c.req.json()
@@ -151,7 +163,7 @@ userRoutes.patch('/:id', requireRole('admin'), async (c) => {
 })
 
 userRoutes.patch('/:id/status', requireRole('admin'), async (c) => {
-  const authorId = c.get('userId') as string
+  const authorId = c.get('userId')
   const userId = c.req.param('id')
   const body = await c.req.json()
   const { status } = body as { status: string }

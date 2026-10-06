@@ -1,4 +1,9 @@
-import { createContactRoutes } from '../lib/contact-routes.js'
+import prisma from '../lib/prisma.js'
+import {
+  CONTACT_SELECT,
+  SEARCH_SELECT,
+  createContactRoutes,
+} from '../lib/contact-routes.js'
 
 const CLIENT_SALES_SELECT = {
   id: true,
@@ -17,33 +22,55 @@ const CLIENT_SALES_SELECT = {
       },
     },
   },
-}
+} as const
+
+const CLIENT_DETAIL_SELECT = {
+  ...CONTACT_SELECT,
+  sales: {
+    select: CLIENT_SALES_SELECT,
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  },
+} as const
 
 const clientRoutes = createContactRoutes({
-  model: 'client',
   entityName: 'Cliente',
   responseKey: 'client',
   pluralResponseKey: 'clients',
-  detailSelect: {
-    id: true,
-    name: true,
-    phone: true,
-    zipCode: true,
-    street: true,
-    number: true,
-    complement: true,
-    neighborhood: true,
-    city: true,
-    state: true,
-    status: true,
-    createdAt: true,
-    updatedAt: true,
-    sales: {
-      select: CLIENT_SALES_SELECT,
-      orderBy: { createdAt: 'desc' },
-      take: 20,
+  operations: {
+    list: () =>
+      prisma.client.findMany({
+        select: CONTACT_SELECT,
+        orderBy: { createdAt: 'desc' },
+      }),
+    search: ({ query, status, limit }) =>
+      prisma.client.findMany({
+        where: {
+          name: { contains: query, mode: 'insensitive' },
+          ...(status ? { status } : {}),
+        },
+        select: SEARCH_SELECT,
+        orderBy: { name: 'asc' },
+        take: limit,
+      }),
+    create: (data) =>
+      prisma.client.create({ data, select: CONTACT_SELECT }),
+    getById: (id, details) =>
+      details
+        ? prisma.client.findUnique({
+            where: { id },
+            select: CLIENT_DETAIL_SELECT,
+          })
+        : prisma.client.findUnique({ where: { id }, select: CONTACT_SELECT }),
+    update: (id, data) =>
+      prisma.client.update({ where: { id }, data, select: CONTACT_SELECT }),
+    updateStatus: (id, status) =>
+      prisma.client.update({
+        where: { id },
+        data: { status },
+        select: CONTACT_SELECT,
+      }),
     },
-  },
 })
 
 export { clientRoutes }

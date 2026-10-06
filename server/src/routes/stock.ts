@@ -118,10 +118,16 @@ stockRoutes.get('/movements', async (c) => {
       : [],
   ])
 
-  const salesMap = new Map(sales.map((s) => [s.id, s]))
-  const purchasesMap = new Map(purchases.map((p) => [p.id, p]))
-  const productionsMap = new Map(productions.map((p) => [p.id, p]))
-  const adjustmentsMap = new Map(adjustments.map((a) => [a.id, a]))
+  const salesMap = new Map(sales.map((sale) => [sale.id, sale] as const))
+  const purchasesMap = new Map(
+    purchases.map((purchase) => [purchase.id, purchase] as const)
+  )
+  const productionsMap = new Map(
+    productions.map((production) => [production.id, production] as const)
+  )
+  const adjustmentsMap = new Map(
+    adjustments.map((adjustment) => [adjustment.id, adjustment] as const)
+  )
 
   const enriched = movements.map((m) => {
     let reference: Record<string, unknown> | null = null
@@ -236,7 +242,7 @@ stockRoutes.get('/adjustments/:id', async (c) => {
 })
 
 stockRoutes.post('/adjustments', requireRole('admin', 'manager'), async (c) => {
-  const userId = c.get('userId') as string
+  const userId = c.get('userId')
   const body = await c.req.json()
   const { itemType, itemId, quantity, reason } = body as {
     itemType: 'product' | 'supply'
@@ -320,7 +326,6 @@ stockRoutes.post('/adjustments', requireRole('admin', 'manager'), async (c) => {
 })
 
 stockRoutes.patch('/adjustments/:id', requireRole('admin', 'manager'), async (c) => {
-  const _userId = c.get('userId') as string
   const id = c.req.param('id')
   const body = await c.req.json()
   const { itemType, itemId, quantity, reason } = body as {
@@ -415,7 +420,7 @@ stockRoutes.patch('/adjustments/:id', requireRole('admin', 'manager'), async (c)
 })
 
 stockRoutes.post('/adjustments/:id/complete', requireRole('admin', 'manager'), async (c) => {
-  const userId = c.get('userId') as string
+  const userId = c.get('userId')
   const id = c.req.param('id')
 
   const existing = await prisma.stockAdjustment.findUnique({
@@ -506,7 +511,7 @@ stockRoutes.post('/adjustments/:id/complete', requireRole('admin', 'manager'), a
 })
 
 stockRoutes.post('/adjustments/:id/reverse', requireRole('admin', 'manager'), async (c) => {
-  const userId = c.get('userId') as string
+  const userId = c.get('userId')
   const id = c.req.param('id')
   const body = await c.req.json()
   const { reason } = body as { reason: string }

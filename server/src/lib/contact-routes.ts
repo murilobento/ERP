@@ -1,17 +1,44 @@
 import { Hono } from 'hono'
-import type { PrismaClient } from '@prisma/client'
-import prisma from './prisma.js'
 import { authMiddleware } from '../middleware/auth.js'
 
+export type ContactCreateData = {
+  name: string
+  phone: string
+  zipCode: string
+  street: string
+  number: string
+  complement: string
+  neighborhood: string
+  city: string
+  state: string
+  status: string
+}
+
+export type ContactUpdateData = Partial<ContactCreateData>
+
+type ContactSearch = {
+  query: string
+  status?: string
+  limit: number
+}
+
+type ContactOperations = {
+  list: () => Promise<unknown[]>
+  search: (params: ContactSearch) => Promise<unknown[]>
+  create: (data: ContactCreateData) => Promise<unknown>
+  getById: (id: string, details: boolean) => Promise<unknown | null>
+  update: (id: string, data: ContactUpdateData) => Promise<unknown>
+  updateStatus: (id: string, status: string) => Promise<unknown>
+}
+
 interface ContactRoutesConfig {
-  model: keyof Pick<PrismaClient, 'client' | 'vendor'>
   entityName: string
   responseKey: string
   pluralResponseKey: string
-  detailSelect?: Record<string, unknown>
+  operations: ContactOperations
 }
 
-const CONTACT_SELECT = {
+export const CONTACT_SELECT = {
   id: true,
   name: true,
   phone: true,
@@ -25,30 +52,38 @@ const CONTACT_SELECT = {
   status: true,
   createdAt: true,
   updatedAt: true,
-}
+} as const
 
-const SEARCH_SELECT = {
+export const SEARCH_SELECT = {
   id: true,
   name: true,
   phone: true,
   status: true,
-}
+} as const
 
-const CONTACT_FIELDS = ['name', 'phone', 'zipCode', 'street', 'number', 'complement', 'neighborhood', 'city', 'state', 'status'] as const
+const CONTACT_FIELDS = [
+  'name',
+  'phone',
+  'zipCode',
+  'street',
+  'number',
+  'complement',
+  'neighborhood',
+  'city',
+  'state',
+  'status',
+] as const
 
 const STATUS_VALUES = ['active', 'inactive'] as const
 
 export function createContactRoutes(config: ContactRoutesConfig) {
-  const { model, entityName, responseKey, pluralResponseKey, detailSelect } = config
+  const { entityName, responseKey, pluralResponseKey, operations } = config
   const router = new Hono()
 
   router.use('*', authMiddleware)
 
   router.get('/', async (c) => {
-    const entities = await prisma[model].findMany({
-      select: CONTACT_SELECT,
-      orderBy: { createdAt: 'desc' },
-    })
+    const entities = await operations.list()
     return c.json({ [pluralResponseKey]: entities })
   })
 
@@ -64,14 +99,10 @@ export function createContactRoutes(config: ContactRoutesConfig) {
       return c.json({ [pluralResponseKey]: [] })
     }
 
-    const entities = await prisma[model].findMany({
-      where: {
-        name: { contains: q, mode: 'insensitive' },
-        ...(status && status !== 'all' ? { status } : {}),
-      },
-      select: SEARCH_SELECT,
-      orderBy: { name: 'asc' },
-      take: limit,
+    const entities = await operations.search({
+      query: q,
+      status: status && status !== 'all' ? status : undefined,
+      limit,
     })
 
     return c.json({ [pluralResponseKey]: entities })
@@ -79,26 +110,34 @@ export function createContactRoutes(config: ContactRoutesConfig) {
 
   router.post('/', async (c) => {
     const body = await c.req.json()
-    const { name, phone, zipCode, street, number, complement, neighborhood, city, state, status } = body
+    const {
+      name,
+      phone,
+      zipCode,
+      street,
+      number,
+      complement,
+      neighborhood,
+      city,
+      state,
+      status,
+    } = body as Partial<ContactCreateData>
 
     if (!name) {
       return c.json({ error: 'Todos os campos obrigatórios devem ser preenchidos.' }, 400)
     }
 
-    const entity = await prisma[model].create({
-      data: {
-        name,
-        phone: phone || '',
-        zipCode: zipCode || '',
-        street: street || '',
-        number: number || '',
-        complement: complement || '',
-        neighborhood: neighborhood || '',
-        city: city || '',
-        state: state || '',
-        status: status || 'active',
-      },
-      select: CONTACT_SELECT,
+    const entity = await operations.create({
+      name,
+      phone: phone || '',
+      zipCode: zipCode || '',
+      street: street || '',
+      number: number || '',
+      complement: complement || '',
+      neighborhood: neighborhood || '',
+      city: city || '',
+      state: state || '',
+      status: status || 'active',
     })
 
     return c.json({ [responseKey]: entity }, 201)
@@ -106,12 +145,7 @@ export function createContactRoutes(config: ContactRoutesConfig) {
 
   router.get('/:id', async (c) => {
     const entityId = c.req.param('id')
-    const select = detailSelect ?? CONTACT_SELECT
-
-    const entity = await prisma[model].findUnique({
-      where: { id: entityId },
-      select,
-    })
+    const entity = await operations.getById(entityId, true)
 
     if (!entity) {
       return c.json({ error: `${entityName} não encontrado.` }, 404)
@@ -124,14 +158,14 @@ export function createContactRoutes(config: ContactRoutesConfig) {
     const entityId = c.req.param('id')
     const body = await c.req.json()
 
-    const existing = await prisma[model].findUnique({ where: { id: entityId } })
+    const existing = await operations.getById(entityId, false)
     if (!existing) {
       return c.json({ error: `${entityName} não encontrado.` }, 404)
     }
 
-    const data: Record<string, unknown> = {}
+    const data: ContactUpdateData = {}
     for (const field of CONTACT_FIELDS) {
-      const value = body[field]
+      const value = (body as Partial<ContactUpdateData>)[field]
       if (value !== undefined) {
         if (field === 'complement' || field === 'phone') {
           data[field] = value
@@ -141,11 +175,7 @@ export function createContactRoutes(config: ContactRoutesConfig) {
       }
     }
 
-    const entity = await prisma[model].update({
-      where: { id: entityId },
-      data,
-      select: CONTACT_SELECT,
-    })
+    const entity = await operations.update(entityId, data)
 
     return c.json({ [responseKey]: entity })
   })
@@ -159,16 +189,12 @@ export function createContactRoutes(config: ContactRoutesConfig) {
       return c.json({ error: 'Status inválido.' }, 400)
     }
 
-    const existing = await prisma[model].findUnique({ where: { id: entityId } })
+    const existing = await operations.getById(entityId, false)
     if (!existing) {
       return c.json({ error: `${entityName} não encontrado.` }, 404)
     }
 
-    const entity = await prisma[model].update({
-      where: { id: entityId },
-      data: { status },
-      select: CONTACT_SELECT,
-    })
+    const entity = await operations.updateStatus(entityId, status)
 
     return c.json({ [responseKey]: entity })
   })
