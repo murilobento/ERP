@@ -5,13 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import api from '@/lib/api'
-import { queryKeys } from '@/lib/query-keys'
-import { useEntityMutation } from '@/lib/use-entity-mutation'
 import {
   computeMarginFromSalePrice,
   computeProductCost,
   computeSalePriceFromMargin,
 } from '@/lib/pricing'
+import { queryKeys } from '@/lib/query-keys'
+import { useEntityMutation } from '@/lib/use-entity-mutation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -127,7 +127,10 @@ export function ProductsActionDialog({
   const statusValue = useWatch({ control: form.control, name: 'status' })
   const marginValue = useWatch({ control: form.control, name: 'margin' })
   const freightValue = useWatch({ control: form.control, name: 'freightCost' })
-  const packagingValue = useWatch({ control: form.control, name: 'packagingCost' })
+  const packagingValue = useWatch({
+    control: form.control,
+    name: 'packagingCost',
+  })
 
   const compositionCost = isEdit
     ? computeProductCost({
@@ -138,7 +141,8 @@ export function ProductsActionDialog({
         })),
       })
     : 0
-  const totalCost = compositionCost + (freightValue ?? 0) + (packagingValue ?? 0)
+  const totalCost =
+    compositionCost + (freightValue ?? 0) + (packagingValue ?? 0)
   const salePrice = computeSalePriceFromMargin(totalCost, marginValue ?? 0)
 
   return (
@@ -327,7 +331,9 @@ export function ProductsActionDialog({
                         autoComplete='off'
                         value={
                           localSalePrice ??
-                          (Number.isFinite(salePrice) ? salePrice.toFixed(2) : '')
+                          (Number.isFinite(salePrice)
+                            ? salePrice.toFixed(2)
+                            : '')
                         }
                         onChange={(e) => {
                           setLocalSalePrice(e.target.value)

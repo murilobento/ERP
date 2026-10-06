@@ -104,7 +104,9 @@ export function ProductsDetailDialog({
               <p className='text-xs text-muted-foreground'>Frete + Embal.</p>
               <p className='text-sm font-medium'>
                 {currentRow.freightCost + currentRow.packagingCost
-                  ? formatCurrency(currentRow.freightCost + currentRow.packagingCost)
+                  ? formatCurrency(
+                      currentRow.freightCost + currentRow.packagingCost
+                    )
                   : '—'}
               </p>
             </div>

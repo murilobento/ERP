@@ -1,3 +1,5 @@
+import { computeProductSalePrice } from '@/lib/pricing'
+
 export type KitItem = {
   id: string
   productId: string
@@ -28,8 +30,6 @@ export type Kit = {
   discount: number
   finalPrice: number
 }
-
-import { computeProductSalePrice } from '@/lib/pricing'
 
 export function computeKitSalePrice(items: KitItem[]) {
   return items.reduce(

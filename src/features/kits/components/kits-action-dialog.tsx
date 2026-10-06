@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/lib/api'
+import { computeProductSalePrice } from '@/lib/pricing'
 import { queryKeys } from '@/lib/query-keys'
 import { useEntityMutation } from '@/lib/use-entity-mutation'
-import { computeProductSalePrice } from '@/lib/pricing'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
