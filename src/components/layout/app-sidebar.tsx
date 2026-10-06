@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useLocation } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth-store'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
@@ -12,7 +13,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { type Company } from '@/features/company/data/schema'
-import { sidebarData } from './data/sidebar-data'
+import { sidebarData, moduleForPath } from './data/sidebar-data'
 import { ModuleSwitcher } from './module-switcher'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
@@ -25,9 +26,18 @@ type CompanyResponse = {
 
 export function AppSidebar() {
   const { collapsible, variant } = useLayout()
-  const [activeModule, setActiveModule] = useState<Module>(
-    sidebarData.modules[0]
+  const { pathname } = useLocation()
+  const locationModule = moduleForPath(pathname)
+  // Override manual válido apenas no módulo da rota em que foi escolhido:
+  // navegar para outra rota devolve o módulo ao derivado da URL
+  const [manual, setManual] = useState<{ for: Module; module: Module } | null>(
+    null
   )
+
+  const activeModule =
+    manual?.for === locationModule
+      ? manual.module
+      : (locationModule ?? sidebarData.modules[0])
   const { auth } = useAuthStore()
   const userRole = auth.user?.role ?? 'viewer'
   const { data: company } = useQuery({
@@ -59,7 +69,9 @@ export function AppSidebar() {
         <ModuleSwitcher
           modules={sidebarData.modules}
           activeModule={activeModule}
-          onModuleChange={setActiveModule}
+          onModuleChange={(module) =>
+            setManual({ for: locationModule ?? sidebarData.modules[0], module })
+          }
         />
       </SidebarHeader>
       <SidebarContent>

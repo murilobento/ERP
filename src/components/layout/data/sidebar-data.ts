@@ -90,3 +90,27 @@ export const sidebarData: SidebarData = {
     ],
   },
 }
+
+/**
+ * Resolve o módulo dono de um pathname por reverse lookup dos grupos de
+ * navegação. Match exato primeiro (ex: /stock/movements), com fallback para o
+ * primeiro segmento do caminho (ex: rotas-filhas de /stock). Rotas
+ * admin-only não são filtradas aqui — a guarda de role é da rota.
+ */
+export function moduleForPath(pathname: string): Module | undefined {
+  const firstSegment = `/${pathname.split('/')[1]}`
+
+  const matchedModule = Object.entries(
+    sidebarData.navGroupsByModule
+  ).find(([, groups]) =>
+    groups.some((group) =>
+      group.items.some(
+        (item) => item.url === pathname || item.url === firstSegment
+      )
+    )
+  )
+
+  return sidebarData.modules.find(
+    (module) => module.name === matchedModule?.[0]
+  )
+}
