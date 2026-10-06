@@ -52,7 +52,9 @@ export function createApp({ enableLogger = true } = {}) {
 
   app.get('/api/health', (c) => c.json({ status: 'ok' }))
 
-  app.onError((_err, c) => {
+  app.onError((err, c) => {
+    // eslint-disable-next-line no-console
+    console.error('Unhandled server error:', err)
     return c.json({ error: 'Erro interno do servidor.' }, 500)
   })
 
