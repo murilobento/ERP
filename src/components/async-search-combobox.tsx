@@ -59,7 +59,7 @@ export function AsyncSearchCombobox<T extends SearchItem>({
     data: items = [],
     isFetching,
     isError,
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+     
   } = useQuery({
     queryKey: [...queryKey, debouncedSearch],
     queryFn: () => fetchFn(debouncedSearch),
