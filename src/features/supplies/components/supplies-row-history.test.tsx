@@ -68,10 +68,13 @@ describe('supplies row history entry point', () => {
     apiGet.mockResolvedValue({ data: historyResponse })
   })
 
-  it('opens the history dialog from the row icon', async () => {
+  it('opens the history dialog from the actions menu', async () => {
     const { getByRole, getByText } = await renderRow()
 
-    await userEvent.click(getByRole('button', { name: 'Histórico de compras' }))
+    await userEvent.click(getByRole('button', { name: 'Abrir menu' }))
+    await userEvent.click(
+      getByRole('menuitem', { name: 'Histórico de compras' })
+    )
 
     expect(getByText('Total gasto')).toBeInTheDocument()
     await vi.waitFor(() =>

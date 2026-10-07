@@ -35,16 +35,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   }
 
   return (
-    <div className='flex items-center justify-end gap-1'>
-      <Button
-        variant='ghost'
-        className='flex h-8 w-8 p-0 hover:text-primary'
-        aria-label='Histórico de compras'
-        title='Histórico de compras'
-        onClick={openHistory}
-      >
-        <History size={16} />
-      </Button>
+    <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
@@ -102,6 +93,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         </DropdownMenuContent>
       </DropdownMenu>
       {statusAction.confirmationDialog}
-    </div>
+    </>
   )
 }
