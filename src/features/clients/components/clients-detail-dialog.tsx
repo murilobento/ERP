@@ -26,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useSales } from '@/features/sales/components/sales-provider'
 import {
   type Client,
   type ClientDetail,
@@ -33,6 +34,7 @@ import {
   getSaleTotal,
   formatCurrency,
 } from '../data/schema'
+import { buildSaleStub } from '../lib/sale-stub'
 import { useClients } from './clients-provider'
 
 type ClientsDetailDialogProps = {
@@ -46,7 +48,9 @@ export function ClientsDetailDialog({
   open,
   onOpenChange,
 }: ClientsDetailDialogProps) {
-  const { setOpen } = useClients()
+  const { setOpen: setClientsOpen } = useClients()
+  const { setOpen: setSalesOpen, setCurrentRow: setSalesCurrentRow } =
+    useSales()
   const currentRowId = currentRow?.id
 
   const { data: detail, isLoading } = useQuery({
@@ -62,7 +66,15 @@ export function ClientsDetailDialog({
   })
 
   function handleEdit() {
-    setOpen('edit')
+    setClientsOpen('edit')
+  }
+
+  function handleOpenSale(saleId: string) {
+    const clientData = detail ?? currentRow
+    const sale = detail?.sales?.find((s) => s.id === saleId)
+    if (!clientData || !sale) return
+    setSalesCurrentRow(buildSaleStub(sale, clientData))
+    setSalesOpen('view')
   }
 
   function handleClose(state: boolean) {
@@ -161,7 +173,11 @@ export function ClientsDetailDialog({
                         }
                         const total = getSaleTotal(sale)
                         return (
-                          <TableRow key={sale.id}>
+                          <TableRow
+                            key={sale.id}
+                            className='cursor-pointer hover:bg-muted/50'
+                            onClick={() => handleOpenSale(sale.id)}
+                          >
                             <TableCell>
                               <Badge variant={statusInfo.variant}>
                                 {statusInfo.label}
@@ -227,7 +243,8 @@ export function ClientsDetailDialog({
                     return (
                       <div
                         key={sale.id}
-                        className='space-y-1 rounded-md border p-3'
+                        className='cursor-pointer space-y-1 rounded-md border p-3 transition-colors hover:bg-muted/50'
+                        onClick={() => handleOpenSale(sale.id)}
                       >
                         <div className='flex items-center justify-between'>
                           <Badge variant={statusInfo.variant}>
